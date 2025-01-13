@@ -41,5 +41,5 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/masoares/ft_transcendance/Database/
+      device: /home/jorteixe/ft_transcendance/Database/
       o: bind
