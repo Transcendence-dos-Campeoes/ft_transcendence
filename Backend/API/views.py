@@ -6,14 +6,20 @@ from users.models import SiteUser
 
 @api_view(['GET'])
 def getUsersData(request):
-	SiteUsers = SiteUser.objects.all()
-	serializer = SiteUserSerializer(SiteUsers, many=True)
-	return Response(serializer.data)
+    """
+    Retrieve a list of all users.
+    """
+    SiteUsers = SiteUser.objects.all()
+    serializer = SiteUserSerializer(SiteUsers, many=True)
+    return Response(serializer.data)
 
 @api_view(['POST'])
 def createUser(request):
-	serializer = SiteUserSerializer(data=request.data)
-	if serializer.is_valid():
-		serializer.save()
-		return Response(serializer.data, status=status.HTTP_201_CREATED)
-	return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    """
+    Create a new user.
+    """
+    serializer = SiteUserSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
