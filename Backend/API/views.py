@@ -5,7 +5,7 @@ from .serializers import SiteUserSerializer
 from users.models import SiteUser
 
 @api_view(['GET'])
-def getData(request):
+def getUsersData(request):
 	SiteUsers = SiteUser.objects.all()
 	serializer = SiteUserSerializer(SiteUsers, many=True)
 	return Response(serializer.data)
