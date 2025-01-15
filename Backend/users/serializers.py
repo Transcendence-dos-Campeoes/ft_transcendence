@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import SiteUser
+from .models import SiteUser
 
 class SiteUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
