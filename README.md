@@ -1,4 +1,4 @@
-# ft_transcendance
+# ft_transcendence
 
 ## Backend
 After making changes to the database models, we need to run:
