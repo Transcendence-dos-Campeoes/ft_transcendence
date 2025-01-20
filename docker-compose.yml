@@ -22,6 +22,16 @@ services:
       - POSTGRES_DB=hello_django_dev
     volumes:
       - pgdata:/var/lib/postgresql/data/ 
+
+  frontend:
+      build: ./Frontend
+      volumes:
+        - ./Frontend:/var/www/html
+      ports:
+        - 443:443
+      depends_on:
+        - db
+        - backend
  
 volumes:
   pgdata:
