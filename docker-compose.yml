@@ -38,5 +38,5 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/jorteixe/ft_transcendence/Database/
+      device: /Users/ruipedropires/CommonCore/ft_transcendence/Database
       o: bind
