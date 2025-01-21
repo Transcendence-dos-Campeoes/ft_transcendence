@@ -139,3 +139,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.SiteUser'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',  # Throttle for anonymous users
+        'rest_framework.throttling.UserRateThrottle'  # Throttle for authenticated users
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1/hour',  # Limit anonymous users to 1 request per hour
+        'user': '1/hour'  # Limit authenticated users to 1 request per hour
+    }
+}

@@ -1,10 +1,14 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework import status
 from .serializers import SiteUserSerializer
 from .models import SiteUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.throttling import AnonRateThrottle
+
+class RegisterUserThrottle(AnonRateThrottle):
+    rate = '4/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
 def getUsersData(request):
@@ -24,6 +28,7 @@ def getUsersData(request):
     }
 )
 @api_view(['POST'])
+@throttle_classes([RegisterUserThrottle])
 def create_user(request):
     """
     Create a new user.
