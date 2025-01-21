@@ -17,23 +17,14 @@ def getUsersData(request):
 
 @swagger_auto_schema(
     method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='The username of the new user', example='testuser'),
-            'nickname': openapi.Schema(type=openapi.TYPE_STRING, description='The nickname of the new user', example='Test User'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, description='The email address of the new user', example='example@example.com'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, description='The password for the new user', example='password123'),
-        },
-        required=['username', 'nickname', 'email', 'password']
-    ),
+    request_body=SiteUserSerializer,
     responses={
         201: openapi.Response('User created successfully', SiteUserSerializer),
         400: 'Bad Request'
     }
 )
 @api_view(['POST'])
-def createUser(request):
+def create_user(request):
     """
     Create a new user.
     """

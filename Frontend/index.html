@@ -211,7 +211,7 @@
 				const repeatPassword = document.getElementById('floatingRepeatPassword').value;
 
 				if (password !== repeatPassword) {
-					alert('Passwords do not match');
+					displayErrorMessage('Passwords do not match');
 					return;
 				}
 
@@ -232,20 +232,35 @@
 					});
 
 					const responseText = await response.text();
-					console.log('Response Text:', responseText);
-
 					if (response.ok) {
 						alert('User registered successfully');
 						// Optionally, redirect to another page
 					} else {
 						const errorData = JSON.parse(responseText);
-						alert('Error: ' + JSON.stringify(errorData));
+						displayErrorMessage(formatErrorMessages(errorData));
 					}
 				} catch (error) {
 					console.error('Error:', error);
-					alert('An error occurred while registering the user');
+					displayErrorMessage('An error occurred while registering the user');
 				}
 			});
+		}
+
+		function formatErrorMessages(errors) {
+			let formattedErrors = '';
+			for (const [field, messages] of Object.entries(errors)) {
+				formattedErrors += `<strong>${field.charAt(0).toUpperCase() + field.slice(1)}:</strong><br>`;
+				messages.forEach(message => {
+					formattedErrors += `- ${message}<br>`;
+				});
+			}
+			return formattedErrors;
+		}
+
+		function displayErrorMessage(message) {
+			const errorMessagesDiv = document.getElementById('errorMessages');
+			errorMessagesDiv.innerHTML = message;
+			errorMessagesDiv.classList.remove('d-none');
 		}
 	</script>
 	<script src="assets/dist/js/bootstrap.bundle.min.js"></script>
