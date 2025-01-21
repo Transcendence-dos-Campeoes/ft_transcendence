@@ -1,0 +1,44 @@
+<div class="container">
+    <div class="modal modal-sheet position-static d-block bg-body-secondary p-4 py-md-5" tabindex="-1" role="dialog"
+        id="modalSignin">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header p-5 pb-4 border-bottom-0">
+                    <h1 class="fw-bold mb-0 fs-2">Login!</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-5 pt-0">
+                    <form class="">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control rounded-3" id="floatingUsernameEmail" placeholder="Username/name@example.com">
+                            <label for="floatingUsername">Username or Email address</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control rounded-3" id="floatingPassword"
+                                placeholder="Password">
+                            <label for="floatingPassword">Password</label>
+                        </div>
+                        <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Login</button>
+                        <hr class="my-4">
+                        <h2 class="fs-5 fw-bold mb-3">Or use your 42Porto Account</h2>
+                        <style>
+                            .login-button {
+                                background-color: #00babc;
+                            }
+
+                            .login-button:hover {
+                                background-color: #008f8f;
+                            }
+                        </style>
+                        <button type="button"
+                            class="login-button text-white py-3 px-4 rounded mt-10 transition duration-200 w-100 d-flex align-items-center justify-content-center">
+                            Login with&nbsp;
+                            <img src="https://www.42evals.com/42.svg" alt="42 Logo" style="width: 24px; height: 24px;" class="ml-2">
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
