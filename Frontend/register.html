@@ -1,11 +1,12 @@
-<div class="modal modal-sheet position-static d-block bg-body-secondary p-4 py-md-5" tabindex="-1" role="dialog"
-    id="modalSignin">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content rounded-4 shadow">
-            <div class="modal-header p-5 pb-4 border-bottom-0">
-                <h1 class="fw-bold mb-0 fs-2">Come play Pong!</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+<div class="container">
+	<div class="modal modal-sheet position-static d-block p-4 py-md-5" tabindex="-1" role="dialog"
+	    id="modalSignin">
+	    <div class="modal-dialog" role="document">
+	        <div class="modal-content rounded-4 shadow">
+	            <div class="modal-header p-5 pb-4 border-bottom-0">
+	                <h1 class="fw-bold mb-0 fs-2">Come play Pong!</h1>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
 
             <div class="modal-body p-5 pt-0">
                 <form id="registrationForm">
@@ -37,3 +38,90 @@
         </div>
     </div>
 </div>
+
+
+<script>
+	async function showComponent(id, element) {
+		try {
+			const response = await fetch(`${id}.html`);
+			const content = await response.text();
+			document.getElementById(element).innerHTML = content;
+
+			if (id === 'register') {
+				attachRegisterFormListener();
+			}
+		} catch (error) {
+			console.error('Error loading component:', error);
+		}
+	}
+
+	function attachRegisterFormListener() {
+		document.getElementById('registrationForm').addEventListener('submit', async function (event) {
+			event.preventDefault();
+			console.log('Form submitted');
+
+			const username = document.getElementById('floatingUsername').value;
+			const email = document.getElementById('floatingInput').value;
+			const nickname = document.getElementById('floatingNickname').value;
+			const password = document.getElementById('floatingPassword').value;
+			const repeatPassword = document.getElementById('floatingRepeatPassword').value;
+
+			if (password !== repeatPassword) {
+				displayErrorMessage('Passwords do not match');
+				return;
+			}
+
+			const data = {
+				username: username,
+				email: email,
+				nickname: nickname,
+				password: password
+			};
+
+			try {
+				const response = await fetch('http://localhost:8000/api/users/create/', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				});
+
+				const responseText = await response.text();
+				if (response.ok) {
+					alert('User registered successfully');
+					const errorMessagesDiv = document.getElementById('errorMessages');
+					errorMessagesDiv.classList.add('d-none'); // Hide the error box
+					errorMessagesDiv.innerHTML = ''; // Clear any existing error messages
+				}
+				else if (!response.ok && response.status == 429) {
+					displayErrorMessage("Too many requests. Please try again later.")
+				}
+				else {
+					const errorData = JSON.parse(responseText);
+					displayErrorMessage(formatErrorMessages(errorData));
+				}
+			} catch (error) {
+				console.error('Error:', error);
+				displayErrorMessage('An error occurred while registering the user');
+			}
+		});
+	}
+
+	function formatErrorMessages(errors) {
+		let formattedErrors = '';
+		for (const [field, messages] of Object.entries(errors)) {
+			formattedErrors += `<strong>${field.charAt(0).toUpperCase() + field.slice(1)}:</strong><br>`;
+			messages.forEach(message => {
+				formattedErrors += `- ${message}<br>`;
+			});
+		}
+		return formattedErrors;
+	}
+
+	function displayErrorMessage(message) {
+		const errorMessagesDiv = document.getElementById('errorMessages');
+		errorMessagesDiv.innerHTML = message;
+		errorMessagesDiv.classList.remove('d-none');
+	}
+</script>
