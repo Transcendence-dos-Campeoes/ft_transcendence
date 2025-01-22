@@ -35,6 +35,10 @@ async function navigateToPage(page) {
         
         router.currentPage = page;
         history.pushState({ page }, '', `#${page}`);
+
+		if (page === 'register') {
+			attachRegisterFormListener();
+		}
     } catch (error) {
         console.error('Error loading page:', error);
     }

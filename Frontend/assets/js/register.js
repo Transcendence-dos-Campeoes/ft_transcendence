@@ -11,7 +11,6 @@ function attachRegisterFormListener() {
 
         const username = document.getElementById('floatingUsername').value;
         const email = document.getElementById('floatingInput').value;
-        const nickname = document.getElementById('floatingNickname').value;
         const password = document.getElementById('floatingPassword').value;
         const repeatPassword = document.getElementById('floatingRepeatPassword').value;
 
@@ -23,7 +22,6 @@ function attachRegisterFormListener() {
         const data = {
             username: username,
             email: email,
-            nickname: nickname,
             password: password
         };
 
