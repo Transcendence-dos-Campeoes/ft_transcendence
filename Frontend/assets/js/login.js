@@ -1,6 +1,10 @@
-
+function attachLoginFormListener() {
+    const form = document.getElementById('loginForm');
+    if (!form) {
+        console.error('Form not found');
+        return;
+    }
     document.getElementById('loginForm').addEventListener('submit', async function(event) {
-        console.log('Login successful');
         event.preventDefault();
 
         const username = document.getElementById('usernameEmail').value;
@@ -8,6 +12,7 @@
 
         await login(username, password);
     });
+}
 
 async function login(username, password) {
     const response = await fetch('/api/users/login', {

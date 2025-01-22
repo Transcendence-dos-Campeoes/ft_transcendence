@@ -39,6 +39,9 @@ async function navigateToPage(page) {
 		if (page === 'register') {
 			attachRegisterFormListener();
 		}
+        else if (page === 'login') {
+			attachLoginFormListener();
+		}
     } catch (error) {
         console.error('Error loading page:', error);
     }
