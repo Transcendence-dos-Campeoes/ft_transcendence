@@ -26,87 +26,10 @@
 		</div>
 	</div>
 
-    <script>
-		const canvas = document.getElementById('screenCanvas');
-		const ctx = canvas.getContext('2d');
-
-		function resizeCanvas() {
-			canvas.width = canvas.offsetWidth;
-			canvas.height = canvas.offsetHeight;
-		}
-
-		function drawScanlines() {
-			ctx.fillStyle = 'rgba(0,0,0,0.2)';
-			for(let i = 0; i < canvas.height; i += 2) {
-				ctx.fillRect(0, i, canvas.width, 1);
-			}
-		}
-
-		function animate() {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			drawScanlines();
-			requestAnimationFrame(animate);
-		}
-
-		window.addEventListener('resize', resizeCanvas);
-		resizeCanvas();
-		animate();
-        // Router state
-        const router = {
-            currentPage: null,
-            pages: {
-                home: '/home.html',
-                login: '/login.html',
-                register: '/register.html'
-            }
-        };
-
-        // Page loader
-        async function navigateToPage(page) {
-			if (router.currentPage === page) return;
-			
-			try {
-				const screen = document.querySelector('.screen');
-				
-				// Remove previous classes
-				screen.classList.remove('zoom-in', 'zoom-out');
-				
-				// Add zoom effect based on navigation
-				if (page === 'home') {
-					screen.classList.add('zoom-in');
-				} else if (router.currentPage === 'home') {
-					// Coming from home page
-					screen.classList.add('zoom-out');
-					// Wait for zoom out
-					await new Promise(resolve => setTimeout(resolve, 500));
-					screen.classList.remove('zoom-out');
-				}
-
-				const response = await fetch(router.pages[page]);
-				const content = await response.text();
-				document.getElementById('content').innerHTML = content;
-				
-				router.currentPage = page;
-				history.pushState({ page }, '', `#${page}`);
-			} catch (error) {
-				console.error('Error loading page:', error);
-			}
-		}
-        // Handle browser back/forward
-        window.addEventListener('popstate', (e) => {
-            if (e.state?.page) {
-                navigateToPage(e.state.page);
-            }
-        });
-
-        // Load initial page
-        window.addEventListener('load', () => {
-            const initialPage = window.location.hash.slice(1) || 'home';
-            navigateToPage(initialPage);
-        });
-    </script>
     <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/canvas.js"></script>
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/sidebars.js"></script>
   </body>
