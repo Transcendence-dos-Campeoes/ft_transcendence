@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteUser
+from .models import SiteUser, SiteUserManager
 
 class SiteUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -18,3 +18,6 @@ class SiteUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+
