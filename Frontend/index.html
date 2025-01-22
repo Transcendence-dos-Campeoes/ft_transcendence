@@ -43,6 +43,11 @@
                 router.currentPage = page;
                 // Update URL without reload
                 history.pushState({ page }, '', `#${page}`);
+                
+                // Call attachRegisterFormListener if the page is register
+                if (page === 'register') {
+                    attachRegisterFormListener();
+                }
             } catch (error) {
                 console.error('Error loading page:', error);
             }
@@ -57,7 +62,7 @@
 
         // Load initial page
         window.addEventListener('load', () => {
-            const initialPage = window.location.hash.slice(1) || 'home';
+            const initialPage = window.location.hash.slice(1) || 'register';
             navigateToPage(initialPage);
         });
     </script>
@@ -65,5 +70,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/sidebars.js"></script>
+	<script src="assets/js/register.js"></script>
   </body>
 </html>

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'drf_yasg',
+	'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'API.urls'
@@ -151,3 +153,6 @@ REST_FRAMEWORK = {
         'user': '1/hour'  # Limit authenticated users to 1 request per hour
     }
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
