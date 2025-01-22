@@ -100,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
         'OPTIONS': {
             'max_similarity': 0.5,
-            'user_attributes': ['username', 'nickname', 'email']
+            'user_attributes': ['username', 'email']
         }
     },
     {

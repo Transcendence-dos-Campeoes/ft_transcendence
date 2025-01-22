@@ -20,7 +20,6 @@ class SiteUserManager(BaseUserManager):
 class SiteUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=150, unique=True)
-    nickname = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
     online_status = models.BooleanField(default=False)
     token = models.CharField(max_length=64, blank=True, null=True)
