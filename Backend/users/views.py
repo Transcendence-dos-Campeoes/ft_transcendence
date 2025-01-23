@@ -1,11 +1,12 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework import status
 from .serializers import SiteUserSerializer
 from .models import SiteUser, SiteUserManager
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.throttling import AnonRateThrottle
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '20/hour'  # Custom throttle rate for user registration
@@ -20,10 +21,12 @@ from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def getUsersData(request):
     """
     Retrieve a list of all users.
     """
+    
     SiteUsers = SiteUser.objects.all()
     serializer = SiteUserSerializer(SiteUsers, many=True)
     return Response(serializer.data)
@@ -37,6 +40,7 @@ def getUsersData(request):
     }
 )
 @api_view(['POST'])
+@permission_classes([])
 @throttle_classes([RegisterUserThrottle])
 def create_user(request):
     """

@@ -38,11 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-	'rest_framework',
-    'rest_framework.authtoken',
-	'users',
-	'drf_yasg',
-    'corsheaders'
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'users',
+    'drf_yasg',
+	'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -150,10 +150,35 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'  # Throttle for authenticated users
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '1/hour',  # Limit anonymous users to 1 request per hour
-        'user': '1/hour'  # Limit authenticated users to 1 request per hour
-    }
+        'anon': '500/hour',  # Limit anonymous users to 1 request per hour
+        'user': '500/hour'  # Limit authenticated users to 1 request per hour
+    },
+	'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# JWT settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+}
