@@ -8,7 +8,7 @@ from drf_yasg import openapi
 from rest_framework.throttling import AnonRateThrottle
 
 class RegisterUserThrottle(AnonRateThrottle):
-    rate = '4/hour'  # Custom throttle rate for user registration
+    rate = '20/hour'  # Custom throttle rate for user registration
 
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token

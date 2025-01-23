@@ -23,10 +23,25 @@ async function login(username, password) {
         body: JSON.stringify({ username, password })
     });
 
+    const responseText = await response.json();
     if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful:', data);
-    } else {
-        console.error('Login failed:', response.statusText);
+        console.log('Login successful:', responseText);
+        navigateToPage("home");
     }
+    else if (!response.ok && response.status == 429) 
+    {
+        displayErrorMessage("Too many requests. Please try again later.")
+    }
+    else 
+    {
+        const errorData = JSON.parse(responseText);
+        displayErrorMessage(formatErrorMessages(errorData));
+    }
+        
+}
+
+function displayErrorMessage(message) {
+    const errorMessagesDiv = document.getElementById('errorMessages');
+    errorMessagesDiv.innerHTML = message;
+    errorMessagesDiv.classList.remove('d-none');
 }
