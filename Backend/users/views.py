@@ -55,14 +55,16 @@ def loginUser(request):
     """
     Log in a user.
     """
-    user = get_object_or_404(SiteUserManager, username = request.data['username'])
+
+    print(f"Username: {request.data['username']}")
+    user = get_object_or_404(SiteUser, username = request.data['username'])
     
     if not user.check_password(request.data['password']):
         return Response({'detail': 'Not found.'}, status=status.HTTP_400_BAD_REQUEST)
     
     token, created = Token.objects.get_or_create(user = user)
     serializer = SiteUserSerializer(instance=user)
-    return Response({"token": token, "user": serializer.data}, status=status.HTTP_200_)
+    return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
