@@ -3,8 +3,8 @@ all: up
 
 #Build and run the Docker containers
 up:
-	@if [ ! -d "/home/${USER}/ft_transcendence/Database/" ]; then \
-        mkdir -p /home/${USER}/ft_transcendence/Database/; \
+	@if [ ! -d "${HOME}/ft_transcendence/Database/" ]; then \
+        mkdir -p ${HOME}/ft_transcendence/Database/; \
     fi
 	docker-compose up --build
 
