@@ -8,10 +8,20 @@ const router = {
     }
 };
 
+// Check if user is authenticated
+function isAuthenticated() {
+    return !!localStorage.getItem('token');
+}
+
 // Page loader
 async function navigateToPage(page) {
     if (router.currentPage === page) return;
-    
+
+    // Check authentication before navigating to home page
+    if (page === 'home' && !isAuthenticated()) {
+        page = 'login';
+    }
+
     try {
         const screen = document.querySelector('.screen');
         
@@ -36,16 +46,16 @@ async function navigateToPage(page) {
         router.currentPage = page;
         history.pushState({ page }, '', `#${page}`);
 
-		if (page === 'register') {
-			attachRegisterFormListener();
-		}
-        else if (page === 'login') {
-			attachLoginFormListener();
-		}
+        if (page === 'register') {
+            attachRegisterFormListener();
+        } else if (page === 'login') {
+            attachLoginFormListener();
+        }
     } catch (error) {
         console.error('Error loading page:', error);
     }
 }
+
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
     if (e.state?.page) {

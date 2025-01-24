@@ -2,9 +2,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
 from .models import SiteUser
 from drf_yasg.utils import swagger_auto_schema
@@ -74,3 +75,14 @@ def loginUser(request):
     """
     # Directly call the MyTokenObtainPairView
     return MyTokenObtainPairView.as_view()(request._request)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logoutUser(request):
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+    except Exception as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
