@@ -13,6 +13,33 @@ function isAuthenticated() {
     return !!localStorage.getItem('token');
 }
 
+// Logout function
+async function logout() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('http://localhost:8000/api/users/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
+        });
+
+        if (response.ok) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            navigateToPage('login');
+        } else {
+            console.error('Failed to log out');
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+}
+
 // Page loader
 async function navigateToPage(page) {
     if (router.currentPage === page) return;
