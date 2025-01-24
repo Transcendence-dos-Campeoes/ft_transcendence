@@ -1,25 +1,17 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, throttle_classes, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework import status
-from .serializers import SiteUserSerializer
-from .models import SiteUser, SiteUserManager
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.throttling import AnonRateThrottle
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
+from .models import SiteUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.throttling import AnonRateThrottle
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '20/hour'  # Custom throttle rate for user registration
-
-from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
-from django.shortcuts import get_object_or_404
-
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -27,7 +19,6 @@ def getUsersData(request):
     """
     Retrieve a list of all users.
     """
-    
     SiteUsers = SiteUser.objects.all()
     serializer = SiteUserSerializer(SiteUsers, many=True)
     return Response(serializer.data)
@@ -49,36 +40,37 @@ def create_user(request):
     """
     serializer = SiteUserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        token = Token.objects.get(username=request.data['username'])
-        return Response({"token": token, "user": serializer.data}, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': serializer.data
+        }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
+        }
+    ),
+    responses={
+        200: openapi.Response('Token obtained successfully'),
+        400: 'Bad Request'
+    }
+)
 @api_view(['POST'])
 @permission_classes([])
-@throttle_classes([RegisterUserThrottle])
 def loginUser(request):
     """
-    Log in a user.
+    Obtain JWT token for user login.
     """
-
-    print(f"Username: {request.data['username']}")
-    user = get_object_or_404(SiteUser, username = request.data['username'])
-    
-    if not user.check_password(request.data['password']):
-        return Response({'detail': 'Not found.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    refresh = RefreshToken.for_user(user)
-    serializer = SiteUserSerializer(instance=user)
-    return Response({
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-        'user': serializer.data
-    }, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def test_token(request):
-    return Response("passed for {}".format(request.user.email))
+    # Directly call the MyTokenObtainPairView
+    return MyTokenObtainPairView.as_view()(request._request)

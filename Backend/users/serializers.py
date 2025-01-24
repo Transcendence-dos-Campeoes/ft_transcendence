@@ -1,27 +1,48 @@
-from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import SiteUser, SiteUserManager
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from .models import SiteUser
+
 
 class SiteUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
     class Meta:
         model = SiteUser
-        fields = ['username', 'email', 'password', 'online_status', 'created_time']
-
-    def validate_password(self, value):
-        validate_password(value, self.instance)
-        return value
+        fields = '__all__'
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = SiteUser(
             username=validated_data['username'],
-            email=validated_data['email'],
-            online_status=validated_data.get('online_status', False),
+            email=validated_data['email']
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
 
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'username'
 
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
 
+        # Add custom claims
+        token['username'] = user.username
+        return token
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            raise serializers.ValidationError('Invalid username or password')
+
+        refresh = self.get_token(user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }

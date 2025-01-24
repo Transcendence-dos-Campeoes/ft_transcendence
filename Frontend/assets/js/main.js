@@ -55,6 +55,6 @@ window.addEventListener('popstate', (e) => {
 
 // Load initial page
 window.addEventListener('load', () => {
-    const initialPage = window.location.hash.slice(1) || 'home';
+    const initialPage = window.location.hash.slice(1) || 'register';
     navigateToPage(initialPage);
 });

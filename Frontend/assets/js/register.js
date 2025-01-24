@@ -36,18 +36,22 @@ function attachRegisterFormListener() {
 
             const responseText = await response.text();
             if (response.ok) {
-				navigateToPage("login");
-                alert('User registered successfully');
-                const errorMessagesDiv = document.getElementById('errorMessages');
-                errorMessagesDiv.classList.add('d-none'); // Hide the error box
-                errorMessagesDiv.innerHTML = ''; // Clear any existing error messages
-            }
-            else if (!response.ok && response.status == 429) {
+				console.log('User Registered Succesfully');
+                const responseData = JSON.parse(responseText);
+                // Store the token in localStorage or a cookie
+                localStorage.setItem('token', responseData.access);
+                // Navigate to the home page
+                navigateToPage("home");
+            } else if (!response.ok && response.status == 429) {
                 displayErrorMessage("Too many requests. Please try again later.")
-            }
-            else {
-                const errorData = JSON.parse(responseText);
-                displayErrorMessage(formatErrorMessages(errorData));
+            } else {
+                try {
+                    const errorData = JSON.parse(responseText);
+                    displayErrorMessage(formatErrorMessages(errorData));
+                } catch (e) {
+                    console.error('Error parsing JSON:', e); // Log the JSON parsing error
+                    displayErrorMessage('An error occurred while registering the user');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
