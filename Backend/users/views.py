@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view(['GET'])
@@ -55,6 +56,8 @@ def create_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([])
+@throttle_classes([RegisterUserThrottle])
 def loginUser(request):
     """
     Log in a user.
@@ -66,9 +69,13 @@ def loginUser(request):
     if not user.check_password(request.data['password']):
         return Response({'detail': 'Not found.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    token, created = Token.objects.get_or_create(user = user)
+    refresh = RefreshToken.for_user(user)
     serializer = SiteUserSerializer(instance=user)
-    return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK)
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+        'user': serializer.data
+    }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
