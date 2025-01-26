@@ -4,7 +4,8 @@ const router = {
     pages: {
         home: '/home.html',
         login: '/login.html',
-        register: '/register.html'
+        register: '/register.html',
+        lobby: '/lobby.html'
     }
 };
 

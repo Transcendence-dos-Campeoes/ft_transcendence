@@ -5,3 +5,5 @@ gunicorn==23.0.0
 drf_yasg==1.21.8
 django-cors-headers==4.6
 djangorestframework-simplejwt==5.4
+channels==4.2.0
+daphne==4.1.2
