@@ -46,7 +46,7 @@ async function logout() {
       localStorage.removeItem('token');
       localStorage.removeItem('refresh_token');
       sessionStorage.removeItem('username');
-      navigateToPage('login');
+      renderContent('login');
     } else {
       console.error('Failed to log out');
     }
@@ -56,7 +56,7 @@ async function logout() {
 }
 
 // Page loader
-async function navigateToPage(page) {
+async function renderContent(page) {
   if (router.currentPage === page) return;
 
   if (page === 'home' && !isAuthenticated()) {
@@ -98,14 +98,14 @@ async function navigateToPage(page) {
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
   if (e.state?.page) {
-    navigateToPage(e.state.page);
+    renderContent(e.state.page);
   }
 });
 
 // Load initial page
 window.addEventListener('load', () => {
   const initialPage = window.location.hash.slice(1) || 'home';
-  navigateToPage(initialPage);
+  renderContent(initialPage);
 });
 
 document.addEventListener('DOMContentLoaded', () => {

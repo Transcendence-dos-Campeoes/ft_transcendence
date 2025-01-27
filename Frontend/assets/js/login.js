@@ -32,7 +32,7 @@ async function login(username, password) {
       // Store the token in localStorage or a cookie
       localStorage.setItem('token', responseData.access);
       sessionStorage.setItem('username', username);
-      navigateToPage('home');
+      renderContent('home');
     } else if (!response.ok && response.status == 429) {
       displayErrorMessage('Too many requests. Please try again later.')
     } else {
