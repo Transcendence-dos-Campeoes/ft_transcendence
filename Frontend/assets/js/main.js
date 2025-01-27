@@ -10,7 +10,7 @@ const router = {
 
 // Check if user is authenticated
 function isAuthenticated() {
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('access');
 }
 
 // Logout function
@@ -61,8 +61,12 @@ async function navigateToPage(page) {
     if (router.currentPage === page) return;
 
     // Check authentication before navigating to home page
-    if (page === 'home' && checkAndRefreshToken()) {
-        page = 'home';
+    if (page === 'home') {
+        console.log('Navigating to home, checking and refreshing token...');
+        const isAuthenticated = await checkAndRefreshToken();
+        if (!isAuthenticated) {
+            page = 'login';
+        }
     }
 
     try {
@@ -82,38 +86,26 @@ async function navigateToPage(page) {
             screen.classList.remove('zoom-out');
         }
 
+        // Load the new page
         const response = await fetch(router.pages[page]);
-        const content = await response.text();
-        document.getElementById('content').innerHTML = content;
-        
+        const html = await response.text();
+        document.querySelector('.screen').innerHTML = html;
         router.currentPage = page;
-        history.pushState({ page }, '', `#${page}`);
 
-        if (page === 'register') {
-            attachRegisterFormListener();
-        } else if (page === 'login') {
+        // Attach event listeners for the new page
+        if (page === 'login') {
             attachLoginFormListener();
+        } else if (page === 'register') {
+            attachRegisterFormListener();
         }
     } catch (error) {
         console.error('Error loading page:', error);
     }
 }
 
-// Handle browser back/forward
-window.addEventListener('popstate', (e) => {
-    if (e.state?.page) {
-        navigateToPage(e.state.page);
-    }
-});
-
-// Load initial page
-window.addEventListener('load', () => {
-    const initialPage = window.location.hash.slice(1) || 'register';
-    navigateToPage(initialPage);
-});
-
 async function checkAndRefreshToken() {
-	const accessTokenExpiry = parseInt(localStorage.getItem('access_token_expiry'), 10);
+    console.log('checkAndRefreshToken called');
+    const accessTokenExpiry = parseInt(localStorage.getItem('access_token_expiry'), 10);
     const currentTime = new Date().getTime();
 
     if (isNaN(accessTokenExpiry)) {
@@ -122,21 +114,20 @@ async function checkAndRefreshToken() {
         return false;
     }
 
+    const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
+    console.log('Current Time:', new Date(currentTime).toLocaleString());
+    console.log('Expiry Time:', new Date(accessTokenExpiry).toLocaleString());
+    console.log('Expiry minus five minutes:', new Date(expiry_minus_five).toLocaleString());
 
-	const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
-	console.log('Current Time:', new Date(currentTime).toLocaleString());
-	console.log('Expiry Time:', new Date(accessTokenExpiry).toLocaleString());
-	console.log('Expiry minus five minutes:', new Date(expiry_minus_five).toLocaleString());
-
-    if (accessTokenExpiry && currentTime > expiry_minus_five) { // 5 minutes before expiry
-		console.log("Token Expired, refreshing token.");
+    if (currentTime > expiry_minus_five) { // 5 minutes before expiry
+        console.log("Token Expired, refreshing token.");
         const refreshSuccess = await refreshToken();
         if (!refreshSuccess) {
             console.log("Refresh unsuccessful.");
             logout();
             return false;
         }
-		console.log("Refresh successful.");
+        console.log("Refresh successful.");
     }
     return true;
 }
@@ -155,8 +146,8 @@ async function refreshToken() {
         const responseData = await response.json();
         if (response.ok) {
             localStorage.setItem('access', responseData.access);
-            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000;
-			console.log('New Access Token Expiry:', new Date(accessTokenExpiry).toLocaleString());// 2 minutes for testing
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+            console.log('New Access Token Expiry:', new Date(accessTokenExpiry).toLocaleString());
             localStorage.setItem('access_token_expiry', accessTokenExpiry);
             console.log('Token refreshed successfully');
             return true;
