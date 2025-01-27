@@ -1,11 +1,11 @@
 const elements = {
   currentElement: null,
   elements: {
-    overview: '/components/overview.html',
-    profile: '/components/profile.html',
-    settings: '/components/settings.html',
-    matches: '/components/matches.html',
-    tournaments: '/components/tournaments.html',
+    overview: "/components/overview.html",
+    profile: "/components/profile.html",
+    settings: "/components/settings.html",
+    matches: "/components/matches.html",
+    tournaments: "/components/tournaments.html",
   },
 };
 function waitForElement(selector, timeout = 5000) {
@@ -28,17 +28,17 @@ function waitForElement(selector, timeout = 5000) {
 }
 
 async function renderElement(element, event = null) {
-  console.log('Rendering element:', element);
+  console.log("Rendering element:", element);
   if (elements.currentElement === element) return;
 
   try {
-    const centerContent = await waitForElement('center-content');
+    const centerContent = await waitForElement("center-content");
     const response = await fetch(elements.elements[element]);
     const content = await response.text();
 
     centerContent.innerHTML = content;
     elements.currentElement = element;
   } catch (error) {
-    console.error('Error loading element:', error);
+    console.error("Error loading element:", error);
   }
 }

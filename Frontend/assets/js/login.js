@@ -27,15 +27,13 @@ async function login(username, password) {
 
     if (response.ok) {
       const responseData = JSON.parse(responseText);
-      console.log('Login successful');
-
-      localStorage.setItem('token', responseData.access);
-      localStorage.setItem('refresh_token', responseData.refresh);
-      sessionStorage.setItem('username', username);
-
-      renderPage('home');
-    } else if (response.status === 429) {
-      displayErrorMessage('Too many requests. Please try again later.');
+      console.log("Login successful:", responseData);
+      // Store the token in localStorage or a cookie
+      localStorage.setItem("token", responseData.access);
+      sessionStorage.setItem("username", username);
+      renderPage("home");
+    } else if (!response.ok && response.status == 429) {
+      displayErrorMessage("Too many requests. Please try again later.");
     } else {
       try {
         const errorData = JSON.parse(responseText);

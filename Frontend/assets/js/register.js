@@ -34,10 +34,12 @@ function attachRegisterFormListener() {
       if (response.ok) {
         console.log('User Registered Successfully');
         const responseData = JSON.parse(responseText);
-        localStorage.setItem('token', responseData.access);
-        renderPage('home');
-      } else if (response.status === 429) {
-        displayErrorMessage('Too many requests. Please try again later.');
+        // Store the token in localStorage or a cookie
+        localStorage.setItem("token", responseData.access);
+        // Navigate to the home page
+        renderPage("home");
+      } else if (!response.ok && response.status == 429) {
+        displayErrorMessage("Too many requests. Please try again later.");
       } else {
         try {
           const errorData = JSON.parse(responseText);

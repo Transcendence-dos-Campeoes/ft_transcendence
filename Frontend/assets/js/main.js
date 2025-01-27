@@ -9,12 +9,12 @@ const router = {
 };
 
 function updateUserProfile() {
-  const username = sessionStorage.getItem('username');
+  const username = sessionStorage.getItem("username");
   if (!username) return;
 
   // Create observer to watch for element
   const observer = new MutationObserver((mutations, obs) => {
-    const userDisplay = document.querySelector('.user-display');
+    const userDisplay = document.querySelector(".user-display");
     if (userDisplay) {
       userDisplay.textContent = username;
       obs.disconnect();
@@ -59,10 +59,10 @@ async function logout() {
     clearTimeout(timeoutId);
 
     if (response.ok) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refresh_token');
-      sessionStorage.removeItem('username');
-      renderPage('login');
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
+      sessionStorage.removeItem("username");
+      renderPage("login");
     } else {
       throw new Error(`Logout failed: ${response.status}`);
     }
@@ -75,6 +75,7 @@ async function logout() {
   }
 }
 
+// Page loader
 async function renderPage(page) {
   if (router.currentPage === page) return;
 
@@ -83,14 +84,14 @@ async function renderPage(page) {
   }
 
   try {
-    const screen = document.querySelector('.screen-container');
-    screen.classList.remove('zoom-in', 'zoom-out');
+    const screen = document.querySelector(".screen-container");
+    screen.classList.remove("zoom-in", "zoom-out");
 
-    if (page === 'home') {
+    if (page === "home") {
       updateUserProfile();
-      screen.classList.add('zoom-in');
-    } else if (router.currentPage === 'home') {
-      screen.classList.add('zoom-out');
+      screen.classList.add("zoom-in");
+    } else if (router.currentPage === "home") {
+      screen.classList.add("zoom-out");
       await new Promise((resolve) => setTimeout(resolve, 500));
       screen.classList.remove('zoom-out');
     }
@@ -120,7 +121,7 @@ window.addEventListener('popstate', (e) => {
 });
 
 // Load initial page
-window.addEventListener('load', () => {
-  const initialPage = window.location.hash.slice(1) || 'home';
+window.addEventListener("load", () => {
+  const initialPage = window.location.hash.slice(1) || "home";
   renderPage(initialPage);
 });
