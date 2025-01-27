@@ -49,8 +49,10 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user is None:
             raise serializers.ValidationError('Invalid username or password')
 
+        user.is_active = True
+        user.save()
+        
         refresh = self.get_token(user)
-
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),

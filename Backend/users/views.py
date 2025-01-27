@@ -83,6 +83,20 @@ def logoutUser(request):
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
         token.blacklist()
+
+        user = request.user
+        user.is_active = False
+        user.save()
+
         return Response(status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
         return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated]) 
+def available_players(request):
+    players = SiteUser.objects.filter(is_active=True)
+    print(f"Active players: {players}") 
+    serializer = SiteUserSerializer(players, many=True)
+    return Response(serializer.data)

@@ -50,7 +50,11 @@ async function navigateToPage(page) {
         page = 'login';
     }
 
-    try {
+    if (page === 'lobby' && !isAuthenticated()) {
+        page = 'login';
+    }
+
+    try {   
         const screen = document.querySelector('.screen');
         
         // Remove previous classes
