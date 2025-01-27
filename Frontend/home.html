@@ -1,200 +1,199 @@
-<div class="container">
-  <header class="p-3 mb-3 border-bottom">
-      <div class="container">
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-          <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
-            <img src="assets/img/logo.png" width="40" height="32" alt="Your Brand">
+<div class="container-fluid vh-100 vw-100">
+  <div class="row h-100">
+    <div class="col-2 d-flex flex-column p-3 bg-body-tertiary">
+      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+        <svg class="bi pe-none me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
+        <span class="fs-4">Sidebar</span>
+      </a>
+      <hr>
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="#" class="nav-link active" aria-current="page">
+            <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+            Home
           </a>
-    
-          <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-            <li><a href="#" class="nav-link px-2 link-secondary">Overview</a></li>
-            <li><a href="#" class="nav-link px-2 link-body-emphasis">Matches</a></li>
-            <li><a href="#" class="nav-link px-2 link-body-emphasis">Tournaments</a></li>
-          </ul>
-    
-          <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-            <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
-          </form>
-    
-          <div class="dropdown text-end">
-            <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
-            </a>
-            <ul class="dropdown-menu text-small">
-              <li><a class="dropdown-item" href="#">Settings</a></li>
-              <li><a class="dropdown-item" href="#">Profile</a></li>
-              <li><hr class="dropdown-divider"></li>
-			  <li><a class="dropdown-item" href="#" onclick="logout()">Sign out</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-  </header>
-</div>
-
-<div class="container">
-  <div class="row">
-    <div class="col-md-8 col-lg-12 px-md-1 d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-      <div class="row">
-        <div class="col-md-6 col-lg-6">
-          <h3>Latest results</h3>
-          <div class="table-responsive small">
-            <table class="table table-striped table-sm">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Header</th>
-                  <th scope="col">Header</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1,001</td>
-                  <td>random</td>
-                  <td>data</td>
-                </tr>
-                <tr>
-                  <td>1,002</td>
-                  <td>placeholder</td>
-                  <td>irrelevant</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>data</td>
-                  <td>rich</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>information</td>
-                  <td>placeholder</td>
-                </tr>
-                <tr>
-                  <td>1,004</td>
-                  <td>text</td>
-                  <td>random</td>
-                </tr>
-                <tr>
-                  <td>1,005</td>
-                  <td>dashboard</td>
-                  <td>irrelevant</td>
-                </tr>
-                <tr>
-                  <td>1,006</td>
-                  <td>dashboard</td>
-                  <td>illustrative</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-6">
-          <h3>Latest tournaments</h3>
-          <div class="table-responsive small">
-            <table class="table table-striped table-sm">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Header</th>
-                  <th scope="col">Header</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1,001</td>
-                  <td>random</td>
-                  <td>data</td>
-                </tr>
-                <tr>
-                  <td>1,002</td>
-                  <td>placeholder</td>
-                  <td>irrelevant</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>data</td>
-                  <td>rich</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>information</td>
-                  <td>placeholder</td>
-                </tr>
-                <tr>
-                  <td>1,004</td>
-                  <td>text</td>
-                  <td>random</td>
-                </tr>
-                <tr>
-                  <td>1,005</td>
-                  <td>dashboard</td>
-                  <td>irrelevant</td>
-                </tr>
-                <tr>
-                  <td>1,006</td>
-                  <td>dashboard</td>
-                  <td>illustrative</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    <div class="col-md-4 col-lg-3 px-md-1">
-      <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-body-tertiary">
-        <a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
-          <span class="fs-5 fw-semibold">Friends</span>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis">
+            <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis">
+            <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#table"/></svg>
+            Orders
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis">
+            <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#grid"/></svg>
+            Products
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis">
+            <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#people-circle"/></svg>
+            Customers
+          </a>
+        </li>
+      </ul>
+      <hr>
+      <div class="dropdown">
+        <a href="#" class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+          <strong class="user-display"></strong>
         </a>
-        <div class="list-group list-group-flush border-bottom scrollarea">
-          <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-              <strong class="mb-1">List group item heading</strong>
-              <small>Wed</small>
-            </div>
-          </a>
-          <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-              <strong class="mb-1">List group item heading</strong>
-              <small class="text-body-secondary">Tues</small>
-            </div>
-          </a>
-          <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-              <strong class="mb-1">List group item heading</strong>
-              <small class="text-body-secondary">Mon</small>
-            </div>
-          </a>
-          <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-              <strong class="mb-1">List group item heading</strong>
-              <small class="text-body-secondary">Wed</small>
-            </div>
-          </a>
-          <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-              <strong class="mb-1">List group item heading</strong>
-              <small class="text-body-secondary">Tues</small>
-            </div>
-          </a>
+        <ul class="dropdown-menu text-small shadow">
+          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="#">Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" onclick="logout()">Sign out</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-8">
+      <div class="row h-100">
+        <div class="col-6 p-3">
+          <h3>Latest results</h3>
+          <div class="table-responsive">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Header</th>
+                  <th scope="col">Header</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1,001</td>
+                  <td>random</td>
+                  <td>data</td>
+                </tr>
+                <tr>
+                  <td>1,002</td>
+                  <td>placeholder</td>
+                  <td>irrelevant</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>data</td>
+                  <td>rich</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>information</td>
+                  <td>placeholder</td>
+                </tr>
+                <tr>
+                  <td>1,004</td>
+                  <td>text</td>
+                  <td>random</td>
+                </tr>
+                <tr>
+                  <td>1,005</td>
+                  <td>dashboard</td>
+                  <td>irrelevant</td>
+                </tr>
+                <tr>
+                  <td>1,006</td>
+                  <td>dashboard</td>
+                  <td>illustrative</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-6 p-3">
+          <h3>Latest tournaments</h3>
+          <div class="table-responsive">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Header</th>
+                  <th scope="col">Header</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1,001</td>
+                  <td>random</td>
+                  <td>data</td>
+                </tr>
+                <tr>
+                  <td>1,002</td>
+                  <td>placeholder</td>
+                  <td>irrelevant</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>data</td>
+                  <td>rich</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>information</td>
+                  <td>placeholder</td>
+                </tr>
+                <tr>
+                  <td>1,004</td>
+                  <td>text</td>
+                  <td>random</td>
+                </tr>
+                <tr>
+                  <td>1,005</td>
+                  <td>dashboard</td>
+                  <td>irrelevant</td>
+                </tr>
+                <tr>
+                  <td>1,006</td>
+                  <td>dashboard</td>
+                  <td>illustrative</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="container">
-  <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-      <p class="col-md-4 mb-0 text-body-secondary">&copy; 2024 Company, Inc</p>
-
-      <a href="/" class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-        <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
+    <div class="col-2 d-flex flex-column p-3 bg-body-tertiary">
+      <a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+        <span class="fs-5 fw-semibold">Friends</span>
       </a>
-
-      <ul class="nav col-md-4 justify-content-end">
-        <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">Home</a></li>
-        <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">Features</a></li>
-        <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">Pricing</a></li>
-        <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">FAQs</a></li>
-        <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">About</a></li>
-      </ul>
-  </footer>
+      <div class="list-group list-group-flush border-bottom scrollarea">
+        <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
+          <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1">List group item heading</strong>
+            <small>Wed</small>
+          </div>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+          <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1">List group item heading</strong>
+            <small class="text-body-secondary">Tues</small>
+          </div>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+          <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1">List group item heading</strong>
+            <small class="text-body-secondary">Mon</small>
+          </div>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
+          <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1">List group item heading</strong>
+            <small class="text-body-secondary">Wed</small>
+          </div>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+          <div class="d-flex w-100 align-items-center justify-content-between">
+            <strong class="mb-1">List group item heading</strong>
+            <small class="text-body-secondary">Tues</small>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
 </div>

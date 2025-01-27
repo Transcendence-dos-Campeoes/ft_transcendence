@@ -5,7 +5,7 @@
     transform: translate(-50%, -50%);
     width: 800px;
     height: 600px;
-    perspective: 1000px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .screen {
@@ -25,13 +25,16 @@
     transition: transform 0.5s ease-in-out;
 }
 
-.screen-content {
-    max-width: 280px;
-    margin: 0 auto;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.screen-container.zoom-in {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100vw;
+    height: 100vh;
+}
+
+.screen-container.zoom-out {
+    transform: translate(-50%, -50%) scale(0.8);
 }
 
 #screenCanvas {
@@ -44,15 +47,5 @@
 
 #content {
     position: relative;
-    width: 100%;
-    height: 100%;
     z-index: 2;
-}
-
-.zoom-in {
-    transform: scale(1.5);
-}
-
-.zoom-out {
-    transform: scale(0.8);
 }
