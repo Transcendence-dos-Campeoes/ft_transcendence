@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'users',
+    'matches',
+    'tournaments',
     'drf_yasg',
     'corsheaders',
 ]
