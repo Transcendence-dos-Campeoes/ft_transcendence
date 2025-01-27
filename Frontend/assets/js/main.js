@@ -45,6 +45,7 @@ async function logout() {
     if (response.ok) {
       localStorage.removeItem('token');
       localStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('username');
       navigateToPage('login');
     } else {
       console.error('Failed to log out');
