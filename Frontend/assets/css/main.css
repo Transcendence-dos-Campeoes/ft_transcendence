@@ -1,3 +1,7 @@
+body {
+  font-family: "Silkscreen", cursive;
+}
+
 .screen-container {
   position: fixed;
   top: 50%;
@@ -17,8 +21,8 @@
   align-items: center;
   background: radial-gradient(
     circle at center,
-    rgba(44, 19, 88, 0.9) 0%,
-    rgba(81, 51, 144, 0.7) 100%
+    rgba(9, 27, 59, 0.9) 0%,
+    rgba(30, 48, 86, 0.7) 100%
   );
   border-radius: 10px;
   border: 10px solid #333;
@@ -51,4 +55,28 @@
 #content {
   position: relative;
   z-index: 2;
+}
+
+.table {
+  background-color: transparent !important;
+}
+
+.table > thead,
+.table > tbody,
+.table > tfoot {
+  background-color: transparent !important;
+}
+
+.table > tbody > tr {
+  background-color: transparent !important;
+}
+
+.table > tbody > tr:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.table th,
+.table td {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.2);
 }
