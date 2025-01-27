@@ -14,9 +14,23 @@ function attachRegisterFormListener() {
         const password = document.getElementById('floatingPassword').value;
         const repeatPassword = document.getElementById('floatingRepeatPassword').value;
 
-        if (password !== repeatPassword) {
-            displayErrorMessage('Passwords do not match');
-            return;
+      const responseText = await response.text();
+      if (response.ok) {
+        console.log("User Registered Succesfully");
+        const responseData = JSON.parse(responseText);
+        // Store the token in localStorage or a cookie
+        localStorage.setItem("token", responseData.access);
+        // Navigate to the home page
+        renderPage("home");
+      } else if (!response.ok && response.status == 429) {
+        displayErrorMessage("Too many requests. Please try again later.");
+      } else {
+        try {
+          const errorData = JSON.parse(responseText);
+          displayErrorMessage(formatErrorMessages(errorData));
+        } catch (e) {
+          console.error("Error parsing JSON:", e); // Log the JSON parsing error
+          displayErrorMessage("An error occurred while registering the user");
         }
 
         const data = {
