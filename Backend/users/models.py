@@ -30,8 +30,8 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
 
     objects = SiteUserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.username
