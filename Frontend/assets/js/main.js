@@ -25,7 +25,8 @@ async function logout() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('access')}`
             },
-            body: JSON.stringify({ refresh })
+            body: JSON.stringify({ refresh }),
+            credentials: 'include' // Include cookies in the request
         });
 
         if (response.ok) {
@@ -34,7 +35,21 @@ async function logout() {
             localStorage.removeItem('access_token_expiry');
             navigateToPage('login');
         } else {
-            console.error('Failed to log out');
+            let responseData;
+            try {
+                responseData = await response.json();
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                responseData = { detail: 'An error occurred' };
+            }
+            if (responseData.detail === "Token is already blacklisted") {
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+                localStorage.removeItem('access_token_expiry');
+                navigateToPage('login');
+            } else {
+                console.error('Failed to log out:', responseData);
+            }
         }
     } catch (error) {
         console.error('Error logging out:', error);
@@ -46,8 +61,8 @@ async function navigateToPage(page) {
     if (router.currentPage === page) return;
 
     // Check authentication before navigating to home page
-    if (page === 'home' && !isAuthenticated()) {
-        page = 'login';
+    if (page === 'home' && checkAndRefreshToken()) {
+        page = 'home';
     }
 
     try {
@@ -97,14 +112,33 @@ window.addEventListener('load', () => {
     navigateToPage(initialPage);
 });
 
-// filepath: /home/jorteixe/ft_transcendence/Frontend/assets/js/main.js
 async function checkAndRefreshToken() {
-    const accessTokenExpiry = localStorage.getItem('access_token_expiry');
+	const accessTokenExpiry = parseInt(localStorage.getItem('access_token_expiry'), 10);
     const currentTime = new Date().getTime();
 
-    if (accessTokenExpiry && currentTime > accessTokenExpiry - 5 * 60 * 1000) { // 5 minutes before expiry
-        await refreshToken();
+    if (isNaN(accessTokenExpiry)) {
+        console.error('Invalid access token expiry time');
+        logout();
+        return false;
     }
+
+
+	const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
+	console.log('Current Time:', new Date(currentTime).toLocaleString());
+	console.log('Expiry Time:', new Date(accessTokenExpiry).toLocaleString());
+	console.log('Expiry minus five minutes:', new Date(expiry_minus_five).toLocaleString());
+
+    if (accessTokenExpiry && currentTime > expiry_minus_five) { // 5 minutes before expiry
+		console.log("Token Expired, refreshing token.");
+        const refreshSuccess = await refreshToken();
+        if (!refreshSuccess) {
+            console.log("Refresh unsuccessful.");
+            logout();
+            return false;
+        }
+		console.log("Refresh successful.");
+    }
+    return true;
 }
 
 async function refreshToken() {
@@ -121,15 +155,30 @@ async function refreshToken() {
         const responseData = await response.json();
         if (response.ok) {
             localStorage.setItem('access', responseData.access);
-            const accessTokenExpiry = new Date().getTime() + 30 * 60 * 1000; // 30 minutes
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000;
+			console.log('New Access Token Expiry:', new Date(accessTokenExpiry).toLocaleString());// 2 minutes for testing
             localStorage.setItem('access_token_expiry', accessTokenExpiry);
             console.log('Token refreshed successfully');
+            return true;
         } else {
-            console.error('Failed to refresh token:', responseData);
-            logout(); // Log out if refresh token is expired or invalid
+            console.error('Failed to refresh Access token:', responseData);
+            return false;
         }
     } catch (error) {
-        console.error('Error refreshing token:', error);
-        logout(); // Log out if there is an error during the refresh process
+        console.error('Error refreshing Access token:', error);
+        return false;
     }
 }
+
+// Handle browser back/forward
+window.addEventListener('popstate', (e) => {
+    if (e.state?.page) {
+        navigateToPage(e.state.page);
+    }
+});
+
+// Load initial page
+window.addEventListener('load', () => {
+    const initialPage = window.location.hash.slice(1) || 'register';
+    navigateToPage(initialPage);
+});

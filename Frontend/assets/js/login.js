@@ -33,7 +33,7 @@ async function login(username, password) {
             // Store the tokens and expiration time in localStorage or a cookie
             localStorage.setItem('access', responseData.access);
             localStorage.setItem('refresh', responseData.refresh);
-            const accessTokenExpiry = new Date().getTime() + 30 * 60 * 1000; // 30 minutes
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 2 minutes for testing
             localStorage.setItem('access_token_expiry', accessTokenExpiry);
             navigateToPage("home");
         } else if (!response.ok && response.status == 429) {
@@ -53,29 +53,6 @@ async function login(username, password) {
     }
 }
 
-async function refreshToken() {
-    try {
-        const refresh = localStorage.getItem('refresh');
-        const response = await fetch('http://localhost:8000/api/token/refresh/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ refresh })
-        });
-
-        const responseData = await response.json();
-        if (response.ok) {
-            localStorage.setItem('access', responseData.access);
-            console.log('Token refreshed successfully');
-        } else {
-            console.error('Failed to refresh token:', responseData);
-        }
-    } catch (error) {
-        console.error('Error refreshing token:', error);
-    }
-}
-
 function displayErrorMessage(message) {
     const errorMessagesDiv = document.getElementById('errorMessages');
     errorMessagesDiv.innerHTML = message;
@@ -92,3 +69,5 @@ function formatErrorMessages(errors) {
     }
     return formattedErrors;
 }
+
+attachLoginFormListener();
