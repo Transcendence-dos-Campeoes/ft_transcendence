@@ -8,10 +8,47 @@ const router = {
     }
 };
 
+// Check if user is authenticated
+function isAuthenticated() {
+    return !!localStorage.getItem('token');
+}
+
+// Logout function
+async function logout() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('http://localhost:8000/api/users/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
+        });
+
+        if (response.ok) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            navigateToPage('login');
+        } else {
+            console.error('Failed to log out');
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+}
+
 // Page loader
 async function navigateToPage(page) {
     if (router.currentPage === page) return;
-    
+
+    // Check authentication before navigating to home page
+    if (page === 'home' && !isAuthenticated()) {
+        page = 'login';
+    }
+
     try {
         const screen = document.querySelector('.screen');
         
@@ -36,13 +73,16 @@ async function navigateToPage(page) {
         router.currentPage = page;
         history.pushState({ page }, '', `#${page}`);
 
-		if (page === 'register') {
-			attachRegisterFormListener();
-		}
+        if (page === 'register') {
+            attachRegisterFormListener();
+        } else if (page === 'login') {
+            attachLoginFormListener();
+        }
     } catch (error) {
         console.error('Error loading page:', error);
     }
 }
+
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
     if (e.state?.page) {
@@ -52,6 +92,6 @@ window.addEventListener('popstate', (e) => {
 
 // Load initial page
 window.addEventListener('load', () => {
-    const initialPage = window.location.hash.slice(1) || 'home';
+    const initialPage = window.location.hash.slice(1) || 'register';
     navigateToPage(initialPage);
 });
