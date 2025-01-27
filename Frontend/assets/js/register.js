@@ -43,7 +43,7 @@ function attachRegisterFormListener() {
         // Store the token in localStorage or a cookie
         localStorage.setItem("token", responseData.access);
         // Navigate to the home page
-        renderContent("home");
+        renderPage("home");
       } else if (!response.ok && response.status == 429) {
         displayErrorMessage("Too many requests. Please try again later.");
       } else {

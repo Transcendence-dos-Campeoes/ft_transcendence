@@ -10,20 +10,22 @@ const router = {
 
 function updateUserProfile() {
   const username = sessionStorage.getItem("username");
-  console.log("Username from session:", username); // Debug
+  if (!username) return;
 
-  setTimeout(() => {
+  // Create observer to watch for element
+  const observer = new MutationObserver((mutations, obs) => {
     const userDisplay = document.querySelector(".user-display");
-    console.log("User display element:", userDisplay);
-
-    if (userDisplay && username) {
+    if (userDisplay) {
       userDisplay.textContent = username;
-    } else {
-      if (!userDisplay && username) {
-        setTimeout(updateUserProfile, 100);
-      }
+      obs.disconnect();
     }
-  }, 0);
+  });
+
+  // Start observing
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 // Check if user is authenticated
@@ -50,7 +52,7 @@ async function logout() {
       localStorage.removeItem("token");
       localStorage.removeItem("refresh_token");
       sessionStorage.removeItem("username");
-      renderContent("login");
+      renderPage("login");
     } else {
       console.error("Failed to log out");
     }
@@ -60,7 +62,7 @@ async function logout() {
 }
 
 // Page loader
-async function renderContent(page) {
+async function renderPage(page) {
   if (router.currentPage === page) return;
 
   if (page === "home" && !isAuthenticated()) {
@@ -69,11 +71,10 @@ async function renderContent(page) {
 
   try {
     const screen = document.querySelector(".screen-container");
-
-    // Remove previous classes
     screen.classList.remove("zoom-in", "zoom-out");
 
     if (page === "home") {
+      updateUserProfile();
       screen.classList.add("zoom-in");
     } else if (router.currentPage === "home") {
       screen.classList.add("zoom-out");
@@ -101,18 +102,12 @@ async function renderContent(page) {
 // Handle browser back/forward
 window.addEventListener("popstate", (e) => {
   if (e.state?.page) {
-    renderContent(e.state.page);
+    renderPage(e.state.page);
   }
 });
 
 // Load initial page
 window.addEventListener("load", () => {
   const initialPage = window.location.hash.slice(1) || "home";
-  renderContent(initialPage);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (isAuthenticated()) {
-    updateUserProfile();
-  }
+  renderPage(initialPage);
 });
