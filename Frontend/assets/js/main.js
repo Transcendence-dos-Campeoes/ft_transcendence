@@ -15,22 +15,23 @@ function isAuthenticated() {
 
 // Logout function
 async function logout() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    const refresh = localStorage.getItem('refresh');
+    if (!refresh) return;
 
     try {
         const response = await fetch('http://localhost:8000/api/users/logout/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${localStorage.getItem('access')}`
             },
-            body: JSON.stringify({ refresh: localStorage.getItem('refresh_token') })
+            body: JSON.stringify({ refresh })
         });
 
         if (response.ok) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            localStorage.removeItem('access_token_expiry');
             navigateToPage('login');
         } else {
             console.error('Failed to log out');
@@ -95,3 +96,40 @@ window.addEventListener('load', () => {
     const initialPage = window.location.hash.slice(1) || 'register';
     navigateToPage(initialPage);
 });
+
+// filepath: /home/jorteixe/ft_transcendence/Frontend/assets/js/main.js
+async function checkAndRefreshToken() {
+    const accessTokenExpiry = localStorage.getItem('access_token_expiry');
+    const currentTime = new Date().getTime();
+
+    if (accessTokenExpiry && currentTime > accessTokenExpiry - 5 * 60 * 1000) { // 5 minutes before expiry
+        await refreshToken();
+    }
+}
+
+async function refreshToken() {
+    try {
+        const refresh = localStorage.getItem('refresh');
+        const response = await fetch('http://localhost:8000/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh })
+        });
+
+        const responseData = await response.json();
+        if (response.ok) {
+            localStorage.setItem('access', responseData.access);
+            const accessTokenExpiry = new Date().getTime() + 30 * 60 * 1000; // 30 minutes
+            localStorage.setItem('access_token_expiry', accessTokenExpiry);
+            console.log('Token refreshed successfully');
+        } else {
+            console.error('Failed to refresh token:', responseData);
+            logout(); // Log out if refresh token is expired or invalid
+        }
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        logout(); // Log out if there is an error during the refresh process
+    }
+}

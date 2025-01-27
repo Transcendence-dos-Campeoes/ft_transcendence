@@ -30,8 +30,11 @@ async function login(username, password) {
         if (response.ok) {
             const responseData = JSON.parse(responseText);
             console.log('Login successful:', responseData);
-            // Store the token in localStorage or a cookie
-            localStorage.setItem('token', responseData.access);
+            // Store the tokens and expiration time in localStorage or a cookie
+            localStorage.setItem('access', responseData.access);
+            localStorage.setItem('refresh', responseData.refresh);
+            const accessTokenExpiry = new Date().getTime() + 30 * 60 * 1000; // 30 minutes
+            localStorage.setItem('access_token_expiry', accessTokenExpiry);
             navigateToPage("home");
         } else if (!response.ok && response.status == 429) {
             displayErrorMessage("Too many requests. Please try again later.")
@@ -47,6 +50,29 @@ async function login(username, password) {
     } catch (error) {
         console.error('Error:', error);
         displayErrorMessage('An error occurred while logging in');
+    }
+}
+
+async function refreshToken() {
+    try {
+        const refresh = localStorage.getItem('refresh');
+        const response = await fetch('http://localhost:8000/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh })
+        });
+
+        const responseData = await response.json();
+        if (response.ok) {
+            localStorage.setItem('access', responseData.access);
+            console.log('Token refreshed successfully');
+        } else {
+            console.error('Failed to refresh token:', responseData);
+        }
+    } catch (error) {
+        console.error('Error refreshing token:', error);
     }
 }
 
