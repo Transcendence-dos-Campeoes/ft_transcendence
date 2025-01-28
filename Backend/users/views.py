@@ -64,6 +64,8 @@ def loginUser(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         refresh = RefreshToken.for_user(user)
+        user.online_status = True
+        user.save()
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
@@ -78,6 +80,11 @@ def logoutUser(request):
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
         token.blacklist()
+
+        user = request.user
+        user.online_status = False
+        user.save()
+
         return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
     except TokenError as e:
         if str(e) == "Token is blacklisted":
