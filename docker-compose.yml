@@ -35,5 +35,5 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: ${HOME}/CommonCore/ft_transcendence/Database
+      device: ${HOME}/ft_transcendence/Database
       o: bind
