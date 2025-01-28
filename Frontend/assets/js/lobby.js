@@ -20,10 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     a.href = '#';
                     a.className = 'list-group-item list-group-item-action py-3 lh-sm';
                     a.innerHTML = `
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <strong class="mb-1">${player.username}</strong>
-                            <small class="text-body-secondary">Online</small>
-                        </div>
+                        <ul class="nav nav-pills flex-column mb-auto">
+                            <li class="nav-item d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center" id="online-players-list">
+                                    <span>${player.username}</span>
+                                </div>
+                            <span
+                                class="status-indicator rounded-circle bg-success ms-auto"
+                                style="width: 8px; height: 8px; display: inline-block"
+                            >
+                            </span>
                     `;
                     playersList.appendChild(a);
                 }
