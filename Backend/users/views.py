@@ -8,6 +8,7 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
 from .models import SiteUser
+from matches.models import Match
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.exceptions import TokenError
@@ -84,3 +85,43 @@ def logoutUser(request):
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserProfile(request):
+    try:
+        user = request.user
+        matches = Match.get_player_matches(user)
+        
+        # Calculate stats
+        total_matches = matches.count()
+        wins = matches.filter(winner=user).count()
+        losses = total_matches - wins
+        win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
+
+        profile_data = {
+            'username': user.username,
+            'email': user.email,
+            'stats': {
+                'total_matches': total_matches,
+                'wins': wins,
+                'losses': losses,
+                'win_rate': round(win_rate, 2)
+            },
+            'recent_matches': matches[:5].values(
+                'id',
+                'player1__username',
+                'player2__username',
+                'player1_score',
+                'player2_score',
+                'created_at',
+                'winner__username'
+            )
+        }
+        
+        return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
