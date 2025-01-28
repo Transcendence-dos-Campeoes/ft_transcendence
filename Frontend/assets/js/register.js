@@ -17,7 +17,7 @@ function attachRegisterFormListener() {
     ).value;
 
     if (password !== repeatPassword) {
-      displayErrorMessage("Passwords do not match");
+      displayMessage("Passwords do not match", MessageType.ERROR);
       return;
     }
 
@@ -41,19 +41,28 @@ function attachRegisterFormListener() {
         localStorage.setItem("access_token_expiry", accessTokenExpiry);
         renderPage("home");
       } else if (!response.ok && response.status == 429) {
-        displayErrorMessage("Too many requests. Please try again later.");
+        displayMessage(
+          "Too many requests. Please try again later.",
+          MessageType.ERROR
+        );
       } else {
         try {
           const errorData = JSON.parse(responseText);
-          displayErrorMessage(formatErrorMessages(errorData));
+          displayMessage(formatErrorMessages(errorData), MessageType.ERROR);
         } catch (e) {
           console.error("Error parsing JSON:", e); // Log the JSON parsing error
-          displayErrorMessage("An error occurred while registering the user");
+          displayMessage(
+            "An error occurred while registering the user",
+            MessageType.ERROR
+          );
         }
       }
     } catch (error) {
       console.error("Error:", error);
-      displayErrorMessage("An error occurred while registering the user");
+      displayMessage(
+        "An error occurred while registering the user",
+        MessageType.ERROR
+      );
     }
   });
 }

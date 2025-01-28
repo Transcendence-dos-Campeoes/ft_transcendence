@@ -37,19 +37,22 @@ async function login(username, password) {
       localStorage.setItem("username", username);
       renderPage("home");
     } else if (!response.ok && response.status == 429) {
-      displayErrorMessage("Too many requests. Please try again later.");
+      displayMessage(
+        "Too many requests. Please try again later.",
+        MessageType.ERROR
+      );
     } else {
       try {
         const errorData = JSON.parse(responseText);
-        displayErrorMessage(formatErrorMessages(errorData));
+        displayMessage(formatErrorMessages(errorData), MessageType.ERROR);
       } catch (e) {
         console.error("Error parsing JSON:", e); // Log the JSON parsing error
-        displayErrorMessage("An error occurred while logging in");
+        displayMessage("An error occurred while logging in", MessageType.ERROR);
       }
     }
   } catch (error) {
     console.error("Error:", error);
-    displayErrorMessage("An error occurred while logging in");
+    displayMessage("An error occurred while logging in", MessageType.ERROR);
   }
 }
 

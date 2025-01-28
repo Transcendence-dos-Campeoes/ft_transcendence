@@ -1,0 +1,58 @@
+<div class="container-fluid p-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          <h4>Create New Tournament</h4>
+        </div>
+        <div class="card-body">
+          <form id="new-tournament-form">
+            <div class="mb-3">
+              <label class="form-label">Tournament Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="tournament-name"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Maximum Players</label>
+              <select class="form-select" id="max-players" required>
+                <option value="4">4 Players</option>
+                <option value="8">8 Players</option>
+                <option value="12">12 Players</option>
+                <option value="16">16 Players</option>
+                <option value="20">20 Players</option>
+                <option value="24">24 Players</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Invite Players</label>
+              <div class="table-responsive">
+                <table class="table table-hover text-white">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="available-players">
+                    <!-- Players will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Create Tournament
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,13 +6,36 @@ const elements = {
     settings: "/components/settings.html",
     matches: "/components/matches.html",
     tournaments: "/components/tournaments.html",
+    newgame: "/components/newgame.html",
+    joingame: "/components/joingame.html",
+    newtournament: "/components/newtournament.html",
+    jointournament: "/components/jointournament.html",
   },
 };
+
+function clearNavLinkButtons() {
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("active");
+  });
+
+  document.querySelectorAll(".dropdown-item").forEach((link) => {
+    link.classList.remove("active");
+  });
+}
 
 async function renderElement(element) {
   console.log("Rendering element:", element);
 
   try {
+    clearNavLinkButtons();
+
+    const navLink = document.querySelector(
+      `a[onclick*="renderElement('${element}')"]`
+    );
+    if (navLink) {
+      navLink.classList.add("active");
+    }
+
     const content = document.querySelector(".center-content");
 
     if (!content) {
@@ -31,6 +54,7 @@ async function renderElement(element) {
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
       await loadProfileData();
+      attachProfileFormListener();
     } else if (element === "overview") {
       loadChart();
     }

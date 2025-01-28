@@ -1,7 +1,7 @@
 <div class="container-fluid vh-100 vw-100">
   <div class="row h-100">
     <!-- Sidebar Div-->
-    <div class="col-2 d-flex flex-column p-3 bg-body-tertiary">
+    <div class="col-2 d-flex flex-column pt-4 bg-body-tertiary">
       <a
         href="/"
         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
@@ -16,7 +16,7 @@
         <li class="nav-item">
           <a
             href="#"
-            class="nav-link active"
+            class="nav-link link-body-emphasis"
             aria-current="page"
             onclick="renderElement('overview')"
           >
@@ -25,26 +25,54 @@
           </a>
         </li>
         <li>
-          <a href="#" class="nav-link link-body-emphasis">
-            <i class="bi bi-dice-6 me-2"></i>
-            Matches
+          <a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse" data-bs-target="#matchesSubmenu">
+              <i class="bi bi-dice-6 me-2"></i>
+              Matches
+              <i class="bi bi-chevron-down ms-2"></i>
           </a>
+          <div class="collapse" id="matchesSubmenu">
+              <ul class="nav nav-pills flex-column ms-3 mt-2">
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('newgame')">
+                          <i class="bi bi-plus-circle me-2"></i>
+                          New Game
+                      </a>
+                  </li>
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('joingame')">
+                          <i class="bi bi-door-open me-2"></i>
+                          Join Game
+                      </a>
+                  </li>
+              </ul>
+          </div>
         </li>
         <li>
-          <a href="#" class="nav-link link-body-emphasis">
-            <i class="bi bi-joystick me-2"></i>
-            Tournaments
+          <a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse" data-bs-target="#tournamentsSubmenu">
+              <i class="bi bi-joystick me-2"></i>
+              Tournaments
+              <i class="bi bi-chevron-down ms-2"></i>
           </a>
-        </li>
-        <li>
-          <a href="#" class="nav-link link-body-emphasis">
-            <i class="bi bi-controller me-2"></i>
-            New game
-          </a>
+          <div class="collapse" id="tournamentsSubmenu">
+              <ul class="nav nav-pills flex-column ms-3 mt-2">
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('newtournament')">
+                          <i class="bi bi-plus-circle me-2"></i>
+                          New tournament
+                      </a>
+                  </li>
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('jointournament')">
+                          <i class="bi bi-door-open me-2"></i>
+                          Join tournament
+                      </a>
+                  </li>
+              </ul>
+          </div>
         </li>
       </ul>
       <hr />
-      <div class="dropdown">
+      <div class="dropdown pb-4">
         <a
           href="#"
           class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
@@ -61,7 +89,7 @@
           <strong class="user-display"></strong>
         </a>
         <ul class="dropdown-menu text-small shadow">
-          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="#" onclick="renderElement('settings')">Settings</a></li>
           <li>
             <a class="dropdown-item" href="#" onclick="renderElement('profile')"
               >Profile</a
@@ -83,7 +111,7 @@
       <a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
           <span class="fs-5 fw-semibold">Friends</span>
       </a>
-      <div class="list-group list-group-flush border-bottom scrollarea" id="online-players-list">
+      <div class="list-group list-group-flush" id="online-players-list">
           <!-- Online players will be dynamically inserted here -->
       </div>
     </div>

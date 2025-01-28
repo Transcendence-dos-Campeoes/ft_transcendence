@@ -1,14 +1,8 @@
 function lobbyLoad() {
-  if (
-    window.location.pathname === "/" ||
-    window.location.pathname.endsWith("index.html")
-  ) {
-    console.log("pathname:", window.location.pathname);
-    const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
-    console.log("WebSocket user:", currentUser);
-    const socket = new WebSocket(
-      "ws://localhost:8000/ws/users/online-players/"
-    );
+  console.log("pathname:", window.location.pathname);
+  const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
+  console.log("WebSocket user:", currentUser);
+  const socket = new WebSocket("ws://localhost:8000/ws/users/online-players/");
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
@@ -78,4 +72,4 @@ function lobbyLoad() {
       console.error("WebSocket error:", error);
     };
   }
-}
+

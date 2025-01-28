@@ -109,6 +109,8 @@ def getUserProfile(request):
         profile_data = {
             'username': user.username,
             'email': user.email,
+            'two_fa_enabled': user.two_fa_enabled,
+            'created_time': user.created_time,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -127,6 +129,40 @@ def getUserProfile(request):
         }
         
         return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUserProfile(request):
+    try:
+        user = request.user
+        data = request.data
+
+        # Update username if provided
+        if 'username' in data:
+            user.username = data['username']
+
+        # Update email if provided
+        if 'email' in data:
+            user.email = data['email']
+        
+        # Update 2FA status if provided
+        if 'two_factor_enabled' in data:
+            user.two_fa_enabled = data['two_factor_enabled']
+        
+        user.save()
+
+        # Return updated profile data
+        return Response({
+            'username': user.username,
+            'email': user.email,
+            'two_factor_enabled': user.two_fa_enabled
+        }, status=status.HTTP_200_OK)
+
     except Exception as e:
         return Response(
             {'error': str(e)}, 
