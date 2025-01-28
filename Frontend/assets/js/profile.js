@@ -8,12 +8,14 @@ async function attachProfileFormListener() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     console.log("📝 Submitting profile form");
+    const loadingOverlay = new LoadingOverlay();
 
     const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
     const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
 
     try {
+      loadingOverlay.show();
       const response = await fetch(
         "http://localhost:8000/api/users/profile/update/",
         {
@@ -50,6 +52,8 @@ async function attachProfileFormListener() {
     } catch (error) {
       console.error("❌ Error updating profile:", error);
       displayMessage("Failed to update profile", MessageType.ERROR);
+    } finally {
+      loadingOverlay.hide();
     }
   });
 }

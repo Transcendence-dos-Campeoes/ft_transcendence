@@ -59,10 +59,10 @@ async function renderPage(page) {
     }
 
     // Load the new page
+    const mainContent = document.getElementById("main-content");
     const response = await fetch(router.pages[page]);
     const html = await response.text();
-    document.querySelector(".screen").innerHTML = html;
-    router.currentPage = page;
+    mainContent.innerHTML = html;
 
     if (page === "login") {
       attachLoginFormListener();

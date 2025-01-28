@@ -22,11 +22,12 @@ function clearNavLinkButtons() {
     link.classList.remove("active");
   });
 }
-
 async function renderElement(element) {
   console.log("Rendering element:", element);
+  const loadingOverlay = new LoadingOverlay();
 
   try {
+    loadingOverlay.show();
     clearNavLinkButtons();
 
     const navLink = document.querySelector(
@@ -61,5 +62,7 @@ async function renderElement(element) {
     console.log("✅ Component render complete:", element);
   } catch (error) {
     console.error("Error loading element:", error);
+  } finally {
+    loadingOverlay.hide();
   }
 }
