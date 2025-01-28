@@ -8,8 +8,8 @@ function attachLoginFormListener() {
       .addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const username = document.getElementById('floatingUsername').value;
-        const password = document.getElementById('floatingPassword').value;
+      const username = document.getElementById("floatingUsername").value;
+      const password = document.getElementById("floatingPassword").value;
 
         await login(username, password);
       });
@@ -24,26 +24,29 @@ async function login(username, password) {
     });
 
     const responseText = await response.text();
-    console.log('Response text:', responseText);  // Log the response text
 
     if (response.ok) {
       const responseData = JSON.parse(responseText);
-      console.log('Login successful:', responseData);
+      console.log("Login successful:", responseData);
       // Store the token in localStorage or a cookie
-      localStorage.setItem('token', responseData.access);
-      sessionStorage.setItem('username', username);
-      renderPage('home');
+      localStorage.setItem("token", responseData.access);
+      sessionStorage.setItem("username", username);
+      renderPage("home");
     } else if (!response.ok && response.status == 429) {
-      displayErrorMessage('Too many requests. Please try again later.');
+      displayErrorMessage("Too many requests. Please try again later.");
     } else {
       try {
         const errorData = JSON.parse(responseText);
         displayErrorMessage(formatErrorMessages(errorData));
       } catch (e) {
-        console.error('Error parsing JSON:', e);  // Log the JSON parsing error
+        console.error('Error parsing response:', e);
         displayErrorMessage('An error occurred while logging in');
       }
     }
+  } catch (error) {
+    console.error('Network error:', error);
+    displayErrorMessage(
+        'Connection failed. Please check your internet connection.');
   }
 }
 

@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class RegisterUserThrottle(AnonRateThrottle):
-    rate = '20/hour'  # Custom throttle rate for user registration
+    rate = '200000/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
