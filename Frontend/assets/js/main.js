@@ -66,7 +66,7 @@ async function logout() {
                 localStorage.removeItem('access');
                 localStorage.removeItem('refresh');
                 localStorage.removeItem('access_token_expiry');
-                navigateToPage('login');
+                renderPage('login');
             } else {
                 console.error('Failed to log out:', responseData);
             }
