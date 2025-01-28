@@ -17,7 +17,6 @@ function attachLoginFormListener() {
 }
 
 async function login(username, password) {
-  const errorModal = new ErrorModal();
   try {
     const response = await fetch("http://localhost:8000/api/users/login/", {
       method: "POST",
@@ -38,22 +37,19 @@ async function login(username, password) {
       localStorage.setItem("username", username);
       renderPage("home");
     } else if (!response.ok && response.status == 429) {
-      displayErrorMessage(
-        "Too many requests. Please try again later.",
-        errorModal
-      );
+      displayErrorMessage("Too many requests. Please try again later.");
     } else {
       try {
         const errorData = JSON.parse(responseText);
-        displayErrorMessage(formatErrorMessages(errorData), errorModal);
+        displayErrorMessage(formatErrorMessages(errorData));
       } catch (e) {
         console.error("Error parsing JSON:", e); // Log the JSON parsing error
-        displayErrorMessage("An error occurred while logging in", errorModal);
+        displayErrorMessage("An error occurred while logging in");
       }
     }
   } catch (error) {
     console.error("Error:", error);
-    displayErrorMessage("An error occurred while logging in", errorModal);
+    displayErrorMessage("An error occurred while logging in");
   }
 }
 

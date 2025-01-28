@@ -1,5 +1,4 @@
 async function loadProfileData() {
-  const errorModal = new ErrorModal();
   try {
     const response = await fetch("http://localhost:8000/api/users/profile/", {
       headers: {
@@ -85,7 +84,7 @@ async function loadProfileData() {
       )
       .join("");
   } catch (error) {
-    displayErrorMessage("Failed to load profile data", errorModal);
+    displayErrorMessage("Failed to load profile data");
   }
 }
 

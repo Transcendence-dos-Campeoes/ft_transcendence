@@ -8,7 +8,9 @@ const router = {
   },
 };
 
-function displayErrorMessage(message, errorModal) {
+function displayErrorMessage(message) {
+  const errorModal = new ErrorModal();
+
   errorModal.show(message);
 }
 

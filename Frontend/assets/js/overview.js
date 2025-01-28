@@ -1,5 +1,4 @@
 function loadChart() {
-  const errorModal = new ErrorModal();
   try {
     const statsChart = new Chart(document.getElementById("myChart"), {
       type: "bar",
@@ -56,6 +55,6 @@ function loadChart() {
       },
     });
   } catch (error) {
-    displayErrorMessage("Failed to load graphics data", errorModal);
+    displayErrorMessage("Failed to load graphics data");
   }
 }

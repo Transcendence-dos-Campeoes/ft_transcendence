@@ -9,8 +9,6 @@ function attachRegisterFormListener() {
     event.preventDefault();
     console.log("Form submitted");
 
-    const errorModal = new ErrorModal();
-
     const username = document.getElementById("floatingUsername").value;
     const email = document.getElementById("floatingInput").value;
     const password = document.getElementById("floatingPassword").value;
@@ -19,7 +17,7 @@ function attachRegisterFormListener() {
     ).value;
 
     if (password !== repeatPassword) {
-      displayErrorMessage("Passwords do not match", errorModal);
+      displayErrorMessage("Passwords do not match");
       return;
     }
 
@@ -43,28 +41,19 @@ function attachRegisterFormListener() {
         localStorage.setItem("access_token_expiry", accessTokenExpiry);
         renderPage("home");
       } else if (!response.ok && response.status == 429) {
-        displayErrorMessage(
-          "Too many requests. Please try again later.",
-          errorModal
-        );
+        displayErrorMessage("Too many requests. Please try again later.");
       } else {
         try {
           const errorData = JSON.parse(responseText);
-          displayErrorMessage(formatErrorMessages(errorData), errorModal);
+          displayErrorMessage(formatErrorMessages(errorData));
         } catch (e) {
           console.error("Error parsing JSON:", e); // Log the JSON parsing error
-          displayErrorMessage(
-            "An error occurred while registering the user",
-            errorModal
-          );
+          displayErrorMessage("An error occurred while registering the user");
         }
       }
     } catch (error) {
       console.error("Error:", error);
-      displayErrorMessage(
-        "An error occurred while registering the user",
-        errorModal
-      );
+      displayErrorMessage("An error occurred while registering the user");
     }
   });
 }
