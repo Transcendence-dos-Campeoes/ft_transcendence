@@ -8,6 +8,8 @@ const elements = {
     tournaments: "/components/tournaments.html",
     newgame: "/components/newgame.html",
     joingame: "/components/joingame.html",
+    newtournament: "/components/newtournament.html",
+    jointournament: "/components/jointournament.html",
   },
 };
 
