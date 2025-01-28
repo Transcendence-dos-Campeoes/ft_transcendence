@@ -8,10 +8,10 @@ const router = {
   },
 };
 
-function displayErrorMessage(message) {
-  const errorModal = new ErrorModal();
+function displayMessage(message, type) {
+  const modal = new MessageModal(type);
 
-  errorModal.show(message);
+  modal.show(message);
 }
 
 function formatErrorMessages(errors) {

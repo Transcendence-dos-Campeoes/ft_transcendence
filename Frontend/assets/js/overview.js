@@ -55,6 +55,6 @@ function loadChart() {
       },
     });
   } catch (error) {
-    displayErrorMessage("Failed to load graphics data");
+    displayMessage("Failed to load graphics data", MessageType.ERROR);
   }
 }

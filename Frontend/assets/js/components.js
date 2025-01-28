@@ -31,6 +31,7 @@ async function renderElement(element) {
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
       await loadProfileData();
+      attachProfileFormListener();
     } else if (element === "overview") {
       loadChart();
     }
