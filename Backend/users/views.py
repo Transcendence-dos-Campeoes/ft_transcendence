@@ -10,9 +10,11 @@ from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
 from .models import SiteUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework_simplejwt.exceptions import TokenError
+from django.contrib.auth import authenticate
 
 class RegisterUserThrottle(AnonRateThrottle):
-    rate = '50/hour'  # Custom throttle rate for user registration
+    rate = '200000/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -53,28 +55,20 @@ def create_user(request):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password'),
-        }
-    ),
-    responses={
-        200: openapi.Response('Token obtained successfully'),
-        400: 'Bad Request'
-    }
-)
 @api_view(['POST'])
 @permission_classes([])
 def loginUser(request):
-    """
-    Obtain JWT token for user login.
-    """
-    # Directly call the MyTokenObtainPairView
-    return MyTokenObtainPairView.as_view()(request._request)
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        })
+    else:
+        return Response({'error': 'Invalid credentials'}, status=400)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -88,15 +82,10 @@ def logoutUser(request):
         user.online_status = False
         user.save()
 
-        return Response(status=status.HTTP_205_RESET_CONTENT)
+        return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+    except TokenError as e:
+        if str(e) == "Token is blacklisted":
+            return Response({"detail": "Token is already blacklisted"}, status=status.HTTP_205_RESET_CONTENT)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated]) 
-def available_players(request):
-    players = SiteUser.objects.filter(online_status=True)
-    print(f"Active players: {players}") 
-    serializer = SiteUserSerializer(players, many=True)
-    return Response(serializer.data)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

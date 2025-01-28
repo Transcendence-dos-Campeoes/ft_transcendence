@@ -1,119 +1,200 @@
 // Router state
 const router = {
   currentPage: null,
-  pages: {home: '/home.html', login: '/login.html', register: '/register.html'}
+  pages: {
+    home: '/home.html',
+    login: '/login.html',
+    register: '/register.html',
+  },
 };
 
 function updateUserProfile() {
-  const username = sessionStorage.getItem('username');
-  console.log('Username from session:', username);  // Debug
+  const username = sessionStorage.getItem("username");
+  if (!username) return;
 
-  setTimeout(() => {
-    const userDisplay = document.querySelector('.user-display');
-    console.log('User display element:', userDisplay);
-
-    if (userDisplay && username) {
+  // Create observer to watch for element
+  const observer = new MutationObserver((mutations, obs) => {
+    const userDisplay = document.querySelector(".user-display");
+    if (userDisplay) {
       userDisplay.textContent = username;
-    } else {
-      if (!userDisplay && username) {
-        setTimeout(updateUserProfile, 100);
-      }
+      obs.disconnect();
     }
-  }, 0);
+  });
+
+  // Start observing
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 // Check if user is authenticated
 function isAuthenticated() {
-  return !!localStorage.getItem('token');
+    return !!localStorage.getItem('access');
 }
 
 // Logout function
 async function logout() {
-  const token = localStorage.getItem('token');
-  if (!token) return;
+    const refresh = localStorage.getItem('refresh');
+    if (!refresh) return;
 
-  try {
-    const response = await fetch('http://localhost:8000/api/users/logout/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({refresh: localStorage.getItem('refresh_token')})
-    });
+    try {
+        const response = await fetch('http://localhost:8000/api/users/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access')}`
+            },
+            body: JSON.stringify({ refresh }),
+            credentials: 'include' // Include cookies in the request
+        });
 
-    if (response.ok) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refresh_token');
-      navigateToPage('login');
-    } else {
-      console.error('Failed to log out');
+        if (response.ok) {
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            localStorage.removeItem('access_token_expiry');
+            renderPage('login');
+        } else {
+            let responseData;
+            try {
+                responseData = await response.json();
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                responseData = { detail: 'An error occurred' };
+            }
+            if (responseData.detail === "Token is already blacklisted") {
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+                localStorage.removeItem('access_token_expiry');
+                renderPage('login');
+            } else {
+                console.error('Failed to log out:', responseData);
+            }
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
     }
-  } catch (error) {
-    console.error('Error logging out:', error);
-  }
 }
 
 // Page loader
-async function navigateToPage(page) {
+async function renderPage(page) {
   if (router.currentPage === page) return;
 
-    // Check authentication before navigating to home page
-    if (page === 'home' && !isAuthenticated()) {
-        page = 'login';
-    }
+  // Check authentication before navigating to home page
+  if (page === 'home') {
+      console.log('Navigating to home, checking and refreshing token...');
+      const isAuthenticated = await checkAndRefreshToken();
+      if (!isAuthenticated) {
+          page = 'login';
+      }
+  }
 
     if (page === 'lobby' && !isAuthenticated()) {
         page = 'login';
     }
 
-  try {
-    const screen = document.querySelector('.screen-container');
+    try {
+        const screen = document.querySelector('.screen-container');
+        
+        // Remove previous classes
+        screen.classList.remove('zoom-in', 'zoom-out');
+        
+        // Add zoom effect based on navigation
+        if (page === 'home') {
+            screen.classList.add('zoom-in');
+            updateUserProfile();
+        } else if (router.currentPage === 'home') {
+            // Coming from home page
+            screen.classList.add('zoom-out');
+            // Wait for zoom out
+            await new Promise(resolve => setTimeout(resolve, 500));
+            screen.classList.remove('zoom-out');
+        }
 
-    // Remove previous classes
-    screen.classList.remove('zoom-in', 'zoom-out');
+        // Load the new page
+        const response = await fetch(router.pages[page]);
+        const html = await response.text();
+        document.querySelector('.screen').innerHTML = html;
+        router.currentPage = page;
 
-    // Add zoom effect based on navigation
-    if (page === 'home') {
-      screen.classList.add('zoom-in');
-    } else if (router.currentPage === 'home') {
-      screen.classList.add('zoom-out');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      screen.classList.remove('zoom-out');
+        // Attach event listeners for the new page
+        if (page === 'login') {
+            attachLoginFormListener();
+        } else if (page === 'register') {
+            attachRegisterFormListener();
+        }
+    } catch (error) {
+        console.error('Error loading page:', error);
+    }
+}
+
+async function checkAndRefreshToken() {
+    console.log('checkAndRefreshToken called');
+    const accessTokenExpiry = parseInt(localStorage.getItem('access_token_expiry'), 10);
+    const currentTime = new Date().getTime();
+
+    if (isNaN(accessTokenExpiry)) {
+        console.error('Invalid access token expiry time');
+        logout();
+        return false;
     }
 
-    const response = await fetch(router.pages[page]);
-    const content = await response.text();
-    document.getElementById('content').innerHTML = content;
+    const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
+    console.log('Current Time:', new Date(currentTime).toLocaleString());
+    console.log('Expiry Time:', new Date(accessTokenExpiry).toLocaleString());
+    console.log('Expiry minus five minutes:', new Date(expiry_minus_five).toLocaleString());
 
-    router.currentPage = page;
-    history.pushState({page}, '', `#${page}`);
-
-    if (page === 'register') {
-      attachRegisterFormListener();
-    } else if (page === 'login') {
-      attachLoginFormListener();
+    if (currentTime > expiry_minus_five) { // 5 minutes before expiry
+        console.log("Token Expired, refreshing token.");
+        const refreshSuccess = await refreshToken();
+        if (!refreshSuccess) {
+            console.log("Refresh unsuccessful.");
+            logout();
+            return false;
+        }
+        console.log("Refresh successful.");
     }
-  } catch (error) {
-    console.error('Error loading page:', error);
-  }
+    return true;
+}
+
+async function refreshToken() {
+    try {
+        const refresh = localStorage.getItem('refresh');
+        const response = await fetch('http://localhost:8000/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh })
+        });
+
+        const responseData = await response.json();
+        if (response.ok) {
+            localStorage.setItem('access', responseData.access);
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+            console.log('New Access Token Expiry:', new Date(accessTokenExpiry).toLocaleString());
+            localStorage.setItem('access_token_expiry', accessTokenExpiry);
+            console.log('Token refreshed successfully');
+            return true;
+        } else {
+            console.error('Failed to refresh Access token:', responseData);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error refreshing Access token:', error);
+        return false;
+    }
 }
 
 // Handle browser back/forward
 window.addEventListener('popstate', (e) => {
   if (e.state?.page) {
-    navigateToPage(e.state.page);
+    renderPage(e.state.page);
   }
 });
 
 // Load initial page
-window.addEventListener('load', () => {
-  const initialPage = window.location.hash.slice(1) || 'home';
-  navigateToPage(initialPage);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (isAuthenticated()) {
-    updateUserProfile();
-  }
+window.addEventListener("load", () => {
+  const initialPage = window.location.hash.slice(1) || "home";
+  renderPage(initialPage);
 });
