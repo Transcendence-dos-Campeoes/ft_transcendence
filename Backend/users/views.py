@@ -63,6 +63,8 @@ def loginUser(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         refresh = RefreshToken.for_user(user)
+        user.online_status = True
+        user.save()
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),

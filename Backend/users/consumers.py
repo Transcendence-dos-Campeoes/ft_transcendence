@@ -7,11 +7,11 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
         async_to_sync(self.channel_layer.group_add)("online_players", self.channel_name)
+        print("CONNECTED: ", self.channel_name)
         self.send_online_players()
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)("online_players", self.channel_name)
-        pass
 
     def send_online_players(self):
         players = SiteUser.objects.filter(online_status=True)

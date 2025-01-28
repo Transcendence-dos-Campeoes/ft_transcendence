@@ -33,7 +33,7 @@ async function login(username, password) {
             localStorage.setItem('refresh', responseData.refresh);
             const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 2 minutes for testing
             localStorage.setItem('access_token_expiry', accessTokenExpiry);
-            sessionStorage.setItem("username", username);
+            localStorage.setItem("username", username);
             renderPage("home");
         } else if (!response.ok && response.status == 429) {
             displayErrorMessage("Too many requests. Please try again later.")

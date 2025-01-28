@@ -48,15 +48,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/' || window.location.pathname.endsWith('index.html')) {
         console.log('pathname:',window.location.pathname);
         const currentUser = localStorage.getItem('username'); // Assuming you store the username in localStorage
-
+        console.log('WebSocket user:', currentUser);
         const socket = new WebSocket('ws://localhost:8000/ws/users/online-players/');
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
             console.log('WebSocket message received:', data); // Debugging line
             const playersList = document.getElementById('online-players-list');
-            playersList.innerHTML = ''; // Clear the list before updating
-            data.forEach(player => {
+            if (playersList) {
+                playersList.innerHTML = '';// Clear the list before updating
+            }
+                data.forEach(player => {
                 if (player.username !== currentUser) { // Exclude the current user
                     const a = document.createElement('a');
                     a.href = '#';
@@ -72,9 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        socket.onclose = function(event) {
-            console.error('WebSocket closed:', event);
-        };
+        // socket.onclose = function(event) {
+        //     console.error('WebSocket closed:', event);
+        // };
 
         socket.onerror = function(error) {
             console.error('WebSocket error:', error);

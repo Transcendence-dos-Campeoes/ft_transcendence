@@ -9,7 +9,7 @@ const router = {
 };
 
 function updateUserProfile() {
-  const username = sessionStorage.getItem("username");
+  const username = localStorage.getItem("username");
   if (!username) return;
 
   // Create observer to watch for element
