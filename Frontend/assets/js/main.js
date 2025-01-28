@@ -50,7 +50,7 @@ async function logout() {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
         localStorage.removeItem("access_token_expiry");
-        navigateToPage("login");
+        renderPage("login");
       } else {
         console.error("Failed to log out:", responseData);
       }
@@ -82,7 +82,7 @@ async function renderPage(page) {
     // Add zoom effect based on navigation
     if (page === "home") {
       screen.classList.add("zoom-in");
-    //   updateUserProfile();
+      //   updateUserProfile();
     } else if (router.currentPage === "home") {
       // Coming from home page
       screen.classList.add("zoom-out");

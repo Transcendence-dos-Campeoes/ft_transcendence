@@ -39,8 +39,7 @@ function attachRegisterFormListener() {
                 localStorage.setItem('refresh', responseData.refresh);
                 const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 30 minutes
                 localStorage.setItem('access_token_expiry', accessTokenExpiry);
-                // Navigate to the home page
-                navigateToPage("home");
+                renderPage("home");
             } else if (!response.ok && response.status == 429) {
                 displayErrorMessage("Too many requests. Please try again later.")
             } else {
