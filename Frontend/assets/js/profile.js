@@ -9,6 +9,7 @@ async function attachProfileFormListener() {
     event.preventDefault();
     console.log("📝 Submitting profile form");
 
+    const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
     const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
 
@@ -22,6 +23,7 @@ async function attachProfileFormListener() {
             Authorization: `Bearer ${localStorage.getItem("access")}`,
           },
           body: JSON.stringify({
+            username: username,
             email: email,
             two_factor_enabled: twoFactorEnabled,
           }),
@@ -36,11 +38,15 @@ async function attachProfileFormListener() {
       console.log("✅ Profile updated:", data);
 
       // Update form with new data
+      document.getElementById("username-input").value = data.username;
+      localStorage.setItem("username", data.username);
       document.getElementById("email-input").value = data.email;
       document.getElementById("2fa-toggle").checked = data.two_factor_enabled;
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
+      renderPage("home");
+      renderElement("overview");
     } catch (error) {
       console.error("❌ Error updating profile:", error);
       displayMessage("Failed to update profile", MessageType.ERROR);
@@ -62,10 +68,22 @@ async function loadProfileData() {
 
     const data = await response.json();
 
-    // Update profile form
+    // Update profile form and details
     document.getElementById("username-input").value = data.username;
     document.getElementById("email-input").value = data.email;
     document.getElementById("profile-username").textContent = data.username;
+    document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
+
+    // Format and display creation date
+    const createdDate = new Date(data.created_time).toLocaleDateString(
+      "pt-PT",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
+    document.getElementById("profile-created").textContent = createdDate;
 
     // Update stats section
     const stats = data.stats;

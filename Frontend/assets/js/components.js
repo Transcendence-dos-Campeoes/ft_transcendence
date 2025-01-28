@@ -13,6 +13,21 @@ async function renderElement(element) {
   console.log("Rendering element:", element);
 
   try {
+    document.querySelectorAll(".nav-link").forEach((link) => {
+      link.classList.remove("active");
+    });
+
+    document.querySelectorAll(".dropdown-item").forEach((link) => {
+      link.classList.remove("active");
+    });
+
+    const navLink = document.querySelector(
+      `a[onclick*="renderElement('${element}')"]`
+    );
+    if (navLink) {
+      navLink.classList.add("active");
+    }
+
     const content = document.querySelector(".center-content");
 
     if (!content) {
