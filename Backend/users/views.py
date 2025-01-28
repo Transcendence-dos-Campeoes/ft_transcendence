@@ -14,7 +14,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import authenticate
 
 class RegisterUserThrottle(AnonRateThrottle):
-    rate = '200/hour'  # Custom throttle rate for user registration
+    rate = '200000/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
