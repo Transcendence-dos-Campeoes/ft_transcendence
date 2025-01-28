@@ -8,36 +8,32 @@ const elements = {
     tournaments: "/components/tournaments.html",
   },
 };
-function waitForElement(selector, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
 
-    const checkElement = () => {
-      const element = document.getElementById(selector);
-      if (element) {
-        resolve(element);
-      } else if (Date.now() - startTime >= timeout) {
-        reject(new Error(`Element ${selector} not found after ${timeout}ms`));
-      } else {
-        setTimeout(checkElement, 100);
-      }
-    };
-
-    checkElement();
-  });
-}
-
-async function renderElement(element, event = null) {
+async function renderElement(element) {
   console.log("Rendering element:", element);
-  if (elements.currentElement === element) return;
 
   try {
-    const centerContent = await waitForElement("center-content");
-    const response = await fetch(elements.elements[element]);
-    const content = await response.text();
+    const content = document.querySelector(".center-content");
 
-    centerContent.innerHTML = content;
+    if (!content) {
+      throw new Error("Content container not found");
+    }
+
+    console.log("📡 Fetching component HTML:", elements.elements[element]);
+    const response = await fetch(elements.elements[element]);
+    const html = await response.text();
+    console.log("📥 HTML received, length:", html.length);
+
+    console.log("🎨 Updating DOM");
+    content.innerHTML = html;
     elements.currentElement = element;
+
+    console.log("🎯 Initializing component:", element);
+    if (element === "profile") {
+      await loadProfileData();
+    } else if (element === "settings") {
+    }
+    console.log("✅ Component render complete:", element);
   } catch (error) {
     console.error("Error loading element:", error);
   }

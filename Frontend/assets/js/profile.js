@@ -92,21 +92,8 @@ function updateUserProfile() {
   const username = sessionStorage.getItem("username");
   if (!username) return;
 
-  // Create observer to watch for element
-  const observer = new MutationObserver((mutations, obs) => {
-    const userDisplay = document.querySelector(".user-display");
-    if (userDisplay) {
-      userDisplay.textContent = username;
-      obs.disconnect();
-    }
-  });
-
-  // Start observing
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
+  const userDisplay = document.querySelector(".user-display");
+  if (userDisplay) {
+    userDisplay.textContent = username;
+  }
 }
-
-// Call function when profile page loads
-document.addEventListener("DOMContentLoaded", loadProfileData);

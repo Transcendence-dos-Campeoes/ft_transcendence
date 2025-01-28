@@ -12,52 +12,22 @@ function displayErrorMessage(message, errorModal) {
   errorModal.show(message);
 }
 
+function formatErrorMessages(errors) {
+  let formattedErrors = "";
+  for (const [field, messages] of Object.entries(errors)) {
+    formattedErrors += `<strong>${
+      field.charAt(0).toUpperCase() + field.slice(1)
+    }:</strong><br>`;
+    messages.forEach((message) => {
+      formattedErrors += `- ${message}<br>`;
+    });
+  }
+  return formattedErrors;
+}
+
 // Check if user is authenticated
 function isAuthenticated() {
   return !!localStorage.getItem("access");
-}
-
-// Logout function
-async function logout() {
-  const refresh = localStorage.getItem("refresh");
-  if (!refresh) return;
-
-  try {
-    const response = await fetch("http://localhost:8000/api/users/logout/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-      body: JSON.stringify({ refresh }),
-      credentials: "include", // Include cookies in the request
-    });
-
-    if (response.ok) {
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("access_token_expiry");
-      renderPage("login");
-    } else {
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) {
-        console.error("Error parsing JSON:", e);
-        responseData = { detail: "An error occurred" };
-      }
-      if (responseData.detail === "Token is already blacklisted") {
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-        localStorage.removeItem("access_token_expiry");
-        renderPage("login");
-      } else {
-        console.error("Failed to log out:", responseData);
-      }
-    }
-  } catch (error) {
-    console.error("Error logging out:", error);
-  }
 }
 
 // Page loader
@@ -76,17 +46,12 @@ async function renderPage(page) {
   try {
     const screen = document.querySelector(".screen-container");
 
-    // Remove previous classes
     screen.classList.remove("zoom-in", "zoom-out");
 
-    // Add zoom effect based on navigation
     if (page === "home") {
       screen.classList.add("zoom-in");
-      //   updateUserProfile();
     } else if (router.currentPage === "home") {
-      // Coming from home page
       screen.classList.add("zoom-out");
-      // Wait for zoom out
       await new Promise((resolve) => setTimeout(resolve, 500));
       screen.classList.remove("zoom-out");
     }
@@ -97,11 +62,13 @@ async function renderPage(page) {
     document.querySelector(".screen").innerHTML = html;
     router.currentPage = page;
 
-    // Attach event listeners for the new page
     if (page === "login") {
-      attachLoginFormListener();
+      await attachLoginFormListener();
     } else if (page === "register") {
-      attachRegisterFormListener();
+      await attachRegisterFormListener();
+    } else if (page === "home") {
+      updateUserProfile();
+      renderElement("overview");
     }
   } catch (error) {
     console.error("Error loading page:", error);

@@ -69,5 +69,3 @@ function formatErrorMessages(errors) {
   }
   return formattedErrors;
 }
-
-attachLoginFormListener();

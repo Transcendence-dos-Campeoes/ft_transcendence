@@ -9,7 +9,7 @@ body {
   transform: translate(-50%, -50%);
   width: 800px;
   height: 600px;
-  transition: all 2.0s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .screen {
