@@ -6,20 +6,26 @@ const elements = {
     settings: "/components/settings.html",
     matches: "/components/matches.html",
     tournaments: "/components/tournaments.html",
+    newgame: "/components/newgame.html",
+    joingame: "/components/joingame.html",
   },
 };
+
+function clearNavLinkButtons() {
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("active");
+  });
+
+  document.querySelectorAll(".dropdown-item").forEach((link) => {
+    link.classList.remove("active");
+  });
+}
 
 async function renderElement(element) {
   console.log("Rendering element:", element);
 
   try {
-    document.querySelectorAll(".nav-link").forEach((link) => {
-      link.classList.remove("active");
-    });
-
-    document.querySelectorAll(".dropdown-item").forEach((link) => {
-      link.classList.remove("active");
-    });
+    clearNavLinkButtons();
 
     const navLink = document.querySelector(
       `a[onclick*="renderElement('${element}')"]`
