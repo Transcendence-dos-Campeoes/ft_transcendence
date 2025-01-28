@@ -15,7 +15,7 @@ function lobbyLoad() {
             {
               playersList.innerHTML = ""; // Clear the list before updating
             }
-            data.forEach((player) => 
+            data.players_data.forEach((player) => 
             {
                 if (player.username !== currentUser) 
                 {

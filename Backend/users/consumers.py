@@ -17,6 +17,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
+        print(data)
         if data['type'] == 'invite':
             self.handle_invite(data)
 
@@ -33,7 +34,11 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def send_online_players(self):
         players = SiteUser.objects.filter(online_status=True)
         players_data = [{"username": player.username} for player in players]
-        self.send(text_data=json.dumps(players_data))
+        data = {
+                "type": "online.players.update",
+                "players_data": players_data,
+            }
+        self.send(text_data=json.dumps(data))
 
     def broadcast_online_players(self):
         players = SiteUser.objects.filter(online_status=True)
