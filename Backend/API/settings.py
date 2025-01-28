@@ -32,6 +32,7 @@ ALLOWED_HOSTS.append('0.0.0.0')
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'channels',
     'Pong',
     'django.contrib.admin',
@@ -79,8 +80,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'API.wsgi.application'
-ASGI_APPLICATION = 'API.wsgi.application'
+# WSGI_APPLICATION = 'API.wsgi.application'
+ASGI_APPLICATION = 'API.asgi.application'
 
 
 # Database
@@ -187,4 +188,14 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
     'JTI_CLAIM': 'jti',
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+        },
+    },
 }

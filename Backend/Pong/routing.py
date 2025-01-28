@@ -1,6 +1,6 @@
 from django.urls import path
-from .consumers import LobbyConsumer
+from .consumers import PongConsumer
 
 ws_urlpatterns = [
-    path('', LobbyConsumer.as_asgi())
+    path('online-players/', PongConsumer.as_asgi())
 ]

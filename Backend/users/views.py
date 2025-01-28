@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class RegisterUserThrottle(AnonRateThrottle):
-    rate = '20/hour'  # Custom throttle rate for user registration
+    rate = '50/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -85,7 +85,7 @@ def logoutUser(request):
         token.blacklist()
 
         user = request.user
-        user.is_active = False
+        user.online_status = False
         user.save()
 
         return Response(status=status.HTTP_205_RESET_CONTENT)
@@ -96,7 +96,7 @@ def logoutUser(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated]) 
 def available_players(request):
-    players = SiteUser.objects.filter(is_active=True)
+    players = SiteUser.objects.filter(online_status=True)
     print(f"Active players: {players}") 
     serializer = SiteUserSerializer(players, many=True)
     return Response(serializer.data)

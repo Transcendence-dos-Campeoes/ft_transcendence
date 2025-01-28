@@ -11,6 +11,7 @@ services:
       - ./.env
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:15
@@ -29,11 +30,17 @@ services:
     depends_on:
       - db
       - backend
+  
+  redis:
+    image: redis:5
+    restart: always
+    ports:
+      - 6379:6379
 
 volumes:
   pgdata:
     driver: local
     driver_opts:
       type: none
-      device: ${HOME}/CommonCore/ft_transcendence/Database
+      device: ${HOME}/ft_transcendence/Database
       o: bind

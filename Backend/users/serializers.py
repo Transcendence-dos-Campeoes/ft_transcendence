@@ -49,7 +49,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user is None:
             raise serializers.ValidationError('Invalid username or password')
 
-        user.is_active = True
+        user.online_status = True
         user.save()
         
         refresh = self.get_token(user)
