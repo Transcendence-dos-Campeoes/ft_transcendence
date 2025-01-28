@@ -266,6 +266,18 @@ body {
   );
 }
 
+.button.audio-button {
+  background: radial-gradient(circle at 30% 30%, #4444ff, #0000cc);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.2), 0 0 20px rgba(0, 0, 255, 0.2);
+}
+
+.button.audio-button.active {
+  background: radial-gradient(circle at 30% 30%, #00ff00, #00cc00);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.2), 0 0 20px rgba(0, 255, 0, 0.4);
+}
+
 .screen-container.zoom-in .screen {
   transform: scale(2);
   transform-origin: center;
