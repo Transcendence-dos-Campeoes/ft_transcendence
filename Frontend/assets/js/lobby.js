@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
 
-        // socket.onclose = function(event) {
-        //     console.error('WebSocket closed:', event);
-        // };
+        socket.onclose = function(event) {
+            console.error('WebSocket closed:', event);
+        };
 
         socket.onerror = function(error) {
             console.error('WebSocket error:', error);
