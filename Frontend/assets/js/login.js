@@ -30,8 +30,11 @@ async function login(username, password) {
         if (response.ok) {
             const responseData = JSON.parse(responseText);
             console.log('Login successful:', responseData);
-            // Store the token in localStorage or a cookie
-            localStorage.setItem('token', responseData.access);
+            // Store the tokens and expiration time in localStorage or a cookie
+            localStorage.setItem('access', responseData.access);
+            localStorage.setItem('refresh', responseData.refresh);
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 2 minutes for testing
+            localStorage.setItem('access_token_expiry', accessTokenExpiry);
             navigateToPage("home");
         } else if (!response.ok && response.status == 429) {
             displayErrorMessage("Too many requests. Please try again later.")
@@ -66,3 +69,5 @@ function formatErrorMessages(errors) {
     }
     return formattedErrors;
 }
+
+attachLoginFormListener();

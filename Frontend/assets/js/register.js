@@ -38,8 +38,11 @@ function attachRegisterFormListener() {
             if (response.ok) {
 				console.log('User Registered Succesfully');
                 const responseData = JSON.parse(responseText);
-                // Store the token in localStorage or a cookie
-                localStorage.setItem('token', responseData.access);
+                // Store the tokens and expiration time in localStorage or a cookie
+                localStorage.setItem('access', responseData.access);
+                localStorage.setItem('refresh', responseData.refresh);
+                const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 30 minutes
+                localStorage.setItem('access_token_expiry', accessTokenExpiry);
                 // Navigate to the home page
                 navigateToPage("home");
             } else if (!response.ok && response.status == 429) {
