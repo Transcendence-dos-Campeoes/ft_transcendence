@@ -44,8 +44,4 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('WebSocket error:', error);
         };
     }
-    //if (window.location.pathname.endsWith('home')) {
-// fetchAvailablePlayers();
-// setInterval(fetchAvailablePlayers, 5000); // Refresh every 5 seconds
-    //}
 });
