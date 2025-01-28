@@ -63,9 +63,9 @@ async function renderPage(page) {
     router.currentPage = page;
 
     if (page === "login") {
-      await attachLoginFormListener();
+      attachLoginFormListener();
     } else if (page === "register") {
-      await attachRegisterFormListener();
+      attachRegisterFormListener();
     } else if (page === "home") {
       updateUserProfile();
       renderElement("overview");

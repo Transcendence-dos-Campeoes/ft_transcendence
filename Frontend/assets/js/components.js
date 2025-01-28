@@ -31,7 +31,8 @@ async function renderElement(element) {
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
       await loadProfileData();
-    } else if (element === "settings") {
+    } else if (element === "overview") {
+      loadChart();
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {
