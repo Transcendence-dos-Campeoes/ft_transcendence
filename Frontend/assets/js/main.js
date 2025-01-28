@@ -69,6 +69,7 @@ async function renderPage(page) {
     } else if (page === "home") {
       updateUserProfile();
       renderElement("overview");
+      lobbyLoad();
     }
   } catch (error) {
     console.error("Error loading page:", error);

@@ -1,4 +1,5 @@
 async function loadProfileData() {
+  const errorModal = new ErrorModal();
   try {
     const response = await fetch("http://localhost:8000/api/users/profile/", {
       headers: {
@@ -84,12 +85,12 @@ async function loadProfileData() {
       )
       .join("");
   } catch (error) {
-    displayErrorMessage("Failed to load profile data");
+    displayErrorMessage("Failed to load profile data", errorModal);
   }
 }
 
 function updateUserProfile() {
-  const username = sessionStorage.getItem("username");
+  const username = localStorage.getItem("username");
   if (!username) return;
 
   const userDisplay = document.querySelector(".user-display");

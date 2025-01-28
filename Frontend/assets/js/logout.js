@@ -18,6 +18,7 @@ async function logout() {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       localStorage.removeItem("access_token_expiry");
+      localStorage.removeItem("username");
       renderPage("login");
     } else {
       let responseData;
@@ -31,6 +32,7 @@ async function logout() {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
         localStorage.removeItem("access_token_expiry");
+        localStorage.removeItem("username");
         renderPage("login");
       } else {
         console.error("Failed to log out:", responseData);
