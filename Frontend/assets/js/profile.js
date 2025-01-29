@@ -160,7 +160,9 @@ async function loadProfileData() {
 }
 
 async function deleteAccount() {
+  const loadingOverlay = new LoadingOverlay();
   try {
+    loadingOverlay.show();
     const response = await fetch("http://localhost:8000/api/users/delete/", {
       method: "DELETE",
       headers: {
@@ -171,14 +173,15 @@ async function deleteAccount() {
     if (response.ok) {
       // Clear local storage
       localStorage.clear();
-      // Redirect to login
-      renderPage("login");
     } else {
       alert("Failed to delete account");
     }
   } catch (error) {
     console.error("Error deleting account:", error);
     alert("Error deleting account");
+  } finally {
+    loadingOverlay.hide();
+    renderPage("login");
   }
 }
 
