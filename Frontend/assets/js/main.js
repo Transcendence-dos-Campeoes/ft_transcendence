@@ -89,40 +89,56 @@ async function renderPage(page) {
       }
   }
 
-    try {
-        const screen = document.querySelector('.screen-container');
-        
-        // Remove previous classes
-        screen.classList.remove('zoom-in', 'zoom-out');
-        
-        // Add zoom effect based on navigation
-        if (page === 'home') {
-            screen.classList.add('zoom-in');
-            updateUserProfile();
-        } else if (router.currentPage === 'home') {
-            // Coming from home page
-            screen.classList.add('zoom-out');
-            // Wait for zoom out
-            await new Promise(resolve => setTimeout(resolve, 500));
-            screen.classList.remove('zoom-out');
-        }
+  try {
+      const screen = document.querySelector('.screen-container');
+      
+      // Remove previous classes
+      screen.classList.remove('zoom-in', 'zoom-out');
+      
+      // Add zoom effect based on navigation
+      if (page === 'home') {
+          screen.classList.add('zoom-in');
+          updateUserProfile();
+      } else if (router.currentPage === 'home') {
+          // Coming from home page
+          screen.classList.add('zoom-out');
+          // Wait for zoom out
+          await new Promise(resolve => setTimeout(resolve, 500));
+          screen.classList.remove('zoom-out');
+      }
 
-        // Load the new page
-        const response = await fetch(router.pages[page]);
-        const html = await response.text();
-        document.querySelector('.screen').innerHTML = html;
-        router.currentPage = page;
+      // Load the new page
+      const response = await fetch(router.pages[page]);
+      const html = await response.text();
+      document.querySelector('.screen').innerHTML = html;
+      router.currentPage = page;
 
-        // Attach event listeners for the new page
-        if (page === 'login') {
-            attachLoginFormListener();
-        } else if (page === 'register') {
-            attachRegisterFormListener();
-        }
-    } catch (error) {
-        console.error('Error loading page:', error);
-    }
+      // Attach event listeners for the new page
+      if (page === 'login') {
+          attachLoginFormListener();
+      } else if (page === 'register') {
+          attachRegisterFormListener();
+      }
+
+      // Update the URL without reloading the page
+      history.pushState({ page: page }, '', `/${page}`);
+  } catch (error) {
+      console.error('Error loading page:', error);
+  }
 }
+
+// Handle browser back/forward
+window.addEventListener('popstate', (e) => {
+  if (e.state?.page) {
+    renderPage(e.state.page);
+  }
+});
+
+// Load initial page
+window.addEventListener("load", () => {
+  const initialPage = window.location.pathname.slice(1) || "home";
+  renderPage(initialPage);
+});
 
 async function checkAndRefreshToken() {
     console.log('checkAndRefreshToken called');
@@ -181,16 +197,3 @@ async function refreshToken() {
         return false;
     }
 }
-
-// Handle browser back/forward
-window.addEventListener('popstate', (e) => {
-  if (e.state?.page) {
-    renderPage(e.state.page);
-  }
-});
-
-// Load initial page
-window.addEventListener("load", () => {
-  const initialPage = window.location.hash.slice(1) || "home";
-  renderPage(initialPage);
-});
