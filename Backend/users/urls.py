@@ -9,4 +9,9 @@ urlpatterns = [
 	path('oauth_callback/', views.oauth_callback),
     path('profile/', views.getUserProfile, name='get_user_profile'),
     path('profile/update/', views.updateUserProfile, name='update_user_profile'),
+    path('friends/', views.getFriends, name='get_friends'),
+    path('friend/delete/<int:friend_id>/', views.deleteFriend, name='delete_friend'),
+    path('invites/', views.getInvites, name='get_invites'),
+    path('invite/create/', views.createInvite, name='create_invite'),
+    path('invite/update/', views.changeStatusInvite, name='change_status_invite'),
 ]

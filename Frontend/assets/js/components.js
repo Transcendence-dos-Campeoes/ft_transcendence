@@ -10,6 +10,7 @@ const elements = {
     joingame: "/components/joingame.html",
     newtournament: "/components/newtournament.html",
     jointournament: "/components/jointournament.html",
+    invites: "/components/invites.html",
   },
 };
 
@@ -58,6 +59,8 @@ async function renderElement(element) {
       attachProfileFormListener();
     } else if (element === "overview") {
       loadChart();
+    } else if (element === "invites") {
+      new FriendSystem();
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {

@@ -35,3 +35,45 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+    
+class Friend(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined')
+    ]
+    
+    requester = models.ForeignKey(
+        SiteUser,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_sent'
+    )
+    receiver = models.ForeignKey(
+        SiteUser,
+        on_delete=models.CASCADE,
+        related_name='friend_requests_received'
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('requester', 'receiver')
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(requester=models.F('receiver')),
+                name='no_self_friend'
+            )
+        ]
+
+    def accept(self):
+        self.status = 'accepted'
+        self.save()
+
+    def decline(self):
+        self.status = 'declined'
+        self.save()
