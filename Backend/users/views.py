@@ -288,15 +288,16 @@ def oauth_callback(request):
         username = user_info['login']
         email = user_info['email']
         photo_URL = user_info['image']['link']  # Correctly extract the photo URL
+
         # Create or authenticate user
         user, created = SiteUser.objects.get_or_create(username=username, defaults={'email': email})
         if created:
             user.set_unusable_password()
-            user.photo_URL = photo_URL
+            user.profile_URL = photo_URL
             user.save()
             print(f"User {username} created with an unusable password.")
         else:
-            user.photo_URL = photo_URL
+            user.profile_URL = photo_URL
             user.email = email
             user.save()
 
@@ -307,7 +308,7 @@ def oauth_callback(request):
             'access': str(refresh.access_token),
             'username': username,
             'email': user.email,
-            'photo_URL': user.photo_URL,
+            'photo_URL': user.profile_URL,
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
     except Exception as e:
