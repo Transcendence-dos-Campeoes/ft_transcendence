@@ -36,8 +36,8 @@ window.onload = async function() {
 				localStorage.setItem('refresh', data.refresh);
 				const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
 				localStorage.setItem('access_token_expiry', accessTokenExpiry);
-				sessionStorage.setItem('username', data.username);
-				sessionStorage.setItem('email', data.email);
+				localStorage.setItem('username', data.username);
+				localStorage.setItem('email', data.email);
                 // // Redirect to the home page or another page
                 window.location.href = '/home';
             } else {
