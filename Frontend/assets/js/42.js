@@ -29,12 +29,15 @@ window.onload = async function() {
 				console.log(data.username);
 				console.log(data.access);
 				console.log(data.email);
+				console.log(data.all_info)
                 // Store the access token and other data
-                localStorage.setItem('access', data.access);
-                localStorage.setItem('refresh', data.refresh);
-                sessionStorage.setItem('username', data.username);
-                sessionStorage.setItem('email', data.email);
-
+// Store the access token and other data
+				localStorage.setItem('access', data.access);
+				localStorage.setItem('refresh', data.refresh);
+				const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+				localStorage.setItem('access_token_expiry', accessTokenExpiry);
+				sessionStorage.setItem('username', data.username);
+				sessionStorage.setItem('email', data.email);
                 // // Redirect to the home page or another page
                 window.location.href = '/home';
             } else {

@@ -203,7 +203,6 @@ def oauth_callback(request):
     user_info = user_info_response.json()
     username = user_info['login']
     email = user_info['email']
-
     # Create or authenticate user
     user, created = SiteUser.objects.get_or_create(username=username, defaults={'email': email})
     if created:
@@ -221,4 +220,5 @@ def oauth_callback(request):
         'access': str(refresh.access_token),
         'username': username,
         'email': user.email,
+        'all_info': user_info,
     }, status=status.HTTP_200_OK)
