@@ -60,10 +60,10 @@ async function renderPage(page) {
     }
 
     // Load the new page
+    const mainContent = document.getElementById("main-content");
     const response = await fetch(router.pages[page]);
     const html = await response.text();
-    document.querySelector(".screen").innerHTML = html;
-    router.currentPage = page;
+    mainContent.innerHTML = html;
 
     if (page === "login") {
       attachLoginFormListener();
@@ -74,10 +74,24 @@ async function renderPage(page) {
       renderElement("overview");
       lobbyLoad();
     }
+    history.pushState({ page: page }, '', `/${page}`);
   } catch (error) {
     console.error("Error loading page:", error);
   }
 }
+
+// Handle browser back/forward
+window.addEventListener("popstate", (e) => {
+  if (e.state?.page) {
+    renderPage(e.state.page);
+  }
+});
+
+// Load initial page
+window.addEventListener("load", () => {
+  const initialPage = window.location.hash.slice(1) || "home";
+  renderPage(initialPage);
+});
 
 async function checkAndRefreshToken() {
   console.log("checkAndRefreshToken called");
@@ -146,16 +160,3 @@ async function refreshToken() {
     return false;
   }
 }
-
-// Handle browser back/forward
-window.addEventListener("popstate", (e) => {
-  if (e.state?.page) {
-    renderPage(e.state.page);
-  }
-});
-
-// Load initial page
-window.addEventListener("load", () => {
-  const initialPage = window.location.hash.slice(1) || "home";
-  renderPage(initialPage);
-});
