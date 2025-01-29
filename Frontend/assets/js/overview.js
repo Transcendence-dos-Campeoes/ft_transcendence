@@ -1,20 +1,6 @@
-/* globals Chart:false */
-let chartInstance = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-
-  setTimeout(() => {
-    const canvas = document.getElementById("myChart");
-    if (!canvas) {
-      console.error("Canvas element not found");
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    chartInstance = new Chart(ctx, {
+function loadChart() {
+  try {
+    const statsChart = new Chart(document.getElementById("myChart"), {
       type: "bar",
       data: {
         labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -68,5 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       },
     });
-  }, 500);
-});
+  } catch (error) {
+    displayMessage("Failed to load graphics data", MessageType.ERROR);
+  }
+}
