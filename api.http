@@ -1,0 +1,27 @@
+### Get All Users
+
+POST http://localhost:8000/api/token/
+Content-Type: application/json
+
+{
+    "username": "masoares",
+    "email": "masoares@gmail.com",
+    "password": "atuaprima"
+}
+###
+
+### Create a User
+
+POST http://localhost:8000/api/users/create/
+Content-Type: application/json
+
+{
+    "username": "masoares",
+    "email": "masoares@gmail.com",
+    "password": "atuaprima"
+}
+
+###
+
+GET http://localhost:8000/api/users/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM3NTY2MTgwLCJpYXQiOjE3Mzc1NjU4ODAsImp0aSI6IjkyODA3ZjBkZDNiMzRlNmI4ZGNiYjAzNjA5MjgyZTYxIiwidXNlcl9pZCI6MTV9.A0PljnU7m3woe-kSVHOKVtXzumHsVpWo_DQbRFrceNc

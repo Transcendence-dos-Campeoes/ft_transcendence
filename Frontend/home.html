@@ -1,0 +1,121 @@
+<div class="container-fluid vh-100 vw-100">
+  <div class="row h-100">
+    <!-- Sidebar Div-->
+    <div class="col-2 d-flex flex-column pt-4 bg-body-tertiary">
+      <a
+        href="/"
+        class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
+      >
+        <svg class="bi pe-none me-2" width="40" height="32">
+          <use xlink:href="#bootstrap" />
+        </svg>
+        <span class="fs-4">Transcendence</span>
+      </a>
+      <hr />
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a
+            href="#"
+            class="nav-link link-body-emphasis"
+            aria-current="page"
+            onclick="renderElement('overview')"
+          >
+            <i class="bi bi-house-door me-2"></i>
+            Home
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse" data-bs-target="#matchesSubmenu">
+              <i class="bi bi-dice-6 me-2"></i>
+              Matches
+              <i class="bi bi-chevron-down ms-2"></i>
+          </a>
+          <div class="collapse" id="matchesSubmenu">
+              <ul class="nav nav-pills flex-column ms-3 mt-2">
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('newgame')">
+                          <i class="bi bi-plus-circle me-2"></i>
+                          New Game
+                      </a>
+                  </li>
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('joingame')">
+                          <i class="bi bi-door-open me-2"></i>
+                          Join Game
+                      </a>
+                  </li>
+              </ul>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse" data-bs-target="#tournamentsSubmenu">
+              <i class="bi bi-joystick me-2"></i>
+              Tournaments
+              <i class="bi bi-chevron-down ms-2"></i>
+          </a>
+          <div class="collapse" id="tournamentsSubmenu">
+              <ul class="nav nav-pills flex-column ms-3 mt-2">
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('newtournament')">
+                          <i class="bi bi-plus-circle me-2"></i>
+                          New tournament
+                      </a>
+                  </li>
+                  <li>
+                      <a href="#" class="nav-link link-body-emphasis" onclick="renderElement('jointournament')">
+                          <i class="bi bi-door-open me-2"></i>
+                          Join tournament
+                      </a>
+                  </li>
+              </ul>
+          </div>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown pb-4">
+        <a
+          href="#"
+          class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <img
+            src="https://github.com/mdo.png"
+            alt=""
+            width="32"
+            height="32"
+            class="rounded-circle me-2"
+          />
+          <strong class="user-display"></strong>
+        </a>
+        <ul class="dropdown-menu text-small shadow">
+          <li><a class="dropdown-item" href="#" onclick="renderElement('settings')">Settings</a></li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="renderElement('profile')"
+              >Profile</a
+            >
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="logout()">Sign out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- Main Content-->
+    <div class="col-8">
+      <div class="center-content"></div>
+    </div>
+    <!-- Friends Div-->
+    <div class="col-2 d-flex flex-column p-3 bg-body-tertiary">
+      <a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+          <span class="fs-5 fw-semibold">Friends</span>
+      </a>
+      <div class="list-group list-group-flush" id="online-players-list">
+          <!-- Online players will be dynamically inserted here -->
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
