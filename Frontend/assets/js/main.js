@@ -5,12 +5,12 @@ const router = {
     home: "/home.html",
     login: "/login.html",
     register: "/register.html",
+    42: "/42.html",
   },
 };
 
 function displayMessage(message, type) {
   const modal = new MessageModal(type);
-
   modal.show(message);
 }
 
@@ -34,6 +34,7 @@ function isAuthenticated() {
 
 // Page loader
 async function renderPage(page) {
+  console.log(`Attempting to render page: ${page}`);
   if (router.currentPage === page) return;
 
   // Check authentication before navigating to home page
@@ -41,13 +42,13 @@ async function renderPage(page) {
     console.log("Navigating to home, checking and refreshing token...");
     const isAuthenticated = await checkAndRefreshToken();
     if (!isAuthenticated) {
+      console.log("User not authenticated, redirecting to login page.");
       page = "login";
     }
   }
 
   try {
     const screen = document.querySelector(".screen-container");
-
     screen.classList.remove("zoom-in", "zoom-out");
 
     if (page === "home") {
@@ -73,11 +74,26 @@ async function renderPage(page) {
       renderElement("overview");
       lobbyLoad();
     }
+    
+    history.pushState({ page: page }, '', `/${page}`);
     router.currentPage = page;
   } catch (error) {
     console.error("Error loading page:", error);
   }
 }
+
+// Handle browser back/forward
+window.addEventListener("popstate", (e) => {
+  if (e.state?.page) {
+    renderPage(e.state.page);
+  }
+});
+
+// Load initial page
+window.addEventListener("load", () => {
+  const initialPage = window.location.pathname.slice(1) || "home";
+  renderPage(initialPage);
+});
 
 async function checkAndRefreshToken() {
   console.log("checkAndRefreshToken called");
@@ -146,16 +162,3 @@ async function refreshToken() {
     return false;
   }
 }
-
-// Handle browser back/forward
-window.addEventListener("popstate", (e) => {
-  if (e.state?.page) {
-    renderPage(e.state.page);
-  }
-});
-
-// Load initial page
-window.addEventListener("load", () => {
-  const initialPage = window.location.hash.slice(1) || "home";
-  renderPage(initialPage);
-});
