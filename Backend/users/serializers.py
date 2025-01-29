@@ -64,8 +64,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     
 
 class FriendRequestSerializer(serializers.ModelSerializer):
-    requester = serializers.PrimaryKeyRelatedField(read_only=True)
-    receiver = serializers.PrimaryKeyRelatedField(queryset=SiteUser.objects.all())
+    requester = serializers.PrimaryKeyRelatedField(source='requester.username', read_only=True)
+    receiver = serializers.CharField()
     status = serializers.CharField(read_only=True)
     
     class Meta:
@@ -73,13 +73,18 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         fields = ['id', 'requester', 'receiver', 'status', 'created_at']
 
     def validate_receiver(self, value):
+        try:
+            receiver = SiteUser.objects.get(username=value)
+        except SiteUser.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+
         requester = self.context['request'].user
-        if value == requester:
+        if receiver == requester:
             raise serializers.ValidationError("Cannot send friend request to yourself")
         
         existing_request = Friend.objects.filter(
             requester=requester, 
-            receiver=value
+            receiver=receiver
         ).exists()
         
         if existing_request:
@@ -88,6 +93,9 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        receiver_username = validated_data.pop('receiver')
+        receiver = SiteUser.objects.get(username=receiver_username)
+        validated_data['receiver'] = receiver
         validated_data['requester'] = self.context['request'].user
         validated_data['status'] = 'pending'
         return super().create(validated_data)

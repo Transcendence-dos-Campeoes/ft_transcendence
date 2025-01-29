@@ -14,6 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import authenticate
+from django.db.models import Q
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -172,7 +173,23 @@ def updateUserProfile(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getFriendRequest(request):
+def getFriends(request):
+    friend_requests = Friend.objects.filter(
+        (Q(receiver=request.user) | Q(requester=request.user)) &
+        Q(status='accepted')
+    )
+    friends_list = []
+    for friendship in friend_requests:
+        friend = friendship.receiver if friendship.requester == request.user else friendship.requester
+        friends_list.append({
+            'id': friend.id,
+            'username': friend.username
+        })
+    return Response(friends_list)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getInvites(request):
     friend_requests = Friend.objects.filter(
             receiver=request.user,
             status='pending'
@@ -182,11 +199,11 @@ def getFriendRequest(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def createInviteFriend(request):
-    """
-    Create a invite user.
-    """
-    serializer = FriendRequestSerializer(data=request.data)
+def createInvite(request):
+    serializer = FriendRequestSerializer(
+        data=request.data,
+        context={'request': request}
+    )
     if serializer.is_valid():
         serializer.save()
         return Response({
@@ -196,7 +213,7 @@ def createInviteFriend(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def changeStatusFriend(request):
+def changeStatusInvite(request):
     """Accept/Decline friend request"""
     friend_request = get_object_or_404(Friend, id=request.data.get("friend_request_id"), receiver=request.user)
     action = request.data.get('action')
@@ -213,4 +230,23 @@ def changeStatusFriend(request):
 
     serializer = FriendRequestSerializer(friend_request)
     return Response(serializer.data)
-    
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteFriend(request, friend_id):
+    """Delete friendship between users"""
+    # Find friendship in either direction
+    friendship = Friend.objects.filter(
+        (Q(requester=request.user, receiver_id=friend_id) |
+         Q(receiver=request.user, requester_id=friend_id)) &
+        Q(status='accepted')
+    ).first()
+
+    if not friendship:
+        return Response(
+            {'error': 'Friendship not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    friendship.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

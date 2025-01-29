@@ -1,0 +1,53 @@
+<div class="friend-system p-4">
+  <!-- Friend Search & Invite -->
+  <div class="invite-form mb-4">
+    <h4>Invite Friend</h4>
+    <form id="inviteForm" class="d-flex gap-2">
+      <input
+        type="text"
+        class="form-control"
+        id="friendUsername"
+        placeholder="Enter username"
+        required
+      />
+      <button type="submit" class="btn btn-primary">Invite</button>
+    </form>
+  </div>
+
+  <!-- Pending Invitations -->
+  <div class="pending-invites mb-4">
+    <h4>Pending Invitations</h4>
+    <div id="pendingInvitesList" class="list-group">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+
+  <!-- Current Friends -->
+  <div class="friends-list">
+    <h4>My Friends</h4>
+    <div id="friendsList" class="list-group">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+</div>
+
+<template id="inviteTemplate">
+  <div
+    class="list-group-item d-flex justify-content-between align-items-center"
+  >
+    <span class="username"></span>
+    <div class="btn-group">
+      <button class="btn btn-sm btn-success accept-btn">Accept</button>
+      <button class="btn btn-sm btn-danger decline-btn">Decline</button>
+    </div>
+  </div>
+</template>
+
+<template id="friendTemplate">
+  <div
+    class="list-group-item d-flex justify-content-between align-items-center"
+  >
+    <span class="username"></span>
+    <button class="btn btn-sm btn-danger remove-friend-btn">Remove</button>
+  </div>
+</template>
