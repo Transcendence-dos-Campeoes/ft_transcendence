@@ -6,13 +6,16 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
-from .models import SiteUser
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
+from .models import SiteUser, Friend
 from matches.models import Match
+from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import authenticate
+from django.db.models import Q
+import requests
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -168,3 +171,136 @@ def updateUserProfile(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFriends(request):
+    friend_requests = Friend.objects.filter(
+        (Q(receiver=request.user) | Q(requester=request.user)) &
+        Q(status='accepted')
+    )
+    friends_list = []
+    for friendship in friend_requests:
+        friend = friendship.receiver if friendship.requester == request.user else friendship.requester
+        friends_list.append({
+            'id': friend.id,
+            'username': friend.username
+        })
+    return Response(friends_list)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getInvites(request):
+    friend_requests = Friend.objects.filter(
+            receiver=request.user,
+            status='pending'
+        )
+    serializer = FriendRequestSerializer(friend_requests, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def createInvite(request):
+    serializer = FriendRequestSerializer(
+        data=request.data,
+        context={'request': request}
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'friend': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def changeStatusInvite(request):
+    """Accept/Decline friend request"""
+    friend_request = get_object_or_404(Friend, id=request.data.get("friend_request_id"), receiver=request.user)
+    action = request.data.get('action')
+
+    if action == 'accept':
+        friend_request.accept()
+    elif action == 'decline':
+        friend_request.decline()
+    else:
+        return Response(
+            {'error': 'Invalid action'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = FriendRequestSerializer(friend_request)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteFriend(request, friend_id):
+    """Delete friendship between users"""
+    # Find friendship in either direction
+    friendship = Friend.objects.filter(
+        (Q(requester=request.user, receiver_id=friend_id) |
+         Q(receiver=request.user, requester_id=friend_id)) &
+        Q(status='accepted')
+    ).first()
+
+    if not friendship:
+        return Response(
+            {'error': 'Friendship not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    friendship.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+@permission_classes([])
+def oauth_callback(request):
+    code = request.data.get('code')
+    if not code:
+        return Response({'error': 'Authorization code is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Exchange authorization code for access token
+    token_url = 'https://api.intra.42.fr/oauth/token'
+    data = {
+        'grant_type': 'authorization_code',
+        'client_id': 'u-s4t2ud-a6f40a3d8815d6e54ce1c1ade89e13948ac4e875a56a593543068f6a77e7ddc4',
+        'client_secret': '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',
+        'code': code,
+        'redirect_uri': 'https://localhost/42'
+    }
+    response = requests.post(token_url, data=data)
+    if response.status_code != 200:
+        return Response({'error': 'Failed to obtain access token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    token_data = response.json()
+    access_token = token_data['access_token']
+
+    # Use access token to get user info
+    user_info_url = 'https://api.intra.42.fr/v2/me'
+    headers = {'Authorization': f'Bearer {access_token}'}
+    user_info_response = requests.get(user_info_url, headers=headers)
+    if user_info_response.status_code != 200:
+        return Response({'error': 'Failed to obtain user info'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user_info = user_info_response.json()
+    username = user_info['login']
+    email = user_info['email']
+    # Create or authenticate user
+    user, created = SiteUser.objects.get_or_create(username=username, defaults={'email': email})
+    if created:
+        user.set_unusable_password()
+        user.save()
+        print(f"User {username} created with an unusable password.")
+    else:
+        user.email = email
+        user.save()
+
+    # Generate JWT tokens
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+        'username': username,
+        'email': user.email,
+        'all_info': user_info,
+    }, status=status.HTTP_200_OK)

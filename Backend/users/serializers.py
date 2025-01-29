@@ -3,6 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from .models import SiteUser
+from .models import Friend
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -60,3 +61,41 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             'email': user.email,
             'is_staff': user.is_staff,
         }
+    
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    requester = serializers.PrimaryKeyRelatedField(source='requester.username', read_only=True)
+    receiver = serializers.CharField()
+    status = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Friend
+        fields = ['id', 'requester', 'receiver', 'status', 'created_at']
+
+    def validate_receiver(self, value):
+        try:
+            receiver = SiteUser.objects.get(username=value)
+        except SiteUser.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+
+        requester = self.context['request'].user
+        if receiver == requester:
+            raise serializers.ValidationError("Cannot send friend request to yourself")
+        
+        existing_request = Friend.objects.filter(
+            requester=requester, 
+            receiver=receiver
+        ).exists()
+        
+        if existing_request:
+            raise serializers.ValidationError("Friend request already exists")
+        
+        return value
+
+    def create(self, validated_data):
+        receiver_username = validated_data.pop('receiver')
+        receiver = SiteUser.objects.get(username=receiver_username)
+        validated_data['receiver'] = receiver
+        validated_data['requester'] = self.context['request'].user
+        validated_data['status'] = 'pending'
+        return super().create(validated_data)
