@@ -2,7 +2,9 @@ function lobbyLoad() {
   console.log("pathname:", window.location.pathname);
   const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
   console.log("WebSocket user:", currentUser);
-  const socket = new WebSocket("ws://localhost:8000/ws/users/online-players/");
+  const token = localStorage.getItem('access');
+  console.log("token:", token);
+  const socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
@@ -14,7 +16,7 @@ function lobbyLoad() {
             if (playersList) 
             {
               playersList.innerHTML = ""; // Clear the list before updating
-            }
+            }   
             data.players_data.forEach((player) => 
             {
                 if (player.username !== currentUser) 
@@ -58,10 +60,11 @@ function lobbyLoad() {
                     from: currentUser,
                     to: data.from
                 }));
-                // Start the game logic here
                 console.log('Game started with:', data.from);
             }
         }
+        else if (data.type === "accept_invite")
+            startGame(data.game_group);
     };
 
     socket.onclose = function (event) {
@@ -72,4 +75,6 @@ function lobbyLoad() {
       console.error("WebSocket error:", error);
     };
   }
+
+  
 
