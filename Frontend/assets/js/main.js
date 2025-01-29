@@ -5,7 +5,7 @@ const router = {
     home: "/home.html",
     login: "/login.html",
     register: "/register.html",
-    pong: "/pong.html"
+    pong: "/pong.html",
     42: "/42.html",
   },
 };
