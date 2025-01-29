@@ -170,7 +170,7 @@ def updateUserProfile(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-@api_view(['PUT'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getFriendRequest(request):
     friend_requests = Friend.objects.filter(
@@ -182,7 +182,7 @@ def getFriendRequest(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def creaateInviteFriend(request):
+def createInviteFriend(request):
     """
     Create a invite user.
     """
