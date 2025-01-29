@@ -6,9 +6,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer
-from .models import SiteUser
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
+from .models import SiteUser, Friend
 from matches.models import Match
+from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.exceptions import TokenError
@@ -168,3 +169,48 @@ def updateUserProfile(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def getFriendRequest(request):
+    friend_requests = Friend.objects.filter(
+            receiver=request.user,
+            status='pending'
+        )
+    serializer = FriendRequestSerializer(friend_requests, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def creaateInviteFriend(request):
+    """
+    Create a invite user.
+    """
+    serializer = FriendRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'friend': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def changeStatusFriend(request):
+    """Accept/Decline friend request"""
+    friend_request = get_object_or_404(Friend, id=request.data.get("friend_request_id"), receiver=request.user)
+    action = request.data.get('action')
+
+    if action == 'accept':
+        friend_request.accept()
+    elif action == 'decline':
+        friend_request.decline()
+    else:
+        return Response(
+            {'error': 'Invalid action'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = FriendRequestSerializer(friend_request)
+    return Response(serializer.data)
+    

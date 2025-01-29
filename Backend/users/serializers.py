@@ -3,6 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from .models import SiteUser
+from .models import Friend
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -60,3 +61,33 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             'email': user.email,
             'is_staff': user.is_staff,
         }
+    
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    requester = serializers.PrimaryKeyRelatedField(read_only=True)
+    receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    status = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Friend
+        fields = ['id', 'requester', 'receiver', 'status', 'created_at']
+
+    def validate_receiver(self, value):
+        requester = self.context['request'].user
+        if value == requester:
+            raise serializers.ValidationError("Cannot send friend request to yourself")
+        
+        existing_request = Friend.objects.filter(
+            requester=requester, 
+            receiver=value
+        ).exists()
+        
+        if existing_request:
+            raise serializers.ValidationError("Friend request already exists")
+        
+        return value
+
+    def create(self, validated_data):
+        validated_data['requester'] = self.context['request'].user
+        validated_data['status'] = 'pending'
+        return super().create(validated_data)
