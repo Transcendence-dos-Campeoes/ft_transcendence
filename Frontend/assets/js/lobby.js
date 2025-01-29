@@ -3,7 +3,6 @@ function lobbyLoad() {
   const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
   console.log("WebSocket user:", currentUser);
   const token = localStorage.getItem('access');
-  console.log("token:", token);
   const socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
 
     socket.onmessage = function (event) {
@@ -25,31 +24,53 @@ function lobbyLoad() {
                     a.href = "#";
                     a.className = "list-group-item list-group-item-action py-3 lh-sm";
                     a.innerHTML = `
-                                  <ul class="nav nav-pills flex-column mb-auto">
-                                      <li class="nav-item d-flex align-items-center justify-content-between">
-                                          <div class="d-flex align-items-center" id="online-players-list">
-                                              <span>${player.username}</span>
-                                          </div>
-                                      <span
-                                          class="status-indicator rounded-circle bg-success ms-auto"
-                                          style="width: 8px; height: 8px; display: inline-block"
-                                      >
-                                      </span>
-                              `;
-                    a.addEventListener('click', function() 
-                    {
-                        // Handle player selection for the new game
-                        console.log('Selected player:', player.username);
-                        socket.send(JSON.stringify
-                        ({
-                            type: 'invite',
-                            from: currentUser,
-                            to: player.username
-                        }));
-                    });
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <span>${player.username}</span>
+                            <span class="status-indicator rounded-circle bg-success ms-2"
+                                  style="width: 8px; height: 8px;">
+                            </span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-link text-white p-0" 
+                                    data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#" 
+                                       onclick="viewProfile('${player.username}')">
+                                        <i class="bi bi-person me-2"></i>View Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item invite-button" href="#" 
+                                       data-username=${player.username}>
+                                        <i class="bi bi-controller me-2"></i>Invite to Game
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    `;
+
                     playersList.appendChild(a);
                 }
             });
+            const inviteButtons = document.querySelectorAll('.invite-button');
+            inviteButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+
+                    event.preventDefault();
+                    const username = button.getAttribute('data-username');
+                    socket.send(JSON.stringify
+                        ({  
+                            type: 'invite',
+                            from: currentUser,
+                            to: username
+                        }));
+                });
+            });            
         }
         else if (data.type === 'invite')
         {
@@ -76,5 +97,4 @@ function lobbyLoad() {
     };
   }
 
-  
 

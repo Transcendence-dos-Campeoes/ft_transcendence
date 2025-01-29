@@ -35,6 +35,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_invite(data)
         elif data['type'] == 'accept_invite':
             self.handle_accept_invite(data)
+        if data['type'] == 'player_move':
+            self.handle_player_move(data)
 
     def handle_invite(self, data):
         async_to_sync(self.channel_layer.group_send)(
@@ -80,8 +82,6 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         self.send_online_players()
 
     def invite(self, event):
-        # print(event['from'])
-        print(self.scope['user'].username)
         if event['to'] == self.scope['user'].username:
             text_data=json.dumps({
                 'type': 'invite',
@@ -118,10 +118,26 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def send_to_channel(self, username, message):
         channel_name = self.get_channel_name(username)
         if channel_name:
-            async_to_sync(self.channel_layer.send)(channel_name, {
-                'type': 'websocket.send',
-                'text': json.dumps(message)
-            })
+            async_to_sync(self.channel_layer.send)(channel_name, json.dumps(message))
 
     def game_update(self, event):
         self.send(text_data=json.dumps(event))
+
+
+    def handle_player_move(self, data):
+        # Update player velocity based on received data
+        if data['player'] == 1:
+            player1['velocityY'] = data['velocityY']
+        elif data['player'] == 2:
+            player2['velocityY'] = data['velocityY']
+
+        # Broadcast the updated game state to both players
+        async_to_sync(self.channel_layer.group_send)(
+            data['game_group'],
+            {
+                'type': 'game_update',
+                'player1': player1,
+                'player2': player2,
+                'ball': ball
+            }
+        )
