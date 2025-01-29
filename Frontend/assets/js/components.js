@@ -6,39 +6,63 @@ const elements = {
     settings: "/components/settings.html",
     matches: "/components/matches.html",
     tournaments: "/components/tournaments.html",
+    newgame: "/components/newgame.html",
+    joingame: "/components/joingame.html",
+    newtournament: "/components/newtournament.html",
+    jointournament: "/components/jointournament.html",
   },
 };
-function waitForElement(selector, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
 
-    const checkElement = () => {
-      const element = document.getElementById(selector);
-      if (element) {
-        resolve(element);
-      } else if (Date.now() - startTime >= timeout) {
-        reject(new Error(`Element ${selector} not found after ${timeout}ms`));
-      } else {
-        setTimeout(checkElement, 100);
-      }
-    };
+function clearNavLinkButtons() {
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("active");
+  });
 
-    checkElement();
+  document.querySelectorAll(".dropdown-item").forEach((link) => {
+    link.classList.remove("active");
   });
 }
-
-async function renderElement(element, event = null) {
+async function renderElement(element) {
   console.log("Rendering element:", element);
-  if (elements.currentElement === element) return;
+  const loadingOverlay = new LoadingOverlay();
 
   try {
-    const centerContent = await waitForElement("center-content");
-    const response = await fetch(elements.elements[element]);
-    const content = await response.text();
+    loadingOverlay.show();
+    clearNavLinkButtons();
 
-    centerContent.innerHTML = content;
+    const navLink = document.querySelector(
+      `a[onclick*="renderElement('${element}')"]`
+    );
+    if (navLink) {
+      navLink.classList.add("active");
+    }
+
+    const content = document.querySelector(".center-content");
+
+    if (!content) {
+      throw new Error("Content container not found");
+    }
+
+    console.log("📡 Fetching component HTML:", elements.elements[element]);
+    const response = await fetch(elements.elements[element]);
+    const html = await response.text();
+    console.log("📥 HTML received, length:", html.length);
+
+    console.log("🎨 Updating DOM");
+    content.innerHTML = html;
     elements.currentElement = element;
+
+    console.log("🎯 Initializing component:", element);
+    if (element === "profile") {
+      await loadProfileData();
+      attachProfileFormListener();
+    } else if (element === "overview") {
+      loadChart();
+    }
+    console.log("✅ Component render complete:", element);
   } catch (error) {
     console.error("Error loading element:", error);
+  } finally {
+    loadingOverlay.hide();
   }
 }

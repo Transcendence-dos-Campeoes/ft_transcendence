@@ -4,9 +4,9 @@ POST http://localhost:8000/api/token/
 Content-Type: application/json
 
 {
-    "username": "new-user",
-    "email": "new-user@example.com",
-    "password": "HALP PLIS"
+    "username": "masoares",
+    "email": "masoares@gmail.com",
+    "password": "atuaprima"
 }
 ###
 
@@ -16,9 +16,9 @@ POST http://localhost:8000/api/users/create/
 Content-Type: application/json
 
 {
-    "username": "new-user",
-    "email": "new-user@example.com",
-    "password": "HALP PLIS"
+    "username": "masoares",
+    "email": "masoares@gmail.com",
+    "password": "atuaprima"
 }
 
 ###
