@@ -65,7 +65,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class FriendRequestSerializer(serializers.ModelSerializer):
     requester = serializers.PrimaryKeyRelatedField(read_only=True)
-    receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    receiver = serializers.PrimaryKeyRelatedField(queryset=SiteUser.objects.all())
     status = serializers.CharField(read_only=True)
     
     class Meta:
