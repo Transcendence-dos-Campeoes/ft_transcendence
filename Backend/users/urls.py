@@ -5,6 +5,7 @@ urlpatterns = [
     path('create/', views.create_user, name='create_user'),
     path('login/', views.loginUser, name='login_user'),
     path('logout/', views.logoutUser, name='logout-user'),
+    path('delete/', views.deleteUser, name='delete-user'),
     path('users/', views.getUsersData, name='get_users_data'),
 	path('oauth_callback/', views.oauth_callback),
     path('profile/', views.getUserProfile, name='get_user_profile'),
