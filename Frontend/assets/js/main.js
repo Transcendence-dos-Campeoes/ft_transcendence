@@ -5,6 +5,7 @@ const router = {
     home: "/home.html",
     login: "/login.html",
     register: "/register.html",
+    pong: "/pong.html",
     42: "/42.html",
   },
 };
@@ -76,8 +77,7 @@ async function renderPage(page) {
       renderElement("overview");
       lobbyLoad();
     }
-    
-    history.pushState({ page: page }, '', `/${page}`);
+    history.pushState({ page: page }, "", `/${page}`);
     router.currentPage = page;
   } catch (error) {
     console.error("Error loading page:", error);
@@ -164,7 +164,6 @@ async function refreshToken() {
     return false;
   }
 }
-
 
 async function load_profile_pic()
 {

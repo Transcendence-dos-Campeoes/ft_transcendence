@@ -96,6 +96,26 @@ def logoutUser(request):
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteUser(request):
+    try:
+        user = request.user
+        # Invalidate all user tokens
+        OutstandingToken.objects.filter(user=user).delete()
+        
+        user.delete()
+        
+        return Response(
+            {"detail": "Account deleted successfully"}, 
+            status=status.HTTP_204_NO_CONTENT
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserProfile(request):

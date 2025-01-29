@@ -47,7 +47,6 @@ async function attachProfileFormListener() {
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
-      renderPage("home");
       renderElement("overview");
     } catch (error) {
       console.error("❌ Error updating profile:", error);
@@ -165,6 +164,32 @@ async function loadProfileData() {
       .join("");
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
+  }
+}
+
+async function deleteAccount() {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetch("http://localhost:8000/api/users/delete/", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
+
+    if (response.ok) {
+      // Clear local storage
+      localStorage.clear();
+    } else {
+      alert("Failed to delete account");
+    }
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert("Error deleting account");
+  } finally {
+    loadingOverlay.hide();
+    renderPage("login");
   }
 }
 

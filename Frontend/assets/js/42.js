@@ -23,7 +23,7 @@ window.onload = async function() {
                 },
                 body: JSON.stringify({ code: code })
             });
-
+          
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Error:', errorData.error);

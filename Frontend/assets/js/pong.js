@@ -48,9 +48,29 @@ let ball =
 let player1Score = 0;
 let player2Score = 0;
 
+function startGame(gameGroup) {
+    const token = localStorage.getItem('access');
+    const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${gameGroup}/?token=${token}`);
 
+    gameSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log("Game message received:", data); // Debugging line
 
-window.onload = function()
+        initializeGame(gameSocket);
+        
+        // Update game state based on received data
+        if (data.type === 'game_update') {
+            player1 = data.player1;
+            player2 = data.player2;
+            ball = data.ball;
+        }
+        gameSocket.send(JSON.dumps({
+
+        }))
+    };
+}
+
+function initializeGame(socket, gameGroup) {
 {
     board = document.getElementById("board");
     board.height = boardHeight;
