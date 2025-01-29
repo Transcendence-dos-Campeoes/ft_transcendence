@@ -73,10 +73,24 @@ async function renderPage(page) {
       renderElement("overview");
       lobbyLoad();
     }
+    history.pushState({ page: page }, '', `/${page}`);
   } catch (error) {
     console.error("Error loading page:", error);
   }
 }
+
+// Handle browser back/forward
+window.addEventListener("popstate", (e) => {
+  if (e.state?.page) {
+    renderPage(e.state.page);
+  }
+});
+
+// Load initial page
+window.addEventListener("load", () => {
+  const initialPage = window.location.hash.slice(1) || "home";
+  renderPage(initialPage);
+});
 
 async function checkAndRefreshToken() {
   console.log("checkAndRefreshToken called");
@@ -145,16 +159,3 @@ async function refreshToken() {
     return false;
   }
 }
-
-// Handle browser back/forward
-window.addEventListener("popstate", (e) => {
-  if (e.state?.page) {
-    renderPage(e.state.page);
-  }
-});
-
-// Load initial page
-window.addEventListener("load", () => {
-  const initialPage = window.location.hash.slice(1) || "home";
-  renderPage(initialPage);
-});
