@@ -23,26 +23,25 @@ window.onload = async function() {
                 },
                 body: JSON.stringify({ code: code })
             });
+          
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error:', errorData.error);
+                return;
+            }
 
             const data = await response.json();
-            if (response.ok) {
-				console.log(data.username);
-				console.log(data.access);
-				console.log(data.email);
-				console.log(data.all_info)
-                // Store the access token and other data
-// Store the access token and other data
-				localStorage.setItem('access', data.access);
-				localStorage.setItem('refresh', data.refresh);
-				const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
-				localStorage.setItem('access_token_expiry', accessTokenExpiry);
-				localStorage.setItem('username', data.username);
-				localStorage.setItem('email', data.email);
-                // // Redirect to the home page or another page
-                window.location.href = '/home';
-            } else {
-                console.error('Error:', data.error);
-            }
+            console.log('OAuth login successful:', data);
+
+            // Store the access token and other data
+            localStorage.setItem('access', data.access);
+            localStorage.setItem('refresh', data.refresh);
+            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+            localStorage.setItem('access_token_expiry', accessTokenExpiry);
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('email', data.email);
+            // Redirect to the home page or another page
+            window.location.href = '/#home';
         } catch (error) {
             console.error('Error:', error);
         }
