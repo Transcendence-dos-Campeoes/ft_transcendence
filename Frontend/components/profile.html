@@ -1,19 +1,19 @@
-<div class="container-fluid p-4" data-component="profile">
-	<!-- Profile Header -->
-	<div class="row mb-4">
-		<div class="col-12">
-			<div class="d-flex align-items-center">
-				<img id="photo_URL_profile" src="https://github.com/mdo.png" alt="Profile"
-					class="profile-picture rounded-circle me-3" width="100" height="100" />
-				<div>
-					<h2 class="mb-0" id="profile-username"></h2>
-					<p class="text-muted">
-						Member since <span id="profile-created"></span>
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="container-fluid p-4 overflow-auto vh-100" data-component="profile">
+  <!-- Profile Header -->
+  <div class="row mb-4 mt-5">
+    <div class="col-12">
+      <div class="d-flex align-items-center">
+        <img id="photo_URL_profile" src="https://github.com/mdo.png" alt="Profile"
+          class="profile-picture rounded-circle me-3" width="100" height="100" />
+        <div>
+          <h2 class="mb-0" id="profile-username"></h2>
+          <p class="text-muted">
+            Member since <span id="profile-created"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Profile Content -->
   <div class="row">
@@ -21,16 +21,26 @@
     <div class="col-md-6 mb-4">
       <div class="card bg-transparent border-light">
         <div class="card-header">
-          <h4>Statistics</h4>
+          <h4>Match Statistics</h4>
         </div>
         <div class="card-body">
-          <canvas id="statsChart"></canvas>
+          <canvas id="matchesChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          <h4>Win Rate Percentage</h4>
+        </div>
+        <div class="card-body">
+          <canvas id="winRateChart"></canvas>
         </div>
       </div>
     </div>
 
     <!-- Match History -->
-    <div class="col-12">
+    <div class="col-12 mb-4">
       <div class="card bg-transparent border-light">
         <div class="card-header">
           <h4>Match History</h4>
@@ -52,14 +62,39 @@
         </div>
       </div>
     </div>
+
+    <!-- Tournament History -->
+    <div class="col-12 mb-4">
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          <h4>Tournament History</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Tournament Name</th>
+                  <th>Position</th>
+                  <th>Players</th>
+                </tr>
+              </thead>
+              <tbody id="tournament-history"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <style>
-	.profile-picture {
-		object-fit: cover;
-		object-position: center;
-		width: 300px;
-		height: 300px;
-	}
+  .profile-picture {
+    object-fit: cover;
+    object-position: center;
+    width: 300px;
+    height: 300px;
+  }
 </style>
