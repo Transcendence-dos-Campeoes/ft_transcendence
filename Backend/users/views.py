@@ -208,6 +208,42 @@ def updateUserProfile(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUserPassword(request):
+    try:
+        user = request.user
+        data = request.data
+
+        # Check current password
+        if not user.check_password(data['currPassword']):
+            return Response(
+                {'error': 'Current password is incorrect'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if new passwords match
+        if data['newPassword'] != data['confPassword']:
+            return Response(
+                {'error': 'New passwords do not match'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update password
+        user.set_password(data['newPassword'])
+        user.save()
+
+        return Response(
+            {'message': 'Password updated successfully'},
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
