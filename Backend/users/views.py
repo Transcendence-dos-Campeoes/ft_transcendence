@@ -130,9 +130,6 @@ def getUserProfile(request):
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
         profile_data = {
-            'username': user.username,
-            'email': user.email,
-            'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
             'photo_URL': user.profile_URL,
             'stats': {
@@ -153,6 +150,25 @@ def getUserProfile(request):
         }
         
         return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserSettings(request):
+    try:
+        user = request.user
+
+        settings_data = {
+            'username': user.username,
+            'email': user.email,
+            'two_fa_enabled': user.two_fa_enabled,
+            'created_time': user.created_time,
+        }
+        return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response(
             {'error': str(e)}, 
@@ -186,6 +202,42 @@ def updateUserProfile(request):
             'email': user.email,
             'two_factor_enabled': user.two_fa_enabled
         }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUserPassword(request):
+    try:
+        user = request.user
+        data = request.data
+
+        # Check current password
+        if not user.check_password(data['currPassword']):
+            return Response(
+                {'error': 'Current password is incorrect'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if new passwords match
+        if data['newPassword'] != data['confPassword']:
+            return Response(
+                {'error': 'New passwords do not match'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update password
+        user.set_password(data['newPassword'])
+        user.save()
+
+        return Response(
+            {'message': 'Password updated successfully'},
+            status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         return Response(
