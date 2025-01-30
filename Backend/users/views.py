@@ -130,9 +130,6 @@ def getUserProfile(request):
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
         profile_data = {
-            'username': user.username,
-            'email': user.email,
-            'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
             'photo_URL': user.profile_URL,
             'stats': {
@@ -153,6 +150,25 @@ def getUserProfile(request):
         }
         
         return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserSettings(request):
+    try:
+        user = request.user
+
+        settings_data = {
+            'username': user.username,
+            'email': user.email,
+            'two_fa_enabled': user.two_fa_enabled,
+            'created_time': user.created_time,
+        }
+        return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response(
             {'error': str(e)}, 
