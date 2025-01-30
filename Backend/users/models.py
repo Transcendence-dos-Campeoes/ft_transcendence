@@ -28,6 +28,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     two_fa_enabled = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     profile_URL = models.URLField(default="https://www.shutterstock.com/image-vector/funny-art-borat-illustration-glasses-600nw-2157502681.jpg")
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')  # Add this line
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
@@ -38,7 +39,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
-    
+
 class Friend(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),

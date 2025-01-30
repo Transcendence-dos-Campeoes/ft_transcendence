@@ -1,5 +1,6 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -144,6 +145,7 @@ def getUserProfile(request):
         profile_data = {
             'created_time': user.created_time,
             'photo_URL': user.profile_URL,
+			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -179,6 +181,7 @@ def getUserSettings(request):
             'email': user.email,
             'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
+			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
         }
         return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
@@ -189,32 +192,17 @@ def getUserSettings(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def updateUserProfile(request):
     try:
         user = request.user
-        data = request.data
+        serializer = SiteUserSerializer(user, data=request.data, partial=True)
 
-        # Update username if provided
-        if 'username' in data:
-            user.username = data['username']
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Update email if provided
-        if 'email' in data:
-            user.email = data['email']
-        
-        # Update 2FA status if provided
-        if 'two_factor_enabled' in data:
-            user.two_fa_enabled = data['two_factor_enabled']
-        
-        user.save()
-
-        # Return updated profile data
-        return Response({
-            'username': user.username,
-            'email': user.email,
-            'two_factor_enabled': user.two_fa_enabled,
-        }, status=status.HTTP_200_OK)
-
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response(
             {'error': str(e)}, 
