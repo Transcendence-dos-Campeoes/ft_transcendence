@@ -193,6 +193,9 @@ def updateUserProfile(request):
         # Update 2FA status if provided
         if 'two_factor_enabled' in data:
             user.two_fa_enabled = data['two_factor_enabled']
+
+        if 'profilePictureImage' in data:
+            user.profile_image = data['profilePictureImage']
         
         user.save()
 
@@ -200,7 +203,8 @@ def updateUserProfile(request):
         return Response({
             'username': user.username,
             'email': user.email,
-            'two_factor_enabled': user.two_fa_enabled
+            'two_factor_enabled': user.two_fa_enabled,
+            'profile_image': user.profile_image
         }, status=status.HTTP_200_OK)
 
     except Exception as e:

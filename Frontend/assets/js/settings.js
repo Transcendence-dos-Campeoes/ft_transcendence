@@ -19,6 +19,11 @@ async function attachSettingsFormListener() {
     const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
     const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
+	const profilePictureInput = document.getElementById("profile-picture-input");
+    let profilePictureImage = null;
+	if (profilePictureInput && profilePictureInput.files.length > 0) {
+		profilePictureImage = profilePictureInput.files[0];
+	}
 
     try {
       loadingOverlay.show();
@@ -34,6 +39,7 @@ async function attachSettingsFormListener() {
             username: username,
             email: email,
             two_factor_enabled: twoFactorEnabled,
+			profilePictureImage: profilePictureImage,
           }),
         }
       );
