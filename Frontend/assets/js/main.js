@@ -74,7 +74,11 @@ async function renderPage(page) {
       updateUserProfile();
       renderElement("overview");
       lobbyLoad();
-    }    
+    }
+    else if (page==="pong")
+    { 
+      startGame(data.game_group, socket);
+    }
     history.pushState({ page: page }, '', `/${page}`);
     router.currentPage = page;
   } catch (error) {

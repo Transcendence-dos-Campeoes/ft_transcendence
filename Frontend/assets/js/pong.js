@@ -50,23 +50,39 @@ let player2Score = 0;
 
 function startGame(gameGroup, socket) {
     
-    renderPage("pong");
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log("Game message received:", data); // Debugging line
+    setTimeout(() => {
+        console.log("ESTOU AQUI");
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Game message received:", data); // Debugging line
 
-        initializeGame(socket, gameGroup, data);
+            initializeGame(socket, gameGroup, data);
 
-        // Update game state based on received data
-        if (data.type === 'game_update') {
-            player1 = data.player1;
-            player2 = data.player2;
-            ball = data.ball;
-        }
-        socket.send(JSON.dumps({
+            // Update game state based on received data
+            if (data.type === 'game_update') {
+                player1 = data.player1;
+                player2 = data.player2;
+                ball = data.ball;
+            }
+        };
+    }, 0); // Ensure the DOM is updated before setting the onmessage handler7
 
-        }))
-    };
+    // socket.onmessage = function(event) {
+    //     const data = JSON.parse(event.data);
+    //     console.log("Game message received:", data); // Debugging line
+
+    //     initializeGame(socket, gameGroup, data);
+
+    //     // Update game state based on received data
+    //     if (data.type === 'game_update') {
+    //         player1 = data.player1;
+    //         player2 = data.player2;
+    //         ball = data.ball;
+    //     }
+    //     socket.send(JSON.dumps({
+
+    //     }))
+    // };
 }
 
 function initializeGame(socket, gameGroup, data)

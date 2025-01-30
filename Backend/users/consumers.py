@@ -52,6 +52,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_accept_invite(data)
         if data['type'] == 'player_move':
             self.handle_player_move(data)
+        # if data[]
         # if data['type'] == 'close_connection':
 
         # if data['type'] == 'websocket'
@@ -85,7 +86,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(data))
 
     def broadcast_online_players(self):
-        players_data = [{"username": user.username} for user in channel_user_map.values ()]
+        players_data = [{"username": user.username} for user in channel_user_map.values()]
         async_to_sync(self.channel_layer.group_send)(
             "online_players",
             {
@@ -106,8 +107,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.send(text_data)
             
     def accept_invite(self, event):
-
-        if 'to' in event     and event['to'] == self.scope['user'].username:
+        if 'to' in event and event['to'] == self.scope['user'].username:
 
             # Add both players to the game group
             game_group_name = f"game_{uuid.uuid4()}"
@@ -115,7 +115,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_add)(game_group_name, self.get_channel_name(event['from']))
 
             self.send(text_data=json.dumps({
-                'type': 'accept_invite',
+                'type': 'start_game',
                 'from': event['from'],
                 'game_group': game_group_name,
                 'player': 'player2'
@@ -138,14 +138,19 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     
     def send_to_channel(self, username, message):
         channel_name = self.get_channel_name(username)
-        print(message)
+
         if channel_name:
             async_to_sync(self.channel_layer.send)(channel_name, {
-                'type': 'accept_invite',
+                'type': 'start_game',
                 "text": json.dumps(message)})
 
     def game_update(self, event):
         self.send(text_data=json.dumps(event))
+
+    def start_game(self, event):
+        self.send(text_data=json.dumps(event))
+
+        
 
 
     # def handle_player_move(self, data):
