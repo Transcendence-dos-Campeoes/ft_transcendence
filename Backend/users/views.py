@@ -130,6 +130,7 @@ def getUserProfile(request):
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
         profile_data = {
+            'username': user.username,
             'created_time': user.created_time,
             'photo_URL': user.profile_URL,
             'stats': {

@@ -23,25 +23,19 @@ async function loadProfileData() {
     );
     document.getElementById("profile-created").textContent = createdDate;
 
-    // Update stats section
+    // Bar chart for matches
     const stats = data.stats;
-    const statsChart = new Chart(document.getElementById("statsChart"), {
+    const matchesChart = new Chart(document.getElementById("matchesChart"), {
       type: "bar",
       data: {
-        labels: ["Total Games", "Wins", "Losses", "Win Rate"],
+        labels: ["Total Games", "Wins", "Losses"],
         datasets: [
           {
-            data: [
-              stats.total_matches,
-              stats.wins,
-              stats.losses,
-              stats.win_rate,
-            ],
+            data: [stats.total_matches, stats.wins, stats.losses],
             backgroundColor: [
               "rgba(255, 255, 255, 0.4)",
               "rgba(75, 192, 192, 0.4)",
               "rgba(255, 99, 132, 0.4)",
-              "rgba(54, 162, 235, 0.4)",
             ],
             borderColor: "rgba(255, 255, 255, 0.8)",
             borderWidth: 1,
@@ -54,7 +48,11 @@ async function loadProfileData() {
           y: {
             beginAtZero: true,
             grid: { color: "rgba(255, 255, 255, 0.1)" },
-            ticks: { color: "white" },
+            ticks: {
+              color: "white",
+              stepSize: 1,
+              callback: (value) => Math.round(value),
+            },
           },
           x: {
             grid: { color: "rgba(255, 255, 255, 0.1)" },
@@ -62,8 +60,37 @@ async function loadProfileData() {
           },
         },
         plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+
+    // Doughnut chart for win rate
+    const winRateChart = new Chart(document.getElementById("winRateChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Wins", "Losses"],
+        datasets: [
+          {
+            data: [stats.win_rate, 100 - stats.win_rate],
+            backgroundColor: [
+              "rgba(75, 192, 192, 0.4)",
+              "rgba(255, 99, 132, 0.4)",
+            ],
+            borderColor: "rgba(255, 255, 255, 0.8)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: "right",
+            labels: { color: "white" },
           },
         },
       },
