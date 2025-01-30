@@ -12,6 +12,8 @@ async function loadProfileData() {
 
     const data = await response.json();
 
+    document.getElementById("profile-username").textContent = data.username;
+
     // Format and display creation date
     const createdDate = new Date(data.created_time).toLocaleDateString(
       "pt-PT",
