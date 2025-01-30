@@ -116,6 +116,21 @@ async function loadProfileData() {
         `
       )
       .join("");
+
+    // Update tournament history
+    const tournamentHistory = document.getElementById("tournament-history");
+    tournamentHistory.innerHTML = data.tournament_history
+      .map(
+        (tournament) => `
+    <tr>
+      <td>${new Date(tournament.date).toLocaleDateString()}</td>
+      <td>${tournament.name}</td>
+      <td>${tournament.position}</td>
+      <td>${tournament.total_players}</td>
+    </tr>
+  `
+      )
+      .join("");
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
   }
