@@ -35,10 +35,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        # Add custom claims
         token['username'] = user.username
         token['email'] = user.email
-        token['is_staff'] = user.is_staff
         return token
 
     def validate(self, attrs):
@@ -59,7 +57,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             'access': str(refresh.access_token),
             'username': user.username,
             'email': user.email,
-            'is_staff': user.is_staff,
         }
     
 
