@@ -16,6 +16,9 @@ from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import authenticate
 from django.db.models import Q
 import requests
+from .consumers import OnlinePlayersConsumer, get_channel_name
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -82,11 +85,22 @@ def logoutUser(request):
     try:
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
+
         token.blacklist()
 
         user = request.user
         user.online_status = False
         user.save()
+
+        channel_layer = get_channel_layer()
+        channel_name = get_channel_name(user.username)
+        if channel_name:
+            async_to_sync(channel_layer.send)(
+                "online_players",
+                {
+                    "type": "close_connection"
+                }
+            )
 
         return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
     except TokenError as e:

@@ -85,7 +85,9 @@ function lobbyLoad() {
             }
         }
         else if (data.type === "accept_invite")
-            startGame(data.game_group);
+            startGame(data.game_group, socket);
+        else if (data.type === "close_connection")
+            socket.close();
     };
 
     socket.onclose = function (event) {
