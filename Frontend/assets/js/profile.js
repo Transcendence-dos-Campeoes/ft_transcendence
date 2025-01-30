@@ -77,6 +77,14 @@ async function loadProfileData() {
     document.getElementById("profile-username").textContent = data.username;
     document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
 
+    const photoElement = document.getElementById('photo_URL_profile');
+    if (photoElement) {
+      console.log('Updating photo URL:', data.photo_URL);
+      photoElement.src = localStorage.getItem("photo_URL");
+    } else {
+      console.error('Photo element not found');
+    }
+
     // Format and display creation date
     const createdDate = new Date(data.created_time).toLocaleDateString(
       "pt-PT",

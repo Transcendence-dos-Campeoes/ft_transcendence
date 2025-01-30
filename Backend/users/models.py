@@ -27,6 +27,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     created_time = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    profile_URL = models.URLField(default="https://www.shutterstock.com/image-vector/funny-art-borat-illustration-glasses-600nw-2157502681.jpg")
 
     objects = SiteUserManager()
 
