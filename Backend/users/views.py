@@ -70,7 +70,6 @@ def loginUser(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         refresh = RefreshToken.for_user(user)
-        user.online_status = True
         user.save()
         return Response({
             'access': str(refresh.access_token),
@@ -89,7 +88,6 @@ def logoutUser(request):
         token.blacklist()
 
         user = request.user
-        user.online_status = False
         user.save()
 
         channel_layer = get_channel_layer()
@@ -207,9 +205,6 @@ def updateUserProfile(request):
         # Update 2FA status if provided
         if 'two_factor_enabled' in data:
             user.two_fa_enabled = data['two_factor_enabled']
-
-        if 'profilePictureImage' in data:
-            user.profile_image = data['profilePictureImage']
         
         user.save()
 
@@ -218,7 +213,6 @@ def updateUserProfile(request):
             'username': user.username,
             'email': user.email,
             'two_factor_enabled': user.two_fa_enabled,
-            'profile_image': user.profile_image
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
