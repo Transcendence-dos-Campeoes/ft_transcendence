@@ -48,35 +48,34 @@ let ball =
 let player1Score = 0;
 let player2Score = 0;
 
-function startGame(gameGroup) {
-    const token = localStorage.getItem('access');
-    const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${gameGroup}/?token=${token}`);
-
-    gameSocket.onmessage = function(event) {
+function startGame(gameGroup, socket) {
+    
+    renderPage("pong");
+    socket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         console.log("Game message received:", data); // Debugging line
 
-        initializeGame(gameSocket);
-        
+        initializeGame(socket, gameGroup, data);
+
         // Update game state based on received data
         if (data.type === 'game_update') {
             player1 = data.player1;
             player2 = data.player2;
             ball = data.ball;
         }
-        gameSocket.send(JSON.dumps({
+        socket.send(JSON.dumps({
 
         }))
     };
 }
 
-function initializeGame(socket, gameGroup) {
+function initializeGame(socket, gameGroup, data)
 {
     board = document.getElementById("board");
     board.height = boardHeight;
     board.width = boardWidth;
     context = board.getContext("2d");
-
+    console.log("ESTOU AQUI")   ;
     //initial players position
     context.fillStyle = "skyblue";
     context.fillRect(player1.x, player1.y, player1.width, player1.height);
@@ -89,8 +88,12 @@ function initializeGame(socket, gameGroup) {
     context.fillRect(ball.x, ball.y, ball.width, ball.height);
     
     requestAnimationFrame(update);
-    document.addEventListener("keydown", movePlayer);
-    document.addEventListener("keyup", stopPlayer);
+    document.addEventListener("keydown", function(event) {
+        movePlayer(event, data['player'], socket, gameGroup);
+    });
+    document.addEventListener("keyup", function(event) {
+        stopPlayer(event, data['player'], socket, gameGroup);
+    });
 }
 
 function update() {
@@ -155,31 +158,43 @@ function update() {
     
 }
 
-function movePlayer(e){
+function movePlayer(event, player, socket, gameGroup){
 
-    //player1
-    if(e.code == "KeyW")
-        player1.velocityY = -3;
-    else if (e.code == "KeyS")
-        player1.velocityY = 3;
-    
-    //player2
-    if(e.code == "ArrowUp")
-        player2.velocityY = -3;
-    else if (e.code == "ArrowDown")
-        player2.velocityY = 3;
-        
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        if (player === 'player1') {
+            player1.velocityY = (event.key === 'ArrowUp') ? -5 : 5;
+            socket.send(JSON.stringify({
+                type: 'player_move',
+                player: player,
+                velocityY: player1.velocityY,
+                game_group: gameGroup
+            }));
+        } else {
+            player2.velocityY = (event.key === 'ArrowUp') ? -5 : 5;
+            socket.send(JSON.stringify({
+                type: 'player_move',
+                player: player,
+                velocityY: player2.velocityY,
+                game_group: gameGroup
+            }));
+        }
+    }
 }
 
-function stopPlayer(e){
-
-    //player1
-    if(e.code == "KeyW" || e.code == "KeyS")
-        player1.velocityY = 0;
-    
-    //player2
-    if(e.code == "ArrowUp" || e.code == "ArrowDown")
-        player2.velocityY = 0;
+function stopPlayer(event, player, socket, gameGroup){
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        if (player === 'player1') {
+            player1.velocityY = 0;
+        } else {
+            player2.velocityY = 0;
+        }
+        socket.send(JSON.stringify({
+            type: 'player_move',
+            player: player,
+            velocityY: 0,
+            game_group: gameGroup
+        }));
+    }
 }
 
 function outOfBounds(yPos)
