@@ -37,7 +37,7 @@ function attachRegisterFormListener() {
         // Store the tokens and expiration time in localStorage or a cookie
         localStorage.setItem("access", responseData.access);
         localStorage.setItem("refresh", responseData.refresh);
-        const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 30 minutes
+        const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 30 minutes
         localStorage.setItem("access_token_expiry", accessTokenExpiry);
         renderPage("home");
       } else if (!response.ok && response.status == 429) {
