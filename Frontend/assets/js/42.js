@@ -36,7 +36,7 @@ window.onload = async function() {
             // Store the access token and other data
             localStorage.setItem('access', data.access);
             localStorage.setItem('refresh', data.refresh);
-            const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+            const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
             localStorage.setItem('access_token_expiry', accessTokenExpiry);
             localStorage.setItem('username', data.username);
             localStorage.setItem('email', data.email);
