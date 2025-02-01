@@ -63,6 +63,10 @@ async function renderElement(element) {
     } else if (element === "settings") {
       await loadSettingsData();
       attachSettingsFormListener();
+    } else if (element === "newtournament") {
+      attachTournamentFormListener();
+    } else if (element === "jointournament") {
+      loadAvailableTournaments();
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {
