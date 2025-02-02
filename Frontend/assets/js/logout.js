@@ -13,7 +13,7 @@ async function logout() {
       body: JSON.stringify({ refresh }),
       credentials: "include", // Include cookies in the request
     });
-    close.socket();
+    socket.close();
     if (response.ok) {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");

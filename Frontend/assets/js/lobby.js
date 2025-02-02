@@ -8,7 +8,11 @@ function lobbyLoad() {
   console.log("WebSocket user:", currentUser);
 
     const token = localStorage.getItem('access');
-    socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
+    if (typeof socket === 'undefined' || socket.readyState === WebSocket.CLOSED) 
+        socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
+
+    else
+        socket.send(JSON.stringify({type: 'lobby'}));
 
     socket.onmessage = function (event) {
         data = JSON.parse(event.data);
@@ -89,8 +93,11 @@ function lobbyLoad() {
                 console.log('Game started with:', data.from);
             }
         }
-        else if (data.type === "accept_invite")
+        else if (data.type === "start_game")
+        {
             renderPage("pong");
+        }    
+        
         else if (data.type === "close_connection")
             socket.close();
     };
