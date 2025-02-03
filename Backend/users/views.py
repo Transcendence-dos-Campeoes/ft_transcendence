@@ -235,8 +235,7 @@ def getFriendProfile(request, username):
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'photo_URL': user.profile_URL,
-			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
