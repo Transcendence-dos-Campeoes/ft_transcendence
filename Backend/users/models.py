@@ -3,20 +3,13 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 class SiteUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
-        serializer = SiteUserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'two_fa_enabled': user.two_fa_enabled,
-                'created_time': user.created_time,
-                'profile_image': user.profile_image.url if user.profile_image else None,
-                'is_staff': user.is_staff,
-                'is_active': user.is_active,
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
@@ -24,9 +17,6 @@ class SiteUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         return self.create_user(username, email, password, **extra_fields)
-    
-    def get_by_natural_key(self, username):
-        return self.get(username=username)
 
 class SiteUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
@@ -34,7 +24,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     two_fa_enabled = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
-    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')  # Add this line
+    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
