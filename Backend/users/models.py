@@ -3,13 +3,21 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 class SiteUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(username=username, email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+        serializer = SiteUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'two_fa_enabled': user.two_fa_enabled,
+                'created_time': user.created_time,
+                'profile_URL': user.profile_URL,
+                'profile_image': user.profile_image.url if user.profile_image else None,
+                'is_staff': user.is_staff,
+                'is_active': user.is_active,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def create_superuser(self, username, email, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
