@@ -56,11 +56,13 @@ async function renderElement(element) {
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
       await loadProfileData();
-      attachProfileFormListener();
     } else if (element === "overview") {
       loadChart();
     } else if (element === "invites") {
       new FriendSystem();
+    } else if (element === "settings") {
+      await loadSettingsData();
+      attachSettingsFormListener();
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {

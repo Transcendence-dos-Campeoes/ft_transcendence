@@ -46,6 +46,7 @@ async function renderPage(page) {
       console.log("User not authenticated, redirecting to login page.");
       page = "login";
     }
+
   }
 
   try {
@@ -72,6 +73,7 @@ async function renderPage(page) {
       attachRegisterFormListener();
     } else if (page === "home") {
       updateUserProfile();
+	  load_profile_pic();
       renderElement("overview");
       lobbyLoad();
     }
@@ -149,7 +151,7 @@ async function refreshToken() {
     const responseData = await response.json();
     if (response.ok) {
       localStorage.setItem("access", responseData.access);
-      const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+      const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
       console.log(
         "New Access Token Expiry:",
         new Date(accessTokenExpiry).toLocaleString()
@@ -165,4 +167,32 @@ async function refreshToken() {
     console.error("Error refreshing Access token:", error);
     return false;
   }
+}
+
+async function load_profile_pic()
+{
+	try {
+		const response = await fetch("http://localhost:8000/api/users/profile/", {
+		  headers: {
+			Authorization: `Bearer ${localStorage.getItem("access")}`,
+		  },
+		});
+	
+		if (!response.ok) {
+		  throw new Error("Failed to fetch profile data");
+		}
+	
+		const data = await response.json();
+		localStorage.setItem('photo_URL', data.photo_URL);
+		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
+
+		const photoElement = document.getElementById('photo_URL');
+		if (photoElement) {
+		  photoElement.src = data.photo_URL;
+		}
+	}
+	catch
+	{
+		displayMessage("Failed to load profile data", MessageType.ERROR);
+	}
 }
