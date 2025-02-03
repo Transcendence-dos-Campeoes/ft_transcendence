@@ -76,7 +76,11 @@ async function renderPage(page) {
       renderElement("overview");
       lobbyLoad();
     }
-    history.pushState({ page: page }, "", `/${page}`);
+    else if (page==="pong")
+    { 
+      startGame(data.game_group, socket);
+    }
+    history.pushState({ page: page }, '', `/${page}`);
     router.currentPage = page;
   } catch (error) {
     console.error("Error loading page:", error);

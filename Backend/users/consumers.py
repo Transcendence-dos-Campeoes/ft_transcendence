@@ -8,6 +8,7 @@ from .models import SiteUser
 import uuid
 
 channel_user_map = {}
+group_channel_map = {}
 
 def get_channel_name(username):
     for channel_name, user in channel_user_map.items():
@@ -31,12 +32,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.close()
 
     def close_connection(self, event):
-        data = {
-                "type": "close_connection",
-            }
-        self.send(text_data=json.dumps(data))
-        print(data)
-        self.close()
+        self.close()    
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)("online_players", self.channel_name)
@@ -46,15 +42,20 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
+        if data['type'] == 'lobby':
+            self.send_online_players()
         if data['type'] == 'invite':
             self.handle_invite(data)
         elif data['type'] == 'accept_invite':
             self.handle_accept_invite(data)
-        if data['type'] == 'player_move':
+        elif data['type'] == 'player_move':
             self.handle_player_move(data)
-        # if data['type'] == 'close_connection':
-
-        # if data['type'] == 'websocket'
+        elif data['type'] == 'ready':
+            self.starting_game(data)
+        elif data['type'] == 'game_update':
+            self.handle_game_update(data)
+        elif data['type'] == 'end_game':
+            self.handle_end_game(data)
 
     def handle_invite(self, data):
         async_to_sync(self.channel_layer.group_send)(
@@ -85,7 +86,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(data))
 
     def broadcast_online_players(self):
-        players_data = [{"username": user.username} for user in channel_user_map.values ()]
+        players_data = [{"username": user.username} for user in channel_user_map.values()]
         async_to_sync(self.channel_layer.group_send)(
             "online_players",
             {
@@ -106,23 +107,28 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.send(text_data)
             
     def accept_invite(self, event):
-
-        if 'to' in event     and event['to'] == self.scope['user'].username:
+        if 'to' in event and event['to'] == self.scope['user'].username:
 
             # Add both players to the game group
             game_group_name = f"game_{uuid.uuid4()}"
             async_to_sync(self.channel_layer.group_add)(game_group_name, self.channel_name)
             async_to_sync(self.channel_layer.group_add)(game_group_name, self.get_channel_name(event['from']))
 
+            if game_group_name not in group_channel_map:
+                group_channel_map[game_group_name] = []
+            group_channel_map[game_group_name].append(self.channel_name)
+            group_channel_map[game_group_name].append(self.get_channel_name(event['from']))
+
             self.send(text_data=json.dumps({
-                'type': 'accept_invite',
+                'type': 'start_game',
                 'from': event['from'],
                 'game_group': game_group_name,
                 'player': 'player2'
             }))
 
-            self.send_to_channel(event['from'], {
-                'from': self.scope['user'].username,
+            async_to_sync(self.channel_layer.group_send)(game_group_name, {
+                'type': 'start_game',
+                'from': event['from'],
                 'game_group': game_group_name,
                 'player': 'player1'
             })
@@ -138,30 +144,69 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     
     def send_to_channel(self, username, message):
         channel_name = self.get_channel_name(username)
-        print(message)
         if channel_name:
             async_to_sync(self.channel_layer.send)(channel_name, {
-                'type': 'accept_invite',
+                'type': 'start_game',
                 "text": json.dumps(message)})
 
-    def game_update(self, event):
+    def start_game(self, event):
+        if (event['from'] == self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+    
+    def starting_game(self, event):
         self.send(text_data=json.dumps(event))
 
+    def handle_player_move(self, data):
+        print(data)
+        async_to_sync(self.channel_layer.group_send)(
+            data['game_group'], 
+            {
+                "type": "player_move",
+                "player": data['player'],
+                "velocityY": data['velocityY'],
+                "user": data['user']
+            })
+    
+    def handle_game_update(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+        data['game_group'], 
+        {
+            "type": "game_update",
+            "player1": data['player1'],
+            "player2": data['player2'],
+            "ball": data['ball'],
+            "game_group": data['game_group'],
+            "user": data['user'],
+            "player1Score": data['player1Score'],
+            "player2Score": data['player2Score']
+        }
+        )
+    
+    def handle_end_game(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+        data['game_group'], 
+        {
+            "type": 'end_game',
+            "user": data['user'],
+            "game_group":  data['game_group'],
+            "player1Score": data['player1Score'],
+            "player2Score": data['player2Score']
+        })
+        if data['game_group'] in group_channel_map:
+            for channel_name in group_channel_map[data['game_group']]:
+                async_to_sync(self.channel_layer.group_discard)(data['game_group'], channel_name)
+            del group_channel_map[data['game_group']]
 
-    # def handle_player_move(self, data):
-    #     # Update player velocity based on received data
-    #     if data['player'] == 1:
-    #         player1['velocityY'] = data['velocityY']
-    #     elif data['player'] == 2:
-    #         player2['velocityY'] = data['velocityY']
 
-    #     # Broadcast the updated game state to both players
-    #     async_to_sync(self.channel_layer.group_send)(
-    #         data['game_group'],
-    #         {
-    #             'type': 'game_update',
-    #             'player': data['player']
-    #             'player2': player2,
-    #             'ball': ball
-    #         }
-    #     )
+    def game_update(self, event):
+        if (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+        
+    def player_move(self, event):
+        # if (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+
+    def end_game(self, event):
+        self.send(text_data=json.dumps(event))
+
+    

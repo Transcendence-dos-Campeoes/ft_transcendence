@@ -1,12 +1,21 @@
+let socket;
+let data;
+
+
 function lobbyLoad() {
   console.log("pathname:", window.location.pathname);
   const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
   console.log("WebSocket user:", currentUser);
-  const token = localStorage.getItem('access');
-  const socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
+
+    const token = localStorage.getItem('access');
+    if (typeof socket === 'undefined' || socket.readyState === WebSocket.CLOSED) 
+        socket = new WebSocket(`ws://localhost:8000/ws/users/online-players/?token=${token}`);
+
+    else
+        socket.send(JSON.stringify({type: 'lobby'}));
 
     socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
+        data = JSON.parse(event.data);
         console.log("WebSocket message received:", data); // Debugging line
 
         if (data.type === 'online.players.update')
@@ -84,8 +93,11 @@ function lobbyLoad() {
                 console.log('Game started with:', data.from);
             }
         }
-        else if (data.type === "accept_invite")
-            startGame(data.game_group, socket);
+        else if (data.type === "start_game")
+        {
+            renderPage("pong");
+        }    
+        
         else if (data.type === "close_connection")
             socket.close();
     };

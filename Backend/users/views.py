@@ -96,7 +96,7 @@ def logoutUser(request):
         channel_name = get_channel_name(user.username)
         if channel_name:
             async_to_sync(channel_layer.send)(
-                "online_players",
+                channel_name,
                 {
                     "type": "close_connection"
                 }
