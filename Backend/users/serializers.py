@@ -10,8 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class SiteUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
-        fields = ['id', 'username', 'email', 'password', 'two_fa_enabled', 'created_time', 'profile_URL', 'profile_image', 'is_staff', 'is_active']
-        read_only_fields = ['id', 'created_time', 'profile_URL', 'is_staff', 'is_active']
+        fields = ['id', 'username', 'email', 'password', 'two_fa_enabled', 'created_time', 'profile_image', 'is_staff', 'is_active']
+        read_only_fields = ['id', 'created_time', 'is_staff', 'is_active']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
