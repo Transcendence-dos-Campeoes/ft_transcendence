@@ -201,6 +201,82 @@ def getUserProfile(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFriendProfile(request, username):
+    try:
+        user = SiteUser.objects.filter(username=username).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+
+        matches = Match.get_player_matches(user)
+        
+        # Get tournament stats
+        tournament_participations = TournamentPlayer.objects.filter(
+            player=user
+        ).select_related('tournament')
+        
+        total_tournaments = tournament_participations.count()
+        tournaments_won = tournament_participations.filter(status='winner').count()
+        best_position = tournament_participations.filter(
+            status__in=['winner', 'eliminated']
+        ).order_by('seed').first()
+        
+        tournament_win_rate = (tournaments_won / total_tournaments * 100) if total_tournaments > 0 else 0
+
+        # Calculate match stats
+        total_matches = matches.count()
+        wins = matches.filter(winner=user).count()
+        losses = total_matches - wins
+        win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
+
+        profile_data = {
+            'username': user.username,
+            'created_time': user.created_time,
+            'photo_URL': user.profile_URL,
+			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'stats': {
+                'total_matches': total_matches,
+                'wins': wins,
+                'losses': losses,
+                'win_rate': round(win_rate, 2),
+                'tournament_stats': {
+                    'total_tournaments': total_tournaments,
+                    'tournaments_won': tournaments_won,
+                    'best_position': best_position.seed if best_position else None,
+                    'tournament_win_rate': round(tournament_win_rate, 2)
+                }
+            },
+            'recent_matches': matches[:5].values(
+                'id',
+                'player1__username',
+                'player2__username',
+                'player1_score',
+                'player2_score',
+                'created_at',
+                'winner__username'
+            ),
+            'tournament_history': [
+                {
+                    'id': t.tournament.id,
+                    'name': t.tournament.name,
+                    'date': t.tournament.created_at,
+                    'position': t.seed,
+                    'status': t.status,
+                    'total_players': t.tournament.players.count()
+                }
+                for t in tournament_participations.order_by('-tournament__created_at')[:5]
+            ]
+        }
+        
+        return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserSettings(request):

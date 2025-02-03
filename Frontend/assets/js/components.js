@@ -3,6 +3,7 @@ const elements = {
   elements: {
     overview: "/components/overview.html",
     profile: "/components/profile.html",
+    friendProfile: "/components/profile.html",
     settings: "/components/settings.html",
     matches: "/components/matches.html",
     tournaments: "/components/tournaments.html",
@@ -53,9 +54,10 @@ async function renderElement(element) {
     content.innerHTML = html;
     elements.currentElement = element;
 
+    const currentUser = localStorage.getItem("username");
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
-      await loadProfileData();
+      await loadProfileData(currentUser);
     } else if (element === "overview") {
       loadChart();
     } else if (element === "invites") {

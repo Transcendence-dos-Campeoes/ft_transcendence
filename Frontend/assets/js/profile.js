@@ -1,22 +1,25 @@
-async function loadProfileData() {
+async function loadProfileData(username) {
   try {
-    const response = await fetch("http://localhost:8000/api/users/profile/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetch(
+      `http://localhost:8000/api/users/profile/${username}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access")}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch profile data");
     }
 
     const data = await response.json();
-	const profileImg = document.getElementById("profile-picture");
-	console.log(profileImg);
-	console.log(data.profile_image);
-	if (profileImg && data.profile_image) {
-		profileImg.src = data.profile_image;
-	}
+    const profileImg = document.getElementById("profile-picture");
+    console.log(profileImg);
+    console.log(data.profile_image);
+    if (profileImg && data.profile_image) {
+      profileImg.src = data.profile_image;
+    }
     // Format and display creation date
     const createdDate = new Date(data.created_time).toLocaleDateString(
       "pt-PT",
@@ -169,7 +172,7 @@ async function deleteAccount() {
 
 function updateUserProfile() {
   const username = localStorage.getItem("username");
-  
+
   if (!username) return;
 
   const userDisplay = document.querySelector(".user-display");
