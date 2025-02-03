@@ -14,10 +14,19 @@ from drf_yasg import openapi
 import requests
 
 from .models import TournamentPlayer, TournamentMatch, Tournament
-from .serializers import TournamentSerializer, TournamentPlayerSerializer
+from .serializers import TournamentSerializer, TournamentPlayerSerializer, StartTournamentSerializer
 from matches.models import Match
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_tournaments(request):
+    tournaments = Tournament.objects.filter(
+            status='pending'
+        )
+    serializer = TournamentSerializer(tournaments, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_tournament(request):
     """Create a new tournament"""
@@ -35,15 +44,6 @@ def create_tournament(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_tournaments(request):
-    tournaments = Tournament.objects.filter(
-            status='pending'
-        )
-    serializer = TournamentSerializer(tournaments, many=True)
-    return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -75,3 +75,40 @@ def create_tournament_player(request, tournament_id):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_tournament(request, tournament_id):
+    try:
+        tournament = Tournament.objects.get(id=tournament_id)
+        
+        # Check if user is creator
+        if tournament.creator != request.user:
+            return Response(
+                {'error': 'Only creator can start tournament'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        serializer = StartTournamentSerializer(
+            tournament,
+            data=request.data,
+            context={'request': request}
+        )
+        
+        if serializer.is_valid():
+            tournament = serializer.save()
+            return Response(
+                TournamentSerializer(tournament).data,
+                status=status.HTTP_200_OK
+            )
+            
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
+    except Tournament.DoesNotExist:
+        return Response(
+            {'error': 'Tournament not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
