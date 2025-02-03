@@ -21,6 +21,8 @@ import requests
 from .consumers import OnlinePlayersConsumer, get_channel_name
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -159,8 +161,7 @@ def getUserProfile(request):
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'photo_URL': user.profile_URL,
-			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -212,7 +213,7 @@ def getUserSettings(request):
             'email': user.email,
             'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
-			'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
         }
         return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
@@ -392,26 +393,30 @@ def oauth_callback(request):
         email = user_info['email']
         photo_URL = user_info['image']['link']  # Correctly extract the photo URL
 
+        # Download the image
+        image_response = requests.get(photo_URL)
+        if image_response.status_code != 200:
+            return Response({'error': 'Failed to download profile image'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Create or authenticate user
         user, created = SiteUser.objects.get_or_create(username=username, defaults={'email': email})
         if created:
             user.set_unusable_password()
-            user.profile_URL = photo_URL
+            image_name = f"profile_images/{username}.jpg"
+            user.profile_image.save(image_name, ContentFile(image_response.content))
             user.save()
             print(f"User {username} created with an unusable password.")
         else:
-            user.profile_URL = photo_URL
             user.email = email
             user.save()
 
-        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'username': username,
             'email': user.email,
-            'photo_URL': user.profile_URL,
+            'profile_image': request.build_absolute_uri(user.profile_image.url),
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
     except Exception as e:

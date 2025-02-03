@@ -12,7 +12,6 @@ class SiteUserManager(BaseUserManager):
                 'email': user.email,
                 'two_fa_enabled': user.two_fa_enabled,
                 'created_time': user.created_time,
-                'profile_URL': user.profile_URL,
                 'profile_image': user.profile_image.url if user.profile_image else None,
                 'is_staff': user.is_staff,
                 'is_active': user.is_active,
@@ -35,7 +34,6 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     two_fa_enabled = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
-    profile_URL = models.URLField(default="https://www.shutterstock.com/image-vector/funny-art-borat-illustration-glasses-600nw-2157502681.jpg")
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')  # Add this line
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
