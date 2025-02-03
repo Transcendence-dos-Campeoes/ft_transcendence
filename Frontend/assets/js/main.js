@@ -146,7 +146,7 @@ async function refreshToken() {
     const responseData = await response.json();
     if (response.ok) {
       localStorage.setItem("access", responseData.access);
-      const accessTokenExpiry = new Date().getTime() + 10 * 60 * 1000; // 10 minutes for testing
+      const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
       console.log(
         "New Access Token Expiry:",
         new Date(accessTokenExpiry).toLocaleString()

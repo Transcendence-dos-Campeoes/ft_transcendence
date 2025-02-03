@@ -19,6 +19,16 @@ async function attachSettingsFormListener() {
     const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
     const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
+    const profilePictureInput = document.getElementById("profile-picture-input");
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("email", email);
+    formData.append("two_factor_enabled", twoFactorEnabled);
+
+    if (profilePictureInput && profilePictureInput.files.length > 0) {
+      formData.append("profile_image", profilePictureInput.files[0]);
+    }
 
     try {
       loadingOverlay.show();
@@ -27,14 +37,9 @@ async function attachSettingsFormListener() {
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("access")}`,
           },
-          body: JSON.stringify({
-            username: username,
-            email: email,
-            two_factor_enabled: twoFactorEnabled,
-          }),
+          body: formData,
         }
       );
 
@@ -50,6 +55,11 @@ async function attachSettingsFormListener() {
       localStorage.setItem("username", data.username);
       document.getElementById("email-input").value = data.email;
       document.getElementById("2fa-toggle").checked = data.two_factor_enabled;
+
+      // Update profile picture
+      if (data.profile_image) {
+        document.getElementById("profile-picture").src = data.profile_image;
+      }
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
@@ -124,6 +134,10 @@ async function loadSettingsData() {
     document.getElementById("email-input").value = data.email;
     document.getElementById("profile-username").textContent = data.username;
     document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
+    const profileImg = document.getElementById("profile-picture-settings");
+	if (profileImg && data.profile_image) {
+		profileImg.src = data.profile_image;
+	}
 
     // Format and display creation date
     const createdDate = new Date(data.created_time).toLocaleDateString(

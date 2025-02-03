@@ -10,8 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class SiteUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
-        fields = '__all__'
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'username', 'email', 'two_fa_enabled', 'created_time', 'profile_URL', 'profile_image', 'is_staff', 'is_active']
+        read_only_fields = ['id', 'created_time', 'profile_URL', 'is_staff', 'is_active']
 
     def create(self, validated_data):
         user = SiteUser(
@@ -35,10 +35,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        # Add custom claims
         token['username'] = user.username
         token['email'] = user.email
-        token['is_staff'] = user.is_staff
         return token
 
     def validate(self, attrs):
@@ -50,7 +48,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user is None:
             raise serializers.ValidationError('Invalid username or password')
 
-        user.online_status = True
         user.save()
         
         refresh = self.get_token(user)
@@ -59,7 +56,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             'access': str(refresh.access_token),
             'username': user.username,
             'email': user.email,
-            'is_staff': user.is_staff,
         }
     
 
