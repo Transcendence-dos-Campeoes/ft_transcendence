@@ -29,7 +29,7 @@ class Match(models.Model):
     @classmethod
     def get_player_matches(cls, user):
         return cls.objects.filter(
-            Q(player1=user) | Q(player2=user)
+            Q(player1=user) | Q(player2=user), status='finished'
         ).select_related('player1', 'player2', 'winner')
 
     def __str__(self):
