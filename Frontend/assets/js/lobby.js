@@ -43,7 +43,7 @@ function lobbyLoad() {
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <a class="dropdown-item" href="#" 
-                                       onclick="renderElement('friendProfile'); loadProfileData('${player.username}')">
+                                       onclick="renderElement('friendProfile'); viewProfile('${player.username}')">
                                         <i class="bi bi-person me-2"></i>View Profile
                                     </a>
                                 </li>

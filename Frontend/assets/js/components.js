@@ -54,10 +54,9 @@ async function renderElement(element) {
     content.innerHTML = html;
     elements.currentElement = element;
 
-    const currentUser = localStorage.getItem("username");
     console.log("🎯 Initializing component:", element);
     if (element === "profile") {
-      await loadProfileData(currentUser);
+      await loadProfileData();
     } else if (element === "overview") {
       loadChart();
     } else if (element === "invites") {
