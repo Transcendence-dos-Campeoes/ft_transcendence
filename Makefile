@@ -6,7 +6,7 @@ up:
 	@if [ ! -d "${HOME}/ft_transcendence/Database/" ]; then \
 		mkdir -p ${HOME}/ft_transcendence/Database/; \
 	fi
-	@if [ ! -d "${HOME}/ft_transcendence/Backend/profile_images/" ]; then \
+	@if [ ! -d "${HOME}/ft_transcendence/Backend/media/profile_images/" ]; then \
 		mkdir -p ${HOME}/ft_transcendence/Backend/media/profile_images; \
 	fi
 	wget --output-document=${HOME}/ft_transcendence/Backend/media/profile_images/default.jpg https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png

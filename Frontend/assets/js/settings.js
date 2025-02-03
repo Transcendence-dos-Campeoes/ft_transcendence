@@ -19,7 +19,9 @@ async function attachSettingsFormListener() {
     const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
     const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
-    const profilePictureInput = document.getElementById("profile-picture-input");
+    const profilePictureInput = document.getElementById(
+      "profile-picture-input"
+    );
 
     const formData = new FormData();
     formData.append("username", username);
@@ -58,7 +60,8 @@ async function attachSettingsFormListener() {
 
       // Update profile picture
       if (data.profile_image) {
-        document.getElementById("profile-picture").src = data.profile_image;
+        document.getElementById("profile-picture-settings").src =
+          data.profile_image;
       }
 
       // Show success message
@@ -135,9 +138,9 @@ async function loadSettingsData() {
     document.getElementById("profile-username").textContent = data.username;
     document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
     const profileImg = document.getElementById("profile-picture-settings");
-	if (profileImg && data.profile_image) {
-		profileImg.src = data.profile_image;
-	}
+    if (profileImg && data.profile_image) {
+      profileImg.src = data.profile_image;
+    }
 
     // Format and display creation date
     const createdDate = new Date(data.created_time).toLocaleDateString(

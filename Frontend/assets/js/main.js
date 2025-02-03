@@ -46,7 +46,6 @@ async function renderPage(page) {
       console.log("User not authenticated, redirecting to login page.");
       page = "login";
     }
-
   }
 
   try {
@@ -73,7 +72,7 @@ async function renderPage(page) {
       attachRegisterFormListener();
     } else if (page === "home") {
       updateUserProfile();
-	  load_profile_pic();
+      load_profile_pic();
       renderElement("overview");
       lobbyLoad();
     }
@@ -169,30 +168,27 @@ async function refreshToken() {
   }
 }
 
-async function load_profile_pic()
-{
-	try {
-		const response = await fetch("http://localhost:8000/api/users/profile/", {
-		  headers: {
-			Authorization: `Bearer ${localStorage.getItem("access")}`,
-		  },
-		});
-	
-		if (!response.ok) {
-		  throw new Error("Failed to fetch profile data");
-		}
-	
-		const data = await response.json();
-		localStorage.setItem('photo_URL', data.photo_URL);
-		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
+async function load_profile_pic() {
+  try {
+    const response = await fetch("http://localhost:8000/api/users/profile/", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
 
-		const photoElement = document.getElementById('photo_URL');
-		if (photoElement) {
-		  photoElement.src = data.photo_URL;
-		}
-	}
-	catch
-	{
-		displayMessage("Failed to load profile data", MessageType.ERROR);
-	}
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile data");
+    }
+
+    const data = await response.json();
+    localStorage.setItem("photo_URL", data.photo_URL);
+    // document.getElementById('photo_URL'.url = localStorage.photo_URL);
+
+    const photoElement = document.getElementById("photo_URL");
+    if (photoElement) {
+      photoElement.src = data.photo_URL;
+    }
+  } catch {
+    displayMessage("Failed to load profile data", MessageType.ERROR);
+  }
 }

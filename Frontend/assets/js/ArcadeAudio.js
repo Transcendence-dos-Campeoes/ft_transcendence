@@ -3,7 +3,7 @@ class ArcadeAudio {
     this.audio = new Audio("/assets/audio/arcade-music.mp3");
     this.audio.loop = true;
     this.audio.volume = 0;
-    this.isPlaying = false;
+    this.isPlaying = true;
     this.setupButtons();
     this.observeZoom();
   }
@@ -37,6 +37,11 @@ class ArcadeAudio {
             this.fadeOut();
             rightButton.classList.remove("active");
             this.isPlaying = false;
+          }
+          else if (screen.classList.contains("zoom-out")) {
+            this.fadeIn();
+            rightButton.classList.add("active");
+            this.isPlaying = true;
           }
         }
       });
