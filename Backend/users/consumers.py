@@ -168,6 +168,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             })
     
     def handle_game_update(self, data):
+        print(data)
         async_to_sync(self.channel_layer.group_send)(
         data['game_group'], 
         {
