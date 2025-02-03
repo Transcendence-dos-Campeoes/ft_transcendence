@@ -24,7 +24,12 @@ class SiteUserSerializer(serializers.ModelSerializer):
         return user
 
     def validate_password(self, value):
-        # Add custom password validation if needed
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+        if not any(char.isdigit() for char in value):
+            raise serializers.ValidationError("Password must contain at least one digit")
+        if not any(char.isalpha() for char in value):
+            raise serializers.ValidationError("Password must contain at least one letter")
         return value
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
