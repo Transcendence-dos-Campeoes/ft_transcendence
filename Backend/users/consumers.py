@@ -150,8 +150,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'player': 'player1'
             })
             match_serializer = MatchSerializer(data={
-            'player1': SiteUser.objects.get(username=event['from']).id,
-            'player2': SiteUser.objects.get(username=event['to']).id,
+            'player2': SiteUser.objects.get(username=event['from']).id,
+            'player1': SiteUser.objects.get(username=event['to']).id,
             'status': 'active'
             })
             if match_serializer.is_valid():
@@ -252,7 +252,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 print ("Nao há arroz")
             match.player1_score = data['player1Score']
             match.player2_score = data ['player2Score']
-            match.winner = SiteUser.objects.get(username=user1) if data['player1Score'] > data['player2Score'] else SiteUser.objects.get(username=user2)
+            if data['player1Score'] > data['player2Score']:
+                match.winner = SiteUser.objects.get(username=user1)
+            else:
+                match.winner = SiteUser.objects.get(username=user2)
             match.status = 'finished'
             match.save()
 

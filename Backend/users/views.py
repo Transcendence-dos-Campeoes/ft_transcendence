@@ -59,7 +59,7 @@ def create_user(request):
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': serializer.data
+            'user': serializer.data['username'],
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
