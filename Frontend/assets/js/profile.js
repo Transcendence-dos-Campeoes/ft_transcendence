@@ -142,7 +142,10 @@ async function loadProfileData() {
 }
 
 async function viewProfile(username) {
+  const loadingOverlay = new LoadingOverlay();
+
   try {
+    loadingOverlay.show();
     const response = await fetch(
       `http://localhost:8000/api/users/profile/${username}/`,
       {
@@ -284,6 +287,8 @@ async function viewProfile(username) {
       .join("");
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
 

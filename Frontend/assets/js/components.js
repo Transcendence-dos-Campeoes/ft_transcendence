@@ -74,6 +74,8 @@ async function renderElement(element) {
       attachTournamentFormListener();
     } else if (element === "jointournament") {
       loadAvailableTournaments();
+    } else if (element === "matches") {
+      loadMatches();
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {
