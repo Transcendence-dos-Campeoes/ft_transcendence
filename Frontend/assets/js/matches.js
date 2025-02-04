@@ -37,8 +37,11 @@ async function loadMatches() {
         (matche) => `
           <tr>
           <td>${new Date(matche.created_at).toLocaleDateString()}</td>
-              <td>${matche.player1__username}</td>
-              <td>${matche.player2__username}</td>
+              <td>${
+                  matche.player1__username === data.current_user
+                    ? matche.player2__username
+                    : matche.player1__username
+                }</td>
               <td>${matche.player1_score + "/" + matche.player2_score}</td>
               <td>${
                 matche.winner__username

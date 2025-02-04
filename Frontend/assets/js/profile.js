@@ -108,15 +108,17 @@ async function loadProfileData() {
         (match) => `
             <tr>
                 <td>${new Date(match.created_at).toLocaleDateString()}</td>
-                <td>${match.player1__username} vs ${
-          match.player2__username
-        }</td>
+                <td>${
+                  match.player1__username === data.username
+                    ? match.player2__username
+                    : match.player1__username
+                }</td>
+                <td>${match.player1_score} - ${match.player2_score}</td>
                 <td>${
                   match.winner__username === data.username
                     ? '<span class="text-success">Win</span>'
                     : '<span class="text-danger">Loss</span>'
                 }</td>
-                <td>${match.player1_score} - ${match.player2_score}</td>
             </tr>
         `
       )
@@ -257,15 +259,17 @@ async function viewProfile(username) {
         (match) => `
             <tr>
                 <td>${new Date(match.created_at).toLocaleDateString()}</td>
-                <td>${match.player1__username} vs ${
-          match.player2__username
-        }</td>
+                <td>${
+                  match.player1__username === data.username
+                    ? match.player2__username
+                    : match.player1__username
+                }</td>
+                <td>${match.player1_score} - ${match.player2_score}</td>
                 <td>${
                   match.winner__username === data.username
                     ? '<span class="text-success">Win</span>'
                     : '<span class="text-danger">Loss</span>'
                 }</td>
-                <td>${match.player1_score} - ${match.player2_score}</td>
             </tr>
         `
       )
