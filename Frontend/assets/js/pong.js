@@ -49,10 +49,42 @@ let player1Score = 0;
 let player2Score = 0;
 let isHost = false;
 let actualPlayer
+let gameRunning = true;
+let animationFrameId;
 
+function resetValues() {
+    player1 = {
+        x: 10,
+        y: boardHeight / 2,
+        width: playerWidth,
+        height: playerHeight,
+        velocityY: playerVelocityY
+    };
+
+    player2 = {
+        x: boardWidth - playerWidth - 10,
+        y: boardHeight / 2,
+        width: playerWidth,
+        height: playerHeight,
+        velocityY: playerVelocityY
+    };
+
+    ball = {
+        x: boardWidth / 2,
+        y: boardHeight / 2,
+        width: ballWidth,
+        height: ballHeight,
+        velocityX: ballVelocityX,
+        velocityY: ballVelocityY
+    };
+
+    player1Score = 0;
+    player2Score = 0;
+    gameRunning = true;
+}
 
 function startGame(gameGroup, socket) {
-    
+        resetValues();
         if (data['player'] === "player1")
         {
             isHost = true;
@@ -66,21 +98,9 @@ function startGame(gameGroup, socket) {
             user: localStorage.getItem("username")
         }));
         initializeGame(socket, gameGroup, actualPlayer);
-        socket.onmessage = function(event) {
+        socket.onmessage = async function(event) {
             const data = JSON.parse(event.data);
             console.log("Game message received:", data); // Debugging line
-            
-            if (!document.keyListenersAdded) {
-                document.addEventListener("keydown", function(event) {
-                    movePlayer(event, actualPlayer, socket, gameGroup);
-                });
-    
-                document.addEventListener("keyup", function(event) {
-                    stopPlayer(event, actualPlayer, socket, gameGroup);
-                });
-    
-                document.keyListenersAdded = true; // Prevents multiple event bindings
-            }
             
             if (data.type === 'game_update') {
                 player1 = data.player1;
@@ -98,7 +118,8 @@ function startGame(gameGroup, socket) {
             }
             if (data.type === 'end_game')
             {
-                console.log("AQUI");
+                //cancelAnimationFrame(animationFrameId);
+                await wait(1200);
                 renderPage("home");
                 return;
             }
@@ -115,14 +136,24 @@ function initializeGame(socket, gameGroup, actualPlayer) {
     board.width = boardWidth;
     context = board.getContext("2d");
 
-    // Initial draw
-    
-    // Start the game loop
-    requestAnimationFrame(() => update(context, socket, gameGroup));
+    if (!gameRunning) return;
+
+    animationFrameId = requestAnimationFrame(() => update(context, socket, gameGroup));
     draw(context);
 
     // Handle player movement
+            
+    if (!document.keyListenersAdded) {
+        document.addEventListener("keydown", function(event) {
+            movePlayer(event, actualPlayer, socket, gameGroup);
+        });
 
+        document.addEventListener("keyup", function(event) {
+            stopPlayer(event, actualPlayer, socket, gameGroup);
+        });
+
+        document.keyListenersAdded = true; // Prevents multiple event bindings
+    }
 }
 
 function wait(ms) {
@@ -131,9 +162,9 @@ function wait(ms) {
 
 async function update(context, socket, gameGroup) {
 
-    requestAnimationFrame(() => update(context, socket, gameGroup));
+    animationFrameId = requestAnimationFrame(() => update(context, socket, gameGroup));
     // Update player positions
-    if (isHost) {
+    if (isHost && gameRunning) {
         player1.y += player1.velocityY;
         player2.y += player2.velocityY;
 
@@ -184,6 +215,7 @@ async function update(context, socket, gameGroup) {
     draw(context);
     if (player1Score === 5 || player2Score === 5)
     {
+        gameRunning = false;
         context.clearRect(0, 0, boardWidth, boardHeight);
         if (player1Score === 5)
         {
@@ -195,9 +227,8 @@ async function update(context, socket, gameGroup) {
         {
             context.fillStyle = "white  ";
             context.font = "60px Arial";
-            context.fillText('Player 2 wins', 20, 20);
+            context.fillText('Player 2 wins', 20, 100);
         }
-        await wait(1200);
         const currentUser = localStorage.getItem("username");
         socket.send(JSON.stringify({
             type: 'end_game',
@@ -206,6 +237,7 @@ async function update(context, socket, gameGroup) {
             player1Score: player1Score,
             player2Score: player2Score
         }));
+        cancelAnimationFrame(animationFrameId);
     }
 }
 

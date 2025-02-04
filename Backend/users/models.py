@@ -77,3 +77,4 @@ class Friend(models.Model):
     def decline(self):
         self.status = 'declined'
         self.save()
+
