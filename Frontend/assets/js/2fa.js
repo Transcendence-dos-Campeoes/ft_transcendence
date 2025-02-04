@@ -15,6 +15,7 @@ function checkAndRunTwoFA() {
 		console.log(currentUrl);
 	}
 }
+
 async function two_fa_enable() {
 	try {
 		const username = localStorage.getItem("username");
@@ -50,5 +51,40 @@ async function two_fa_enable() {
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("An error occurred while enabling 2FA.", MessageType.ERROR);
+	}
+}
+
+async function verifyOtpCode() {
+	try {
+		const otpCode = document.getElementById("otpCode").value;
+		const username = localStorage.getItem("username");
+		console.log("OTP Code:", otpCode);
+
+		const response = await fetch(
+			"http://localhost:8000/api/users/twofa/verify/",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${localStorage.getItem("access")}`,
+				},
+				body: JSON.stringify({ username, otpCode }), // Send the OTP code and username
+			}
+		);
+
+		if (response.ok) {
+			console.log("OTP verification successful.");
+			const responseData = await response.json();
+			console.log("Response Data:", responseData);
+			displayMessage("OTP verification successful", MessageType.SUCCESS);
+		} else {
+			console.log("OTP verification failed.");
+			const errorData = await response.json();
+			console.log("Error Data:", errorData);
+			displayMessage("OTP verification failed", MessageType.ERROR);
+		}
+	} catch (error) {
+		console.error("Error:", error);
+		displayMessage("An error occurred while verifying OTP.", MessageType.ERROR);
 	}
 }

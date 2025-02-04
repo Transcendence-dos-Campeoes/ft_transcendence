@@ -19,4 +19,5 @@ urlpatterns = [
     path('invite/create/', views.createInvite, name='create_invite'),
     path('invite/update/', views.changeStatusInvite, name='change_status_invite'),
 	path('twofa/enable/', views.enable_two_fa, name='two_fa_enable'),
+	path('twofa/verify/', views.verify_two_fa, name='two_fa_enable'),
 ]

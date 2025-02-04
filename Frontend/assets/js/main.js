@@ -192,3 +192,31 @@ async function load_profile_pic() {
 		displayMessage("Failed to load profile data", MessageType.ERROR);
 	}
 }
+
+
+async function checkUserStatus() {
+	try {
+		const response = await fetch("http://localhost:8000/api/users/check_status/", {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${localStorage.getItem("access")}`,
+			},
+		});
+
+		if (response.ok) {
+			const responseData = await response.json();
+			if (!responseData.two_fa_enabled || !responseData.is_otp_verified) {
+				window.location.href = "https://localhost/two_fa_enable";
+			}
+		} else {
+			window.location.href = "https://localhost/login";
+		}
+	} catch (error) {
+		console.error("Error checking user status:", error);
+		window.location.href = "https://localhost/login";
+	}
+}
+
+// Call this function before rendering any protected page
+// checkUserStatus();

@@ -35,15 +35,15 @@ async function login(username, password) {
 			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 2 minutes for testing
 			localStorage.setItem("access_token_expiry", accessTokenExpiry);
 			localStorage.setItem("username", username);
-			if (responseData.two_fa_enabled == false) {
-				history.pushState({}, '', 'https://localhost/two_fa_enable');
-				checkAndRunTwoFA()
-			}
-			else {
-				history.pushState({}, '', 'https://localhost/two_fa_verify');
-				checkAndRunTwoFA();
-			}
-			//   renderPage("home");
+			// if (responseData.two_fa_enabled == false) {
+			// 	history.pushState({}, '', 'https://localhost/two_fa_enable');
+			// 	checkAndRunTwoFA()
+			// }
+			// else {
+			// 	history.pushState({}, '', 'https://localhost/two_fa_verify');
+			// 	checkAndRunTwoFA();
+			// }
+			renderPage("home");
 		} else if (!response.ok && response.status == 429) {
 			displayMessage(
 				"Too many requests. Please try again later.",

@@ -24,6 +24,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     two_fa_secret = models.CharField(max_length=32, blank=True, null=True)
     two_fa_enabled = models.BooleanField(default=False)
+    is_otp_verified = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
     is_staff = models.BooleanField(default=False)
