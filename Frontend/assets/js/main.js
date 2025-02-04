@@ -39,7 +39,7 @@ async function renderPage(page) {
   if (router.currentPage === page) return;
 
   // Check authentication before navigating to home page
-  if (page === "home") {
+  if (page !== "login" && page !== "register" && page !== "42") {
     console.log("Navigating to home, checking and refreshing token...");
     const isAuthenticated = await checkAndRefreshToken();
     if (!isAuthenticated) {
@@ -75,12 +75,10 @@ async function renderPage(page) {
       load_profile_pic();
       renderElement("overview");
       lobbyLoad();
-    }
-    else if (page==="pong")
-    { 
+    } else if (page === "pong") {
       startGame(data.game_group, socket);
     }
-    history.pushState({ page: page }, '', `/${page}`);
+    history.pushState({ page: page }, "", `/${page}`);
     router.currentPage = page;
   } catch (error) {
     console.error("Error loading page:", error);

@@ -139,6 +139,7 @@ async function loadChart() {
             <td>${new Date(match.created_at).toLocaleDateString()}</td>
             <td>${match.player1__username} vs ${match.player2__username}</td>
             <td>${match.player1_score} - ${match.player2_score}</td>
+            <td>${match.winner__username || "Undefined"}</td>
             <td>${getStatusBadge(match.status)}</td>
         </tr>
     `
