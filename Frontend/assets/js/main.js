@@ -181,12 +181,12 @@ async function load_profile_pic() {
     }
 
     const data = await response.json();
-    localStorage.setItem("photo_URL", data.photo_URL);
+    localStorage.setItem("profile_image", data.profile_image);
     // document.getElementById('photo_URL'.url = localStorage.photo_URL);
 
-    const photoElement = document.getElementById("photo_URL");
+    const photoElement = document.getElementById("profile-photo-home");
     if (photoElement) {
-      photoElement.src = data.photo_URL;
+      photoElement.src = data.profile_image;
     }
   } catch {
     displayMessage("Failed to load profile data", MessageType.ERROR);
