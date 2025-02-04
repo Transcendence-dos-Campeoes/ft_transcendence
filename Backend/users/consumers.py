@@ -53,6 +53,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_invite(data)
         elif data['type'] == 'accept_invite':
             self.handle_accept_invite(data)
+        elif data['type'] == 'decline_invite':
+            self.handle_decline_invite(data)
         elif data['type'] == 'player_move':
             self.handle_player_move(data)
         elif data['type'] == 'ready':
@@ -77,6 +79,16 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             "online_players",
             {
                 "type": "accept_invite",
+                "from": data['from'],
+                "to": data['to']
+            }
+        )
+
+    def handle_decline_invite(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+            "online_players",
+            {
+                "type": "decline_invite",
                 "from": data['from'],
                 "to": data['to']
             }
@@ -150,7 +162,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 print("Validation errors:", match_serializer.errors)
         else:
             self.send(text_data=json.dumps(event))
-            
+
+    def decline_invite(self, event):
+        if 'to' in event and event['to'] == self.scope['user'].username:
+            self.send(text_data=json.dumps(event))
 
     def get_channel_name(self, username):
         for channel_name, user in channel_user_map.items():
