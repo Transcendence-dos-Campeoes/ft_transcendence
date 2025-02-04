@@ -1,28 +1,80 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.throttling import AnonRateThrottle
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
-from .models import SiteUser, Friend
-from matches.models import Match
-from tournaments.models import TournamentPlayer
-from django.shortcuts import get_object_or_404
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework_simplejwt.exceptions import TokenError
-from django.contrib.auth import authenticate
-from django.db.models import Q
-import requests
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from django.db.models import Avg, Count
 from .models import Match
+from users.models import SiteUser
+from tournaments.models import Tournament
 from .serializers import MatchSerializer
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getRecentMatches(request):
+    try:
+        # Get 10 most recent matches
+        matches = Match.objects.all().order_by('-created_at')[:10]
+        
+        # Get 10 most recent tournaments
+        tournaments = Tournament.objects.all().order_by('-created_at')[:10]
+
+        # Calculate global statistics
+        total_matches = Match.objects.count()
+        total_tournaments = Tournament.objects.count()
+        total_players = SiteUser.objects.count()
+        
+        # Calculate average scores
+        avg_score = Match.objects.aggregate(
+            avg_p1_score=Avg('player1_score'),
+            avg_p2_score=Avg('player2_score')
+        )
+
+         # Get most active players
+        player_stats = SiteUser.objects.annotate(
+            matches_played=Count('matches_as_player1') + Count('matches_as_player2'),
+            tournaments_played=Count('tournament_entries')  # Changed from tournament_players
+        ).order_by('-matches_played')[:5]
+        
+        data = {
+            'recent_matches': matches.values(
+                'id',
+                'player1__username',
+                'player2__username',
+                'player1_score',
+                'player2_score',
+                'created_at',
+                'winner__username',
+                'status',
+            ),
+            'tournament_history': tournaments.values(
+                'id',
+                'name',
+                'created_at',
+                'status',
+                'winner__username'
+            ),
+            'overview_stats': {
+                'total_matches': total_matches,
+                'total_tournaments': total_tournaments,
+                'total_players': total_players,
+                'average_scores': {
+                    'player1': round(avg_score['avg_p1_score'] or 0, 2),
+                    'player2': round(avg_score['avg_p2_score'] or 0, 2)
+                },
+                'top_players': [{
+                    'username': player.username,
+                    'matches': player.matches_played,
+                    'tournaments': player.tournaments_played
+                } for player in player_stats]
+            }
+        }
+        
+        return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
