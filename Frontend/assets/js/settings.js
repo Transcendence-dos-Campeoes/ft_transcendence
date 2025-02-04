@@ -31,11 +31,11 @@ async function attachSettingsFormListener() {
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
     }
-
+	console.log(formData)
     try {
       loadingOverlay.show();
       const response = await fetch(
-        "http://localhost:8000/api/users/profile/update/",
+        "http://localhost:8000/api/users/settings/update/",
         {
           method: "PUT",
           headers: {
@@ -44,7 +44,7 @@ async function attachSettingsFormListener() {
           body: formData,
         }
       );
-
+	  
       if (!response.ok) {
         throw new Error("Failed to update profile");
       }
