@@ -34,9 +34,11 @@ function attachRegisterFormListener() {
       if (response.ok) {
         console.log("User Registered Succesfully");
         const responseData = JSON.parse(responseText);
+        console.log(responseData);
         // Store the tokens and expiration time in localStorage or a cookie
         localStorage.setItem("access", responseData.access);
         localStorage.setItem("refresh", responseData.refresh);
+        localStorage.setItem("username", responseData.user);
         const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 30 minutes
         localStorage.setItem("access_token_expiry", accessTokenExpiry);
         renderPage("home");
