@@ -181,7 +181,8 @@ def getUserProfile(request):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {
@@ -255,7 +256,8 @@ def getFriendProfile(request, username):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {

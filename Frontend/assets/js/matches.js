@@ -34,23 +34,27 @@ async function loadMatches() {
 
     tbody.innerHTML = data.matches
       .map(
-        (matche) => `
+        (match) => `
           <tr>
-          <td>${new Date(matche.created_at).toLocaleDateString()}</td>
+          <td>${new Date(match.created_at).toLocaleDateString()}</td>
               <td>${
-                  matche.player1__username === data.current_user
-                    ? matche.player2__username
-                    : matche.player1__username
-                }</td>
-              <td>${matche.player1_score + "/" + matche.player2_score}</td>
+                match.player1__username === data.current_user
+                  ? match.player2__username
+                  : match.player1__username
+              }</td>
               <td>${
-                matche.winner__username
-                  ? matche.winner__username === data.current_user
+                match.player1__username === data.current_user
+                  ? match.player1_score + "/" + match.player2_score
+                  : match.player2_score + "/" + match.player1_score
+              }</td>
+              <td>${
+                match.winner__username
+                  ? match.winner__username === data.current_user
                     ? '<span class="text-success">Win</span>'
                     : '<span class="text-danger">Loss</span>'
                   : "Undefined"
               }</td>
-              <td>${getStatusBadge(matche.status)}</td>
+              <td>${getStatusBadge(match.status)}</td>
           </tr>
       `
       )
