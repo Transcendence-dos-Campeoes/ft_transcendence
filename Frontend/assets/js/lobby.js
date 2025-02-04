@@ -13,6 +13,10 @@ function lobbyLoad() {
     );
   else socket.send(JSON.stringify({ type: "lobby" }));
 
+  waitingModal = new MessageModal(MessageType.INVITE);
+  messageModal = new MessageModal(MessageType.INVITE);
+  declineModal = new DeclineModal(MessageType.INFO);
+
   socket.onmessage = function (event) {
     data = JSON.parse(event.data);
     console.log("WebSocket message received:", data); // Debugging line
@@ -73,23 +77,53 @@ function lobbyLoad() {
               to: username,
             })
           );
+          waitingModal.show(`Waiting for ${username} to accept your game invite...`, "Invite Sent").then((accept) => {
+            if (!accept) {
+              socket.send(
+                JSON.stringify({
+                  type: "decline_invite",
+                  from: currentUser,
+                  to: username,
+                })
+              );
+              //declineModal.show(`Your game invite to ${username} was rejected.`, "Invite Rejected");
+            }
+          });
         });
       });
     } else if (data.type === "invite") {
-      const accept = confirm(
-        `${data.from} has invited you to play a game. Do you accept?`
-      );
-      if (accept) {
-        socket.send(
-          JSON.stringify({
-            type: "accept_invite",
-            from: currentUser,
-            to: data.from,
-          })
-        );
-        console.log("Game started with:", data.from);
-      }
+      messageModal.show(`${data.from} has invited you to play a game. Do you accept?`, "Invite").then((accept) => {
+        if (accept) {
+          // User accepted the invitation
+          socket.send(
+            JSON.stringify({
+              type: "accept_invite",
+              from: currentUser,
+              to: data.from,
+            })
+          );
+          console.log("Game started with:", data.from);
+        } else {
+          // User declined the invitation
+          socket.send(
+            JSON.stringify({
+              type: "decline_invite",
+              from: currentUser,
+              to: data.from,
+            })
+          );
+        }
+      });
+    } else if (data.type === "decline_invite"){
+        waitingModal.hide();
+        messageModal.hide();
+        if (data.to === currentUser)
+          declineModal.show(`Game invite rejected.`, "Invite Rejected");
+
+      console.log("Invite declined by:", data.from);
     } else if (data.type === "start_game") {
+        waitingModal.hide();
+      console.log("Game started with:", data.from);
       renderPage("pong");
     } else if (data.type === "close_connection") socket.close();
   };
