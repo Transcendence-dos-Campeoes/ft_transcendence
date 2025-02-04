@@ -4,11 +4,16 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from .models import SiteUser
 
+from matches.models import Match
+from matches.serializers import MatchSerializer
+
 
 import uuid
 
 channel_user_map = {}
 group_channel_map = {}
+
+group_match_map = {}
 
 def get_channel_name(username):
     for channel_name, user in channel_user_map.items():
@@ -132,6 +137,17 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'game_group': game_group_name,
                 'player': 'player1'
             })
+            match_serializer = MatchSerializer(data={
+            'player1': SiteUser.objects.get(username=event['from']).id,
+            'player2': SiteUser.objects.get(username=event['to']).id,
+            'status': 'active'
+            })
+            if match_serializer.is_valid():
+                match = match_serializer.save()
+                group_match_map[game_group_name] = match.id
+                print( group_match_map[game_group_name])
+            else:
+                print("Validation errors:", match_serializer.errors)
         else:
             self.send(text_data=json.dumps(event))
             
@@ -150,14 +166,15 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 "text": json.dumps(message)})
 
     def start_game(self, event):
+        print(event)
         if (event['from'] == self.scope['user'].username):
             self.send(text_data=json.dumps(event))
     
     def starting_game(self, event):
         self.send(text_data=json.dumps(event))
+         # Create a new match instance
 
     def handle_player_move(self, data):
-        print(data)
         async_to_sync(self.channel_layer.group_send)(
             data['game_group'], 
             {
@@ -183,6 +200,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         )
     
     def handle_end_game(self, data):
+
         async_to_sync(self.channel_layer.group_send)(
         data['game_group'], 
         {
@@ -192,10 +210,36 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             "player1Score": data['player1Score'],
             "player2Score": data['player2Score']
         })
+        users = []
         if data['game_group'] in group_channel_map:
             for channel_name in group_channel_map[data['game_group']]:
+                print (channel_user_map[channel_name])
+                users.append(channel_user_map[channel_name])
                 async_to_sync(self.channel_layer.group_discard)(data['game_group'], channel_name)
             del group_channel_map[data['game_group']]
+            user1 = users[0]
+            user2 = users[1]
+
+            try:
+                user1_id = SiteUser.objects.get(username=user1).id
+                print(user1_id, "U1")
+                user2_id = SiteUser.objects.get(username=user2).id
+                print(user2_id, "U2")
+
+            except SiteUser.DoesNotExist as e:
+                print(f"Error: {e}")
+
+            print(user1, "   ", user2)
+            match_id = group_match_map[data['game_group']]
+            print(match_id)
+            match = Match.objects.get(id=match_id)
+            if not match:
+                print ("Nao há arroz")
+            match.player1_score = data['player1Score']
+            match.player2_score = data ['player2Score']
+            match.winner = SiteUser.objects.get(username=user1) if data['player1Score'] > data['player2Score'] else SiteUser.objects.get(username=user2)
+            match.status = 'finished'
+            match.save()
 
 
     def game_update(self, event):
