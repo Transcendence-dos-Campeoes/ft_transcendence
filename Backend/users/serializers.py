@@ -10,8 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class SiteUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
-        fields = ['id', 'username', 'email', 'password', 'two_fa_enabled', 'created_time', 'profile_URL', 'profile_image', 'is_staff', 'is_active']
-        read_only_fields = ['id', 'created_time', 'profile_URL', 'is_staff', 'is_active']
+        fields = ['id', 'username', 'email', 'password', 'two_fa_enabled', 'created_time', 'profile_image', 'is_staff', 'is_active']
+        read_only_fields = ['id', 'created_time', 'is_staff', 'is_active']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -24,7 +24,12 @@ class SiteUserSerializer(serializers.ModelSerializer):
         return user
 
     def validate_password(self, value):
-        # Add custom password validation if needed
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+        if not any(char.isdigit() for char in value):
+            raise serializers.ValidationError("Password must contain at least one digit")
+        if not any(char.isalpha() for char in value):
+            raise serializers.ValidationError("Password must contain at least one letter")
         return value
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

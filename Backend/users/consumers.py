@@ -138,13 +138,16 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'player': 'player1'
             })
             match_serializer = MatchSerializer(data={
-            'player1': event['from'],
-            'player2': event['to'],
+            'player1': SiteUser.objects.get(username=event['from']).id,
+            'player2': SiteUser.objects.get(username=event['to']).id,
             'status': 'active'
             })
             if match_serializer.is_valid():
                 match = match_serializer.save()
                 group_match_map[game_group_name] = match.id
+                print( group_match_map[game_group_name])
+            else:
+                print("Validation errors:", match_serializer.errors)
         else:
             self.send(text_data=json.dumps(event))
             
@@ -216,22 +219,27 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             del group_channel_map[data['game_group']]
             user1 = users[0]
             user2 = users[1]
+
+            try:
+                user1_id = SiteUser.objects.get(username=user1).id
+                print(user1_id, "U1")
+                user2_id = SiteUser.objects.get(username=user2).id
+                print(user2_id, "U2")
+
+            except SiteUser.DoesNotExist as e:
+                print(f"Error: {e}")
+
             print(user1, "   ", user2)
             match_id = group_match_map[data['game_group']]
-            match = Match.objects.filter(id=match_id)
+            print(match_id)
+            match = Match.objects.get(id=match_id)
             if not match:
                 print ("Nao há arroz")
-            match_serializer = MatchSerializer(match, data={
-                'player1': user1,
-                'player2': user2,
-                'player1_score': data['player1Score'],
-                'player2_score': data['player2Score'],
-                'winner': user1 if data['player1Score'] > data['player2Score'] else user2,
-                'status': 'finished'
-            }, partial=True)
-            if match_serializer.is_valid():
-                match_serializer.save()
-                print("guardou")
+            match.player1_score = data['player1Score']
+            match.player2_score = data ['player2Score']
+            match.winner = SiteUser.objects.get(username=user1) if data['player1Score'] > data['player2Score'] else SiteUser.objects.get(username=user2)
+            match.status = 'finished'
+            match.save()
 
 
     def game_update(self, event):
