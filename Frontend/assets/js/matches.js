@@ -2,7 +2,7 @@ async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/matches/get/", {
+    const response = await fetch("http://localhost:8000/api/users/matches/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },
@@ -12,24 +12,30 @@ async function loadMatches() {
       throw new Error("Failed to fetch matches");
     }
 
-    const matches = await response.json();
+    const data = await response.json();
     const tbody = document.getElementById("regular-matches");
 
-    if (matches.length === 0) {
+    if (data.matches.length === 0) {
       tbody.innerHTML = "";
       return;
     }
 
-    tbody.innerHTML = matches
+    tbody.innerHTML = data.matches
       .map(
         (matche) => `
           <tr>
-              <td>${matche.id}</td>
-              <td>${matche.player1}</td>
-              <td>${matche.player2}</td>
+          <td>${new Date(matche.created_at).toLocaleDateString()}</td>
+              <td>${matche.player1__username}</td>
+              <td>${matche.player2__username}</td>
+              <td>${matche.player1_score + "/" + matche.player2_score}</td>
+              <td>${
+                matche.winner__username
+                  ? matche.winner__username === data.current_user
+                    ? '<span class="text-success">Win</span>'
+                    : '<span class="text-danger">Loss</span>'
+                  : "Undefined"
+              }</td>
               <td>${matche.status}</td>
-              <td>${matche.score}</td>
-              <td>${matche.actions}</td>
           </tr>
       `
       )

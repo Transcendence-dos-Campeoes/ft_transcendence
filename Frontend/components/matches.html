@@ -1,4 +1,15 @@
 <div class="container-fluid p-4">
+
+    <div class="row mb-4 mt-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h2>Matches</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <!-- Tournament Matches Section -->
@@ -7,7 +18,7 @@
                     <h4>Tournament Matches</h4>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
                         <table class="table table-hover text-white">
                             <thead>
                                 <tr>
@@ -33,16 +44,16 @@
                     <h4>Regular Matches</h4>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
                         <table class="table table-hover text-white">
                             <thead>
                                 <tr>
-                                    <th>Match ID</th>
+                                    <th>Date</th>
                                     <th>Player 1</th>
                                     <th>Player 2</th>
-                                    <th>Status</th>
                                     <th>Score</th>
-                                    <th>Actions</th>
+                                    <th>Winner</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="regular-matches">

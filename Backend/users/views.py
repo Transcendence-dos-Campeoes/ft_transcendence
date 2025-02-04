@@ -276,6 +276,36 @@ def getFriendProfile(request, username):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserMatches(request):
+    try:
+        user = request.user
+        matches = Match.get_player_matches(user)
+        
+        regular_matches = matches.values(
+            'id',
+            'player1__username',
+            'player2__username',
+            'player1_score',
+            'player2_score',
+            'created_at',
+            'winner__username',
+            'status'
+        ).order_by('-created_at')
+
+        return Response({
+            'matches': regular_matches,
+            'total_matches': matches.count(),
+            'current_user': user.username
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
