@@ -118,18 +118,30 @@ async function loadChart() {
       }
     );
 
+    const getStatusBadge = (status) => {
+      const statusColors = {
+        active: "bg-success",
+        pending: "bg-warning",
+        finished: "bg-secondary",
+        cancelled: "bg-danger",
+      };
+      return `<span class="badge ${
+        statusColors[status.toLowerCase()] || "bg-secondary"
+      }">${status}</span>`;
+    };
+
     // Update match history
     const matchHistory = document.getElementById("latest-matches");
     matchHistory.innerHTML = data.recent_matches
       .map(
         (match) => `
-           <tr>
+        <tr>
             <td>${new Date(match.created_at).toLocaleDateString()}</td>
             <td>${match.player1__username} vs ${match.player2__username}</td>
             <td>${match.player1_score} - ${match.player2_score}</td>
-            <td>${match.status}</td>
-           </tr>
-       `
+            <td>${getStatusBadge(match.status)}</td>
+        </tr>
+    `
       )
       .join("");
 
@@ -138,18 +150,14 @@ async function loadChart() {
     tournamentHistory.innerHTML = data.tournament_history
       .map(
         (tournament) => `
-            <tr>
-              <td>${tournament.name}</td>
-              <td>${tournament.status}</td>
-              <td>${tournament.total_players}</td>
-              <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
-              <td>${
-                tournament.winner__username
-                  ? tournament.winner__username
-                  : "Undefined"
-              }</td>
-            </tr>
-        `
+        <tr>
+            <td>${tournament.name}</td>
+            <td>${getStatusBadge(tournament.status)}</td>
+            <td>${tournament.total_players}</td>
+            <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
+            <td>${tournament.winner__username || "Undefined"}</td>
+        </tr>
+    `
       )
       .join("");
   } catch (error) {

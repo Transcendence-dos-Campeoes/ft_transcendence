@@ -20,6 +20,18 @@ async function loadMatches() {
       return;
     }
 
+    const getStatusBadge = (status) => {
+      const statusColors = {
+        active: "bg-success",
+        pending: "bg-warning",
+        finished: "bg-secondary",
+        cancelled: "bg-danger",
+      };
+      return `<span class="badge ${
+        statusColors[status.toLowerCase()] || "bg-secondary"
+      }">${status}</span>`;
+    };
+
     tbody.innerHTML = data.matches
       .map(
         (matche) => `
@@ -35,7 +47,7 @@ async function loadMatches() {
                     : '<span class="text-danger">Loss</span>'
                   : "Undefined"
               }</td>
-              <td>${matche.status}</td>
+              <td>${getStatusBadge(matche.status)}</td>
           </tr>
       `
       )
