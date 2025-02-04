@@ -22,6 +22,7 @@ class MessageModal {
     modal.setAttribute("tabindex", "-1");
 
     const isSuccess = this.type === "success";
+    const isError = this.type === "error";
     const titleClass = isSuccess ? "text-success" : "text-danger";
     const title = isSuccess ? "Success" : "Error";
 
@@ -33,11 +34,12 @@ class MessageModal {
                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body"></div>
+                  ${!isError ? `
                   <div class="modal-footer border-secondary">
                       <span class="timer"></span>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                       <button type="button" class="btn btn-primary">Accept</button>
-                  </div>
+                  </div>` : ''}
               </div>
           </div>
       `;
@@ -46,8 +48,10 @@ class MessageModal {
     this.modal = modal;
     this.bsModal = new bootstrap.Modal(modal);
 
-    this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
-    this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
+    if (!isError) { 
+      this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
+      this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
+    }
   }
 
   show(message, title = null) {
@@ -65,23 +69,28 @@ class MessageModal {
       }
     } else {
       const isSuccess = this.type === "success";
+      const isError = this.type === "error";
       titleElement.className = isSuccess ? "modal-title text-success" : "modal-title text-danger";
       titleElement.innerHTML = isSuccess ? "Success" : "Error";
-      footerElement.querySelector('.btn-primary').style.display = 'inline-block';
+      if (!isError) {
+        footerElement.querySelector('.btn-primary').style.display = 'inline-block';
+      }
     }
     this.bsModal.show();
 
-    let timeLeft = 30;
-    timerElement.innerHTML = `Time left: ${timeLeft}s`;
-    this.timer = setInterval(() => {
-      timeLeft -= 1;
+    if (!this.type === MessageType.ERROR) {
+      let timeLeft = 30;
       timerElement.innerHTML = `Time left: ${timeLeft}s`;
-      if (timeLeft <= 0) {
-        clearInterval(this.timer);
-        this.resolve(false);
-        this.hide();
-      }
-    }, 1000);
+      this.timer = setInterval(() => {
+        timeLeft -= 1;
+        timerElement.innerHTML = `Time left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(this.timer);
+          this.resolve(false);
+          this.hide();
+        }
+      }, 1000);
+    }
 
     return new Promise((resolve) => {
       this.resolve = resolve;
