@@ -10,7 +10,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
 from .models import SiteUser, Friend
 from matches.models import Match
-from tournaments.models import TournamentPlayer
+from tournaments.models import TournamentPlayer, TournamentMatch
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -297,8 +297,25 @@ def getUserMatches(request):
             'status'
         ).order_by('-created_at')
 
+        tournament_matches = TournamentMatch.objects.filter(
+            match__in=matches
+        ).values(
+            'match__id',
+            'match__player1__username',
+            'match__player2__username',
+            'match__player1_score',
+            'match__player2_score',
+            'match__created_at',
+            'match__winner__username',
+            'match__status',
+            'tournament__name',
+            'round_number',
+            'match_number'
+        ).order_by('-match__created_at')
+
         return Response({
-            'matches': regular_matches,
+            'regular_matches': regular_matches,
+            'tournament_matches': tournament_matches,
             'total_matches': matches.count(),
             'current_user': user.username
         }, status=status.HTTP_200_OK)
