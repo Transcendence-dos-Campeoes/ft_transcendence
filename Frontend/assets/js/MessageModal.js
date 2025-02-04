@@ -3,6 +3,7 @@ const MessageType = {
   ERROR: "error",
   WARNING: "warning",
   INFO: "info",
+  INVITE: "invite",
 };
 
 class MessageModal {
@@ -31,8 +32,10 @@ class MessageModal {
               <div class="modal-content bg-dark text-white border-secondary">
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
+                      ${isError ?
+                      `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
+                      : ''}
+                      </div>
                   <div class="modal-body"></div>
                   ${!isError ? `
                   <div class="modal-footer border-secondary">
@@ -78,7 +81,7 @@ class MessageModal {
     }
     this.bsModal.show();
 
-    if (!this.type === MessageType.ERROR) {
+    if ((this.type === MessageType.INVITE)) {
       let timeLeft = 30;
       timerElement.innerHTML = `Time left: ${timeLeft}s`;
       this.timer = setInterval(() => {

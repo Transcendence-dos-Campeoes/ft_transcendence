@@ -13,8 +13,8 @@ function lobbyLoad() {
     );
   else socket.send(JSON.stringify({ type: "lobby" }));
 
-  waitingModal = new MessageModal(MessageType.INFO);
-  messageModal = new MessageModal(MessageType.INFO);
+  waitingModal = new MessageModal(MessageType.INVITE);
+  messageModal = new MessageModal(MessageType.INVITE);
   declineModal = new DeclineModal(MessageType.INFO);
 
   socket.onmessage = function (event) {
