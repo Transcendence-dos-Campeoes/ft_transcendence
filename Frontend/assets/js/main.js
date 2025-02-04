@@ -202,8 +202,11 @@ async function checkUserStatus() {
 
 		if (response.ok) {
 			const responseData = await response.json();
-			if (!responseData.two_fa_enabled || !responseData.is_otp_verified) {
+			if (!responseData.two_fa_enabled) {
 				window.location.href = "https://localhost/two_fa_enable";
+			}
+			else if (responseData.two_fa_enabled && !responseData.is_otp_verified) {
+				window.location.href = "https://localhost/two_fa_verify";
 			}
 		} else {
 			window.location.href = "https://localhost/login";
