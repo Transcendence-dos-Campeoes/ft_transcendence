@@ -7,8 +7,7 @@ function checkAndRunTwoFA() {
 		console.log("Matched two_fa_enable URL");
 		two_fa_enable();
 	} else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
-		console.log("Matched two_fa_verify URL");
-		alert("VERIFY");
+		renderPage("two_fa_verify")
 	}
 	else {
 		console.log("Didn't match any URL");
@@ -77,6 +76,7 @@ async function verifyOtpCode() {
 			const responseData = await response.json();
 			console.log("Response Data:", responseData);
 			displayMessage("OTP verification successful", MessageType.SUCCESS);
+			renderPage("home")
 		} else {
 			console.log("OTP verification failed.");
 			const errorData = await response.json();

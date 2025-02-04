@@ -29,11 +29,6 @@ function formatErrorMessages(errors) {
 	return formattedErrors;
 }
 
-// Check if user is authenticated
-function isAuthenticated() {
-	return !!localStorage.getItem("access");
-}
-
 // Page loader
 async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
@@ -47,6 +42,7 @@ async function renderPage(page) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
+		checkUserStatus();
 	}
 
 	try {
