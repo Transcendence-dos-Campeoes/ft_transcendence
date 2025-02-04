@@ -22,6 +22,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
+    two_fa_secret = models.CharField(max_length=32, blank=True, null=True)
     two_fa_enabled = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
