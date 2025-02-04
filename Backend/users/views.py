@@ -477,7 +477,7 @@ def oauth_callback(request):
         user, created = SiteUser.objects.get_or_create(username=username, defaults={'email': email})
         if created:
             user.set_unusable_password()
-            image_name = f"profile_images/{username}.jpg"
+            image_name = f"{username}.jpg"
             user.profile_image.save(image_name, ContentFile(image_response.content))
             user.save()
             print(f"User {username} created with an unusable password.")
