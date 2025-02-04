@@ -284,11 +284,19 @@ def getFriendProfile(request, username):
 def getUserMatches(request):
     try:
         user = request.user
-        matches = Match.get_player_matches(user)
+        all_matches = Match.get_player_matches(user)
         
-        regular_matches = matches.values(
+        # Get tournament match IDs
+        tournament_match_ids = TournamentMatch.objects.filter(
+            match__in=all_matches
+        ).values_list('match_id', flat=True)
+
+        # Get regular matches excluding tournament matches
+        regular_matches = all_matches.exclude(
+            id__in=tournament_match_ids
+        ).values(
             'id',
-            'player1__username',
+            'player1__username', 
             'player2__username',
             'player1_score',
             'player2_score',
@@ -297,26 +305,27 @@ def getUserMatches(request):
             'status'
         ).order_by('-created_at')
 
+        # Get tournament matches
         tournament_matches = TournamentMatch.objects.filter(
-            match__in=matches
+            match__in=all_matches
         ).values(
             'match__id',
             'match__player1__username',
-            'match__player2__username',
+            'match__player2__username', 
             'match__player1_score',
             'match__player2_score',
             'match__created_at',
             'match__winner__username',
             'match__status',
             'tournament__name',
-            'round_number',
+            'round_number', 
             'match_number'
         ).order_by('-match__created_at')
 
         return Response({
             'regular_matches': regular_matches,
             'tournament_matches': tournament_matches,
-            'total_matches': matches.count(),
+            'total_matches': all_matches.count(),
             'current_user': user.username
         }, status=status.HTTP_200_OK)
         

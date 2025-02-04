@@ -90,7 +90,7 @@ async function loadMatches() {
                   : '<span class="text-danger">Loss</span>'
                 : "Undefined"
             }</td>
-            <td>${g > etStatusBadge(match.match__status)}</td>
+            <td>${getStatusBadge(match.match__status)}</td>
           </tr>
       `
       )
