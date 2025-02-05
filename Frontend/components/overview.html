@@ -1,91 +1,88 @@
 <div class="container-fluid p-4 overflow-auto vh-100">
-  <!-- Stats Row -->
-  <div class="row mb-2">
+
+  <!-- Overview Header -->
+  <div class="row mb-4 mt-4">
     <div class="col-12">
-      <h5 class="card-title text-white">Player Statistics</h5>
-      <canvas class="my-4 w-100" id="myChart"></canvas>
+      <div class="d-flex align-items-center">
+        <div>
+          <h2>Overview</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row mb-4">
+    <div class="col-6">
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          Top Players Statistics
+        </div>
+        <div class="card-body">
+          <canvas class="my-4 w-100" id="topPlayersChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          Average Scores Distribution
+        </div>
+        <div class="card-body">
+          <canvas class="my-4 w-100" id="avgScoresChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
   <!-- Tables Row -->
   <div class="row">
     <!-- Tournaments Column -->
     <div class="col-12 mb-4">
-      <h3>Latest Tournaments</h3>
-      <div class="table-responsive">
-        <table class="table table-hover table-sm table-dark table-borderless">
-          <thead>
-            <tr>
-              <th scope="col">Tournament</th>
-              <th scope="col">Status</th>
-              <th scope="col">Players</th>
-              <th scope="col">Start Date</th>
-              <th scope="col">Winner</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Spring Championship</td>
-              <td><span class="badge bg-success">Active</span></td>
-              <td>6/8</td>
-              <td>2024-03-15</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>Weekly Tournament</td>
-              <td><span class="badge bg-warning">Pending</span></td>
-              <td>3/8</td>
-              <td>2024-03-20</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>Winter Cup</td>
-              <td><span class="badge bg-secondary">Finished</span></td>
-              <td>8/8</td>
-              <td>2024-02-28</td>
-              <td>PlayerName</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          Latest Tournaments
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm table-dark table-borderless">
+              <thead>
+                <tr>
+                  <th scope="col">Tournament</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Players</th>
+                  <th scope="col">Start Date</th>
+                  <th scope="col">Winner</th>
+                </tr>
+              </thead>
+              <tbody id="latest-tounaments"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
+
     <!-- Matches Column -->
     <div class="col-12">
-      <h3>Latest Matches</h3>
-      <div class="table-responsive">
-        <table class="table table-hover table-sm table-dark table-borderless">
-          <thead>
-            <tr>
-              <th scope="col">Match</th>
-              <th scope="col">Players</th>
-              <th scope="col">Score</th>
-              <th scope="col">Status</th>
-              <th scope="col">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>#1001</td>
-              <td>Player1 vs Player2</td>
-              <td>5 - 3</td>
-              <td><span class="badge bg-success">Finished</span></td>
-              <td>2024-03-15</td>
-            </tr>
-            <tr>
-              <td>#1002</td>
-              <td>Player3 vs Player4</td>
-              <td>2 - 4</td>
-              <td><span class="badge bg-primary">Active</span></td>
-              <td>2024-03-15</td>
-            </tr>
-            <tr>
-              <td>#1003</td>
-              <td>Player5 vs Player6</td>
-              <td>- - -</td>
-              <td><span class="badge bg-warning">Pending</span></td>
-              <td>2024-03-16</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card bg-transparent border-light">
+        <div class="card-header">
+          Latest Matches
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm table-dark table-borderless">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Players</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">Winner</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="latest-matches"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>

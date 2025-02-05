@@ -20,6 +20,9 @@ class Tournament(models.Model):
     finished_at = models.DateTimeField(null=True, blank=True)
     winner = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, null=True, related_name='tournaments_won')
 
+    def get_player_count(self):
+        return self.players.filter(status='accepted').count()
+    
     class Meta:
         ordering = ['-created_at']
 
@@ -46,7 +49,7 @@ class TournamentMatch(models.Model):
     match = models.OneToOneField('matches.Match', on_delete=models.CASCADE)
     round_number = models.IntegerField()
     match_number = models.IntegerField()
-    next_match = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, related_name='previous_matches')
+    next_match = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='previous_matches')
 
     class Meta:
         ordering = ['round_number', 'match_number']

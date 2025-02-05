@@ -1,5 +1,13 @@
+@font-face {
+  font-family: "Public Pixel";
+  src: url("../fonts/PublicPixel-rv0pA.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-  font-family: "Silkscreen", cursive;
+  font-family: "Public Pixel", sans-serif;
+  font-size: 12px; 
 }
 
 .screen-container {

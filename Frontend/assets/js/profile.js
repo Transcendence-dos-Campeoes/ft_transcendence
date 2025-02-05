@@ -101,22 +101,43 @@ async function loadProfileData() {
       },
     });
 
+    const getStatusBadge = (status) => {
+      const statusColors = {
+        active: "bg-success",
+        pending: "bg-warning",
+        finished: "bg-secondary",
+        cancelled: "bg-danger",
+      };
+      return `<span class="badge ${
+        statusColors[status.toLowerCase()] || "bg-secondary"
+      }">${status}</span>`;
+    };
+
     // Update match history
     const matchHistory = document.getElementById("match-history");
     matchHistory.innerHTML = data.recent_matches
       .map(
         (match) => `
             <tr>
-                <td>${new Date(match.created_at).toLocaleDateString()}</td>
-                <td>${match.player1__username} vs ${
-          match.player2__username
-        }</td>
-                <td>${
-                  match.winner__username === data.username
+              <td>${new Date(match.created_at).toLocaleDateString()}</td>
+              <td>${
+                match.player1__username === data.username
+                  ? match.player2__username
+                  : match.player1__username
+              }</td>
+              <td>${
+                match.player1__username === data.username
+                  ? match.player1_score + " - " + match.player2_score
+                  : match.player2_score + " - " + match.player1_score
+              }</td>
+              <td>${
+                match.winner__username
+                  ? match.winner__username === data.username
                     ? '<span class="text-success">Win</span>'
                     : '<span class="text-danger">Loss</span>'
-                }</td>
-                <td>${match.player1_score} - ${match.player2_score}</td>
+                  : "Undefined"
+              }</td>
+              <td>${getStatusBadge(match.status)}</td>
             </tr>
         `
       )
@@ -142,7 +163,10 @@ async function loadProfileData() {
 }
 
 async function viewProfile(username) {
+  const loadingOverlay = new LoadingOverlay();
+
   try {
+    loadingOverlay.show();
     const response = await fetch(
       `http://localhost:8000/api/users/profile/${username}/`,
       {
@@ -247,22 +271,43 @@ async function viewProfile(username) {
       },
     });
 
+    const getStatusBadge = (status) => {
+      const statusColors = {
+        active: "bg-success",
+        pending: "bg-warning",
+        finished: "bg-secondary",
+        cancelled: "bg-danger",
+      };
+      return `<span class="badge ${
+        statusColors[status.toLowerCase()] || "bg-secondary"
+      }">${status}</span>`;
+    };
+
     // Update match history
     const matchHistory = document.getElementById("match-history");
     matchHistory.innerHTML = data.recent_matches
       .map(
         (match) => `
             <tr>
-                <td>${new Date(match.created_at).toLocaleDateString()}</td>
-                <td>${match.player1__username} vs ${
-          match.player2__username
-        }</td>
-                <td>${
-                  match.winner__username === data.username
+              <td>${new Date(match.created_at).toLocaleDateString()}</td>
+              <td>${
+                match.player1__username === data.username
+                  ? match.player2__username
+                  : match.player1__username
+              }</td>
+              <td>${
+                match.player1__username === data.username
+                  ? match.player1_score + " - " + match.player2_score
+                  : match.player2_score + " - " + match.player1_score
+              }</td>
+              <td>${
+                match.winner__username
+                  ? match.winner__username === data.username
                     ? '<span class="text-success">Win</span>'
                     : '<span class="text-danger">Loss</span>'
-                }</td>
-                <td>${match.player1_score} - ${match.player2_score}</td>
+                  : "Undefined"
+              }</td>
+              <td>${getStatusBadge(match.status)}</td>
             </tr>
         `
       )
@@ -284,6 +329,8 @@ async function viewProfile(username) {
       .join("");
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
 

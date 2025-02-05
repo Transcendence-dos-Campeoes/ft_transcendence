@@ -1,0 +1,67 @@
+<div class="container-fluid p-4 overflow-auto vh-100">
+
+    <div class="row mb-4 mt-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h2>Matches</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <!-- Tournament Matches Section -->
+            <div class="card bg-transparent border-light mb-4">
+                <div class="card-header">
+                    <h4>Tournament Matches</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
+                        <table class="table table-hover text-white">
+                            <thead>
+                                <tr>
+                                    <th>Tournament</th>
+                                    <th>Date</th>
+                                    <th>Opponent</th>
+                                    <th>Score</th>
+                                    <th>Result</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tournament-matches">
+                                <!-- Tournament matches will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regular Matches Section -->
+            <div class="card bg-transparent border-light">
+                <div class="card-header">
+                    <h4>Regular Matches</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
+                        <table class="table table-hover text-white">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Opponent</th>
+                                    <th>Score</th>
+                                    <th>Result</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="regular-matches">
+                                <!-- Regular matches will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

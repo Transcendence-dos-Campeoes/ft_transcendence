@@ -10,7 +10,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
 from .models import SiteUser, Friend
 from matches.models import Match
-from tournaments.models import TournamentPlayer
+from tournaments.models import TournamentPlayer, TournamentMatch
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -64,7 +64,7 @@ def create_user(request):
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': serializer.data
+            'user': serializer.data['username'],
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -189,7 +189,8 @@ def getUserProfile(request):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {
@@ -263,7 +264,8 @@ def getFriendProfile(request, username):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {
@@ -279,6 +281,62 @@ def getFriendProfile(request, username):
         }
         
         return Response(profile_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserMatches(request):
+    try:
+        user = request.user
+        all_matches = Match.get_player_matches(user)
+        
+        # Get tournament match IDs
+        tournament_match_ids = TournamentMatch.objects.filter(
+            match__in=all_matches
+        ).values_list('match_id', flat=True)
+
+        # Get regular matches excluding tournament matches
+        regular_matches = all_matches.exclude(
+            id__in=tournament_match_ids
+        ).values(
+            'id',
+            'player1__username', 
+            'player2__username',
+            'player1_score',
+            'player2_score',
+            'created_at',
+            'winner__username',
+            'status'
+        ).order_by('-created_at')
+
+        # Get tournament matches
+        tournament_matches = TournamentMatch.objects.filter(
+            match__in=all_matches
+        ).values(
+            'match__id',
+            'match__player1__username',
+            'match__player2__username', 
+            'match__player1_score',
+            'match__player2_score',
+            'match__created_at',
+            'match__winner__username',
+            'match__status',
+            'tournament__name',
+            'round_number', 
+            'match_number'
+        ).order_by('-match__created_at')
+
+        return Response({
+            'regular_matches': regular_matches,
+            'tournament_matches': tournament_matches,
+            'total_matches': all_matches.count(),
+            'current_user': user.username
+        }, status=status.HTTP_200_OK)
+        
     except Exception as e:
         return Response(
             {'error': str(e)}, 

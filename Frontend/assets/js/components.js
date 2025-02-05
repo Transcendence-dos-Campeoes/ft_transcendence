@@ -61,25 +61,27 @@ async function renderElement(element) {
 		content.innerHTML = html;
 		elements.currentElement = element;
 
-		console.log("🎯 Initializing component:", element);
-		if (element === "profile") {
-			await loadProfileData();
-		} else if (element === "overview") {
-			loadChart();
-		} else if (element === "invites") {
-			new FriendSystem();
-		} else if (element === "settings") {
-			await loadSettingsData();
-			attachSettingsFormListener();
-		} else if (element === "newtournament") {
-			attachTournamentFormListener();
-		} else if (element === "jointournament") {
-			loadAvailableTournaments();
-		}
-		console.log("✅ Component render complete:", element);
-	} catch (error) {
-		console.error("Error loading element:", error);
-	} finally {
-		loadingOverlay.hide();
-	}
+    console.log("🎯 Initializing component:", element);
+    if (element === "profile") {
+      await loadProfileData();
+    } else if (element === "overview") {
+      loadChart();
+    } else if (element === "invites") {
+      new FriendSystem();
+    } else if (element === "settings") {
+      await loadSettingsData();
+      attachSettingsFormListener();
+    } else if (element === "newtournament") {
+      attachTournamentFormListener();
+    } else if (element === "jointournament") {
+      loadAvailableTournaments();
+    } else if (element === "matches") {
+      loadMatches();
+    }
+    console.log("✅ Component render complete:", element);
+  } catch (error) {
+    console.error("Error loading element:", error);
+  } finally {
+    loadingOverlay.hide();
+  }
 }
