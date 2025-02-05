@@ -59,25 +59,43 @@ function renderTournamentMatch(match, currentUser) {
           </tr>`;
 }
 
-function filterMatches(matches, filter, tableId, current_user, isRegularMatch) {
+function filterRegularMatches(matches, filters, current_user) {
   const filteredMatches = matches.filter(match => {
-    const searchTerm = filter.toLowerCase();
+    const matchDate = new Date(match.created_at).toLocaleDateString();
+    const opponent = match.player1__username === current_user ?
+      match.player2__username : match.player1__username;
+    const result = match.winner__username ?
+      (match.winner__username === current_user ? 'win' : 'loss') : '';
 
-    if (isRegularMatch) {
-      return match.player1__username.toLowerCase().includes(searchTerm) ||
-        match.player2__username.toLowerCase().includes(searchTerm) ||
-        match.status.toLowerCase().includes(searchTerm);
-    } else {
-      return match.tournament__name.toLowerCase().includes(searchTerm) ||
-        match.match__player1__username.toLowerCase().includes(searchTerm) ||
-        match.match__player2__username.toLowerCase().includes(searchTerm) ||
-        match.match__status.toLowerCase().includes(searchTerm);
-    }
+    return (!filters.date || matchDate.includes(filters.date)) &&
+      (!filters.opponent || opponent.toLowerCase().includes(filters.opponent.toLowerCase())) &&
+      (!filters.result || result === filters.result) &&
+      (!filters.status || match.status.toLowerCase() === filters.status.toLowerCase());
   });
 
-  document.getElementById(tableId).innerHTML = filteredMatches
-    .map(match => isRegularMatch ?
-      renderRegularMatch(match, current_user) :
+  document.getElementById('regular-matches').innerHTML = filteredMatches
+    .map(match =>
+      renderRegularMatch(match, current_user))
+    .join('');
+}
+
+function filterTournamentMatches(matches, filters, current_user) {
+  const filteredMatches = matches.filter(match => {
+    const matchDate = new Date(match.match__created_at).toLocaleDateString();
+    const opponent = match.match__player1__username === current_user ?
+      match.match__player2__username : match.match__player1__username;
+    const result = match.match__winner__username ?
+      (match.match__winner__username === current_user ? 'win' : 'loss') : '';
+
+    return (!filters.date || matchDate.includes(filters.date)) &&
+      (!filters.opponent || opponent.toLowerCase().includes(filters.opponent.toLowerCase())) &&
+      (!filters.result || result === filters.result) &&
+      (!filters.status || match.match__status.toLowerCase() === filters.status.toLowerCase());
+  });
+
+
+  document.getElementById('tournament-matches').innerHTML = filteredMatches
+    .map(match =>
       renderTournamentMatch(match, current_user))
     .join('');
 }
@@ -100,18 +118,31 @@ async function loadMatches() {
     regularMatchesData = data.regular_matches;
     tournamentMatchesData = data.tournament_matches;
 
-    // Add event listeners for filters
-    document.getElementById('regular-matches-filter').addEventListener('input', (e) => {
-      filterMatches(regularMatchesData, e.target.value, 'regular-matches', data.current_user, true);
+    ['date', 'opponent', 'result', 'status'].forEach(filterType => {
+      document.getElementById(`regular-matches-filter-${filterType}`).addEventListener('change', (e) => {
+        const filters = {
+          date: document.getElementById('regular-matches-filter-date').value,
+          opponent: document.getElementById('regular-matches-filter-opponent').value,
+          result: document.getElementById('regular-matches-filter-result').value,
+          status: document.getElementById('regular-matches-filter-status').value
+        };
+        filterRegularMatches(regularMatchesData, filters, data.current_user);
+      });
     });
 
-    document.getElementById('tournament-matches-filter').addEventListener('input', (e) => {
-      filterMatches(tournamentMatchesData, e.target.value, 'tournament-matches', data.current_user, false);
+    ['date', 'opponent', 'result', 'status'].forEach(filterType => {
+      document.getElementById(`tournament-matches-filter-${filterType}`).addEventListener('change', (e) => {
+        const filters = {
+          date: document.getElementById('tournament-matches-filter-date').value,
+          opponent: document.getElementById('tournament-matches-filter-opponent').value,
+          result: document.getElementById('tournament-matches-filter-result').value,
+          status: document.getElementById('tournament-matches-filter-status').value
+        };
+        filterTournamentMatches(regularMatchesData, filters, data.current_user);
+      });
     });
-
-    // Initial render
-    filterMatches(regularMatchesData, '', 'regular-matches', data.current_user, true);
-    filterMatches(tournamentMatchesData, '', 'tournament-matches', data.current_user, false);
+    filterRegularMatches(regularMatchesData, {}, data.current_user);
+    filterTournamentMatches(tournamentMatchesData, {}, data.current_user);
   } catch (error) {
     displayMessage("Failed to load matches", MessageType.ERROR);
   } finally {
