@@ -52,6 +52,8 @@ def getRecentMatches(request):
                 'created_at',
                 'status',
                 'winner__username'
+            ).annotate(
+                player_count=Count('players')
             ),
             'overview_stats': {
                 'total_matches': total_matches,
