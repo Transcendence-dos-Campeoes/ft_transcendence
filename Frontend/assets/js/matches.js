@@ -44,8 +44,8 @@ async function loadMatches() {
               }</td>
               <td>${
                 match.player1__username === data.current_user
-                  ? match.player1_score + "/" + match.player2_score
-                  : match.player2_score + "/" + match.player1_score
+                  ? match.player1_score + " - " + match.player2_score
+                  : match.player2_score + " - " + match.player1_score
               }</td>
               <td>${
                 match.winner__username
@@ -80,8 +80,12 @@ async function loadMatches() {
             }</td>
             <td>${
               match.match__player1__username === data.current_user
-                ? match.match__player2_score
-                : match.match__player2_score + "/" + match.match__player1_score
+                ? match.match__player1_score +
+                  " - " +
+                  match.match__player2_score
+                : match.match__player2_score +
+                  " - " +
+                  match.match__player1_score
             }</td>
             <td>${
               match.match__winner__username

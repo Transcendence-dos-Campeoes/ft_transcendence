@@ -127,8 +127,8 @@ async function loadProfileData() {
               }</td>
               <td>${
                 match.player1__username === data.username
-                  ? match.player1_score + "/" + match.player2_score
-                  : match.player2_score + "/" + match.player1_score
+                  ? match.player1_score + " - " + match.player2_score
+                  : match.player2_score + " - " + match.player1_score
               }</td>
               <td>${
                 match.winner__username
@@ -297,8 +297,8 @@ async function viewProfile(username) {
               }</td>
               <td>${
                 match.player1__username === data.username
-                  ? match.player1_score + "-" + match.player2_score
-                  : match.player2_score + "-" + match.player1_score
+                  ? match.player1_score + " - " + match.player2_score
+                  : match.player2_score + " - " + match.player1_score
               }</td>
               <td>${
                 match.winner__username

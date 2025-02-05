@@ -67,7 +67,7 @@ async function loadChart() {
               beginAtZero: true,
               ticks: {
                 color: "white",
-                stepSize: 1,
+                // stepSize: 1,
                 callback: (value) => Math.round(value),
               },
             },
