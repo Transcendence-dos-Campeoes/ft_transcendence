@@ -37,10 +37,10 @@ async function renderPage(page) {
 	// Check authentication before navigating to home page
 	if (page !== "login" && page !== "register" && page !== "42" && page !== "two_fa_enable" && page !== "two_fa_verify") {
 		console.log("Navigating to home, checking and refreshing token...");
-		await checkUserStatus();
 		const isAuthenticated = await checkAndRefreshToken();
-		if (!isAuthenticated) {
-			console.log("User not authenticated, redirecting to login page.");
+		const isVerified = await checkUserStatus();
+		if (!isAuthenticated || !isVerified) {
+			console.log("User not authenticated or verified, redirecting to login page.");
 			page = "login";
 		}
 	}
@@ -64,7 +64,7 @@ async function renderPage(page) {
 		mainContent.innerHTML = html;
 
 		if (page === "login") {
-			attachLoginFormListener();
+			await authenticateUserFlow(page);
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
@@ -75,10 +75,42 @@ async function renderPage(page) {
 		} else if (page === "pong") {
 			startGame(data.game_group, socket);
 		}
+		else if (page === "two_fa_enable") {
+			two_fa_enable();
+		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);
+	}
+
+	async function authenticateUserFlow(page) {
+		const isAuthenticated = await checkAndRefreshToken();
+		const isVerified = await checkUserStatus();
+		const twofaenabled = await check2faenabled();
+		if (!isAuthenticated && page === "login") {
+			localStorage.clear();
+			attachLoginFormListener();
+		}
+		else if (!isAuthenticated && page === "register") {
+			localStorage.clear();
+			attachRegisterFormListener();
+		}
+		else {
+			console.log("Authenticated");
+			if (!isVerified && !twofaenabled) {
+				console.log("Not verified and 2FA not enabled.");
+				renderPage("two_fa_enable");
+			}
+			else if (!isVerified && twofaenabled) {
+				console.log("Not verified but 2FA Enabled.");
+				renderPage("two_fa_verify");
+			}
+			else {
+				console.log("Verified.");
+				renderPage("home");
+			}
+		}
 	}
 }
 
@@ -199,23 +231,36 @@ async function checkUserStatus() {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
 			},
 		});
-
-		if (response.ok) {
-			const responseData = await response.json();
-			if (!responseData.two_fa_enabled) {
-				window.location.href = "https://localhost/two_fa_enable";
-			}
-			else if (responseData.two_fa_enabled && !responseData.is_otp_verified) {
-				window.location.href = "https://localhost/two_fa_verify";
-			}
+		const responseData = await response.json();
+		if (response.ok && responseData.is_otp_verified) {
+			return true;
 		} else {
-			window.location.href = "https://localhost/login";
+			return false;
 		}
 	} catch (error) {
 		console.error("Error checking user status:", error);
-		window.location.href = "https://localhost/login";
+		return false;
 	}
 }
 
-// Call this function before rendering any protected page
-// checkUserStatus();
+async function check2faenabled() {
+	console.log("check2faenabled called.")
+	try {
+		const response = await fetch("http://localhost:8000/api/users/check_status/", {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${localStorage.getItem("access")}`,
+			},
+		});
+		const responseData = await response.json();
+		if (response.ok && responseData.two_fa_enabled) {
+			return true;
+		} else {
+			return false;
+		}
+	} catch (error) {
+		console.error("Error checking 2fa status:", error);
+		return false;
+	}
+}
