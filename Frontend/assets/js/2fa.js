@@ -131,3 +131,61 @@ async function verifyOtpCode() {
 		console.error("Error:", error);
 	}
 }
+
+async function recover2FA() {
+	const username = localStorage.getItem("username");
+	const email = localStorage.getItem("email");
+
+	try {
+		// Request a new 2FA QR code
+		const enableResponse = await fetch(
+			"http://localhost:8000/api/users/twofa/enable/",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${localStorage.getItem("access")}`,
+				},
+				body: JSON.stringify({ username }), // Send the username
+			}
+		);
+
+		if (!enableResponse.ok) {
+			const errorData = await enableResponse.json();
+			console.log("Error Data:", errorData);
+			displayMessage("Failed to enable 2FA", MessageType.ERROR);
+			return;
+		}
+
+		const enableData = await enableResponse.json();
+		console.log("2FA enabled successfully:", enableData);
+
+		// Send the email with the new QR code
+		const sendMailResponse = await fetch(
+			"http://localhost:8000/api/users/sendmail/",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${localStorage.getItem("access")}`,
+				},
+				body: JSON.stringify({ email, qr_code: enableData.qr_code }), // Send the email and QR code
+			}
+		);
+
+		if (sendMailResponse.ok) {
+			console.log("Recovery email sent successfully.");
+			const responseData = await sendMailResponse.json();
+			console.log("Response Data:", responseData);
+			displayMessage("Recovery email sent successfully", MessageType.SUCCESS);
+		} else {
+			console.log("Failed to send recovery email.");
+			const errorData = await sendMailResponse.json();
+			console.log("Error Data:", errorData);
+			displayMessage("Failed to send recovery email", MessageType.ERROR);
+		}
+	} catch (error) {
+		console.error("Error during 2FA recovery:", error);
+		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
+	}
+}

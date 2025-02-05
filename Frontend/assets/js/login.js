@@ -35,6 +35,7 @@ async function login(username, password) {
 			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 2 minutes for testing
 			localStorage.setItem("access_token_expiry", accessTokenExpiry);
 			localStorage.setItem("username", username);
+			localStorage.setItem("email", responseData.email);
 			if (responseData.two_fa_enabled == false) {
 				history.pushState({}, '', 'https://localhost/two_fa_enable');
 				checkAndRunTwoFA()
