@@ -130,27 +130,25 @@ async function loadAvailableTournaments() {
             <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
             <td>${tournament.status}</td>
             <td>
-                ${
-                  tournament.creator === currentUser
-                    ? `<button 
+                ${tournament.creator === currentUser
+            ? `<button 
                         class="btn btn-success btn-sm" 
                         onclick="startTournament(${tournament.id})"
                         ${tournament.currentPlayers < 4 ? "disabled" : ""}
                     >
                         Start Tournament
                     </button>`
-                    : `<button 
+            : `<button 
                         class="btn btn-primary btn-sm" 
                         onclick="joinTournament(${tournament.id})"
-                        ${
-                          tournament.currentPlayers >= tournament.maxPlayers
-                            ? "disabled"
-                            : ""
-                        }
+                        ${tournament.currentPlayers >= tournament.maxPlayers
+              ? "disabled"
+              : ""
+            }
                     >
                         Join
                     </button>`
-                }
+          }
             </td>
         </tr>
     `

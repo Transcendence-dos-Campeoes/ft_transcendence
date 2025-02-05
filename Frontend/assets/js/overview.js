@@ -15,7 +15,6 @@ async function loadChart() {
     const data = await response.json();
 
     // Initialize arrays for each day
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const winsPerDay = Array(7).fill(0);
     const lossesPerDay = Array(7).fill(0);
 
@@ -125,16 +124,20 @@ async function loadChart() {
         finished: "bg-secondary",
         cancelled: "bg-danger",
       };
-      return `<span class="badge ${
-        statusColors[status.toLowerCase()] || "bg-secondary"
-      }">${status}</span>`;
+      return `<span class="badge ${statusColors[status.toLowerCase()] || "bg-secondary"
+        }">${status}</span>`;
     };
 
+    const noTournamentsDiv = document.getElementById("no-tournaments");
+    const noMatchesDiv = document.getElementById("no-matches");
+
     // Update match history
-    const matchHistory = document.getElementById("latest-matches");
-    matchHistory.innerHTML = data.recent_matches
-      .map(
-        (match) => `
+    if (data.recent_matches.length !== 0) {
+      noMatchesDiv.classList.add("d-none");
+      const matchHistory = document.getElementById("latest-matches");
+      matchHistory.innerHTML = data.recent_matches
+        .map(
+          (match) => `
         <tr>
             <td>${new Date(match.created_at).toLocaleDateString()}</td>
             <td>${match.player1__username} vs ${match.player2__username}</td>
@@ -143,14 +146,19 @@ async function loadChart() {
             <td>${getStatusBadge(match.status)}</td>
         </tr>
     `
-      )
-      .join("");
+        )
+        .join("");
+    } else {
+      noMatchesDiv.classList.remove("d-none");
+    }
 
     // Update tournament history
-    const tournamentHistory = document.getElementById("latest-tounaments");
-    tournamentHistory.innerHTML = data.tournament_history
-      .map(
-        (tournament) => `
+    if (data.tournament_history.length !== 0) {
+      noTournamentsDiv.classList.add("d-none");
+      const tournamentHistory = document.getElementById("latest-tounaments");
+      tournamentHistory.innerHTML = data.tournament_history
+        .map(
+          (tournament) => `
           <tr>
               <td>${tournament.name}</td>
               <td>${getStatusBadge(tournament.status)}</td>
@@ -159,8 +167,11 @@ async function loadChart() {
               <td>${tournament.winner__username || "Undefined"}</td>
           </tr>
       `
-      )
-      .join("");
+        )
+        .join("");
+    } else {
+      noTournamentsDiv.classList.remove("d-none");
+    }
   } catch (error) {
     displayMessage("Failed to load graphics data", MessageType.ERROR);
   } finally {
