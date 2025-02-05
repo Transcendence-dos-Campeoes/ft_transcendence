@@ -142,7 +142,7 @@ async function loadChart() {
             <td>${new Date(match.created_at).toLocaleDateString()}</td>
             <td>${match.player1__username} vs ${match.player2__username}</td>
             <td>${match.player1_score} - ${match.player2_score}</td>
-            <td>${match.winner__username || "Undefined"}</td>
+            <td>${match.winner__username || ""}</td>
             <td>${getStatusBadge(match.status)}</td>
         </tr>
     `
@@ -164,7 +164,7 @@ async function loadChart() {
               <td>${getStatusBadge(tournament.status)}</td>
               <td>${tournament.player_count}</td>
               <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
-              <td>${tournament.winner__username || "Undefined"}</td>
+              <td>${tournament.winner__username || ""}</td>
           </tr>
       `
         )

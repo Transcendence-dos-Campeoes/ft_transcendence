@@ -31,7 +31,7 @@ def getRecentMatches(request):
 
          # Get most active players
         player_stats = SiteUser.objects.annotate(
-            matches_played=Count('matches_as_player1') + Count('matches_as_player2'),
+            matches_played=Count('matches_as_player1', distinct=True) + Count('matches_as_player2', distinct=True),
             tournaments_played=Count('tournament_entries')
         ).order_by('-matches_played')[:10]
         
