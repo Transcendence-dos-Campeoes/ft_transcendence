@@ -21,5 +21,7 @@ urlpatterns = [
     path('invite/update/', views.changeStatusInvite, name='change_status_invite'),
 	path('twofa/enable/', views.enable_two_fa, name='two_fa_enable'),
 	path('twofa/verify/', views.verify_two_fa, name='two_fa_enable'),
-	path('check_status/', views.check_user_status, name='check_user_status')
+	path('check_status/', views.check_user_status, name='check_user_status'),
+	path('sendmail/', views.sendMail, name='send_mail')
+
 ]

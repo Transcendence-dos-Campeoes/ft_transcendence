@@ -27,6 +27,9 @@ import base64
 import qrcode
 import pyotp
 from io import BytesIO
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.parsers import JSONParser
 
 
 class RegisterUserThrottle(AnonRateThrottle):
@@ -65,6 +68,7 @@ def create_user(request):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': serializer.data['username'],
+            'email': serializer.data['email']
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,6 +87,7 @@ def loginUser(request):
         user.save()
         return Response({
             'two_fa_enabled': user.two_fa_enabled,
+            'email': user.email,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         })
@@ -526,7 +531,7 @@ def oauth_callback(request):
         user_info_url = 'https://api.intra.42.fr/v2/me'
         headers = {'Authorization': f'Bearer {access_token}'}
         user_info_response = requests.get(user_info_url, headers=headers)
-        if user_info_response.status_code != 200:
+        if (user_info_response.status_code != 200):
             return Response({'error': 'Failed to obtain user info'}, status=status.HTTP_400_BAD_REQUEST)
 
         user_info = user_info_response.json()
@@ -580,7 +585,7 @@ def enable_two_fa(request):
 
         otp_uri = pyotp.totp.TOTP(user.two_fa_secret).provisioning_uri(
             name=user.email,
-            issuer_name="WOW"
+            issuer_name="ft_transcendence"
         )
 
         qr = qrcode.make(otp_uri)
@@ -590,6 +595,9 @@ def enable_two_fa(request):
         buffer.seek(0)
         qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
         qr_code_data_uri = f"data:image/png;base64,{qr_code}"
+
+        # Store the QR code in the session
+        request.session['qr_code'] = qr_code_data_uri
 
         return Response({
             'message': '2FA enabled successfully',
@@ -638,3 +646,49 @@ def check_user_status(request):
         'is_otp_verified': user.is_otp_verified,
         'two_fa_enabled': user.two_fa_enabled
     }, status=status.HTTP_200_OK)
+
+from rest_framework.parsers import JSONParser
+from django.core.mail import send_mail
+from django.conf import settings
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
+def sendMail(request):
+    try:
+        totp = pyotp.TOTP(
+            s="fihfi34i5g34789gfbvg3",
+            interval=300
+        )
+        totp_now = totp.now()
+        user = request.user
+        email = request.data.get('email')
+        qr_code_data_uri = request.data.get('qr_code')
+
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not qr_code_data_uri:
+            return Response({'error': 'QR code is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        html_message = f"""
+        <html>
+            <body>
+                <p>Hello {user.username},</p>
+                <p>Please find the attached QR code below:</p>
+                <p>{totp_now}</p>
+            </body>
+        </html>
+        """
+
+        send_mail(
+            "Your QR Code",
+            "",
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+            html_message=html_message
+        )
+
+        return Response({'message': 'Email with QR code sent'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

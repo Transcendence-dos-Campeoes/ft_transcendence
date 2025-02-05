@@ -11,9 +11,13 @@
 	<h1>Verify Two-Factor Authentication</h1>
 	<div>
 		<p>Enter the OTP code from your authenticator app:</p>
-		<input type="text" id="otpCode" placeholder="Enter OTP code">
-		<button onclick="verifyOtpCode()" style="background-color: green; color: white;">Verify OTP</button>
-		<button onclick="cancelVerification()" style="background-color: red; color: white;">Cancel</button>
+		<input type="text" id="otpCode" placeholder="Enter OTP code" style="margin-bottom: 10px;">
+		<div>
+
+			<button onclick="verifyOtpCode()" style="background-color: green; color: white;">Verify OTP</button>
+			<button onclick="cancelVerification()" style="background-color: red; color: white;">Cancel</button>
+			<button onclick="recover2FA()" style="background-color: blue; color: white;">Recover 2FA</button>
+		</div>
 		<!-- Added cancel button -->
 	</div>
 	<script src="assets/js/2fa.js"></script>
