@@ -18,7 +18,7 @@ class TournamentSerializer(serializers.ModelSerializer):
         return TournamentPlayer.objects.filter(tournament=obj).count()
 
     def validate_maxPlayers(self, value):
-        if value < 4 or value > 24:
+        if value < 4 or value > 32:
             raise serializers.ValidationError("Number of players must be between 4 and 24")
         return value
 

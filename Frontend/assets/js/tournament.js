@@ -181,49 +181,30 @@ async function loadAvailableTournaments() {
     }
 
     noTournamentsDiv.classList.add("d-none");
-    tbody.innerHTML = tournaments
-      .map(
-        (tournament) => `
-        <tr style="cursor: pointer">
-            <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${tournament.tournamentName}</td>
-            <td>${tournament.creator}</td>
-            <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
-            <td>${tournament.status}</td>
-            <td>
-                ${tournament.creator === currentUser
-            ? `<button 
-                        class="btn btn-success btn-sm" 
-                        onclick="startTournament(${tournament.id})"
-                        ${tournament.currentPlayers < 4 ? "disabled" : ""}
-                    >
-                        Start Tournament
-                    </button>
-                    <button 
-                        class="btn btn-primary btn-sm" 
-                        onclick="joinTournament(${tournament.id})"
-                        ${tournament.currentPlayers >= tournament.maxPlayers
-              ? "disabled"
-              : ""
-            }
-                    >
-                        Join
-                    </button>`
-            : `<button 
-                        class="btn btn-primary btn-sm" 
-                        onclick="joinTournament(${tournament.id})"
-                        ${tournament.currentPlayers >= tournament.maxPlayers
-              ? "disabled"
-              : ""
-            }
-                    >
-                        Join
-                    </button>`
-          }
-            </td>
-        </tr>
-    `
-      )
-      .join("");
+    tbody.innerHTML = tournaments.map(tournament => `
+      <tr style="cursor: pointer">
+          <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${tournament.tournamentName}</td>
+          <td>${tournament.creator}</td>
+          <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
+          <td>${tournament.status}</td>
+          <td>
+              ${tournament.creator === currentUser && tournament.status === 'pending' && tournament.currentPlayers >= 4
+        ? `<button 
+                      class="btn btn-success btn-sm" 
+                      onclick="startTournament(${tournament.id})"
+                      >Start Tournament</button>`
+        : ''
+      }
+              ${tournament.currentPlayers < tournament.maxPlayers
+        ? `<button 
+                      class="btn btn-primary btn-sm" 
+                      onclick="joinTournament(${tournament.id})"
+                      >Join</button>`
+        : ''
+      }
+          </td>
+      </tr>`
+    ).join('');
   } catch (error) {
     displayMessage("Failed to load tournaments", MessageType.ERROR);
   } finally {
