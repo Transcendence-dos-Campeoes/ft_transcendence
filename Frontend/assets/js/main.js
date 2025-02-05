@@ -191,6 +191,7 @@ async function load_profile_pic() {
 
 
 async function checkUserStatus() {
+	console.log("Check User Status called.")
 	try {
 		const response = await fetch("http://localhost:8000/api/users/check_status/", {
 			method: "GET",
