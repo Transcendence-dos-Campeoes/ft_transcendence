@@ -67,7 +67,7 @@ async function loadChart() {
               beginAtZero: true,
               ticks: {
                 color: "white",
-                stepSize: 1,
+                // stepSize: 1,
                 callback: (value) => Math.round(value),
               },
             },
@@ -151,14 +151,14 @@ async function loadChart() {
     tournamentHistory.innerHTML = data.tournament_history
       .map(
         (tournament) => `
-        <tr>
-            <td>${tournament.name}</td>
-            <td>${getStatusBadge(tournament.status)}</td>
-            <td>${tournament.total_players}</td>
-            <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
-            <td>${tournament.winner__username || "Undefined"}</td>
-        </tr>
-    `
+          <tr>
+              <td>${tournament.name}</td>
+              <td>${getStatusBadge(tournament.status)}</td>
+              <td>${tournament.player_count}</td>
+              <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
+              <td>${tournament.winner__username || "Undefined"}</td>
+          </tr>
+      `
       )
       .join("");
   } catch (error) {

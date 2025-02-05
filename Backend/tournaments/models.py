@@ -20,6 +20,9 @@ class Tournament(models.Model):
     finished_at = models.DateTimeField(null=True, blank=True)
     winner = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, null=True, related_name='tournaments_won')
 
+    def get_player_count(self):
+        return self.players.filter(status='accepted').count()
+    
     class Meta:
         ordering = ['-created_at']
 
