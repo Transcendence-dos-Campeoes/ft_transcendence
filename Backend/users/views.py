@@ -631,8 +631,10 @@ def verify_two_fa(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_user_status(request):
+    username = request.data.get('username')
     user = request.user
     return Response({
+        'username': user.username,
         'is_otp_verified': user.is_otp_verified,
         'two_fa_enabled': user.two_fa_enabled
     }, status=status.HTTP_200_OK)
