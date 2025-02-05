@@ -23,6 +23,11 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+import base64
+import qrcode
+import pyotp
+from io import BytesIO
+
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -74,8 +79,10 @@ def loginUser(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         refresh = RefreshToken.for_user(user)
+        user.is_otp_verified = False
         user.save()
         return Response({
+            'two_fa_enabled': user.two_fa_enabled,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         })
@@ -92,6 +99,7 @@ def logoutUser(request):
         token.blacklist()
 
         user = request.user
+        user.is_otp_verified = False
         user.save()
 
         channel_layer = get_channel_layer()
@@ -549,8 +557,82 @@ def oauth_callback(request):
             'access': str(refresh.access_token),
             'username': username,
             'email': user.email,
+            'two_fa_enabled': user.two_fa_enabled,
             'profile_image': request.build_absolute_uri(user.profile_image.url),
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def enable_two_fa(request):
+    try:
+        username = request.data.get('username')
+        user = request.user
+        if not username:
+            return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.two_fa_secret:
+            user.two_fa_secret = pyotp.random_base32()
+            user.save()
+
+        otp_uri = pyotp.totp.TOTP(user.two_fa_secret).provisioning_uri(
+            name=user.email,
+            issuer_name="WOW"
+        )
+
+        qr = qrcode.make(otp_uri)
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        
+        buffer.seek(0)
+        qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        qr_code_data_uri = f"data:image/png;base64,{qr_code}"
+
+        return Response({
+            'message': '2FA enabled successfully',
+            'username': username,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'two_fa_enabled': user.two_fa_enabled,
+                'two_fa_secret': user.two_fa_secret
+            },
+            'qr_code': qr_code_data_uri
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_two_fa(request):
+    try:
+        username = request.data.get('username')
+        otp_code = request.data.get('otpCode')
+        user = request.user
+
+        if not username or not otp_code:
+            return Response({'error': 'Username and OTP code are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        totp = pyotp.TOTP(user.two_fa_secret)
+        if totp.verify(otp_code):
+            user.two_fa_enabled = True
+            user.is_otp_verified = True
+            user.save()
+            return Response({'message': 'OTP verification successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid OTP code'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_user_status(request):
+    user = request.user
+    return Response({
+        'is_otp_verified': user.is_otp_verified,
+        'two_fa_enabled': user.two_fa_enabled
+    }, status=status.HTTP_200_OK)
