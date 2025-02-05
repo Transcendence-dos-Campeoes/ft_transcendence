@@ -119,7 +119,7 @@ async function loadMatches() {
     tournamentMatchesData = data.tournament_matches;
 
     ['date', 'opponent', 'result', 'status'].forEach(filterType => {
-      document.getElementById(`regular-matches-filter-${filterType}`).addEventListener('change', (e) => {
+      document.getElementById(`regular-matches-filter-${filterType}`).addEventListener('input', (e) => {
         const filters = {
           date: document.getElementById('regular-matches-filter-date').value,
           opponent: document.getElementById('regular-matches-filter-opponent').value,
@@ -131,7 +131,7 @@ async function loadMatches() {
     });
 
     ['date', 'opponent', 'result', 'status'].forEach(filterType => {
-      document.getElementById(`tournament-matches-filter-${filterType}`).addEventListener('change', (e) => {
+      document.getElementById(`tournament-matches-filter-${filterType}`).addEventListener('input', (e) => {
         const filters = {
           date: document.getElementById('tournament-matches-filter-date').value,
           opponent: document.getElementById('tournament-matches-filter-opponent').value,
