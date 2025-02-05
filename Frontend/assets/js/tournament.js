@@ -95,6 +95,29 @@ async function startTournament(tournamentId) {
   }
 }
 
+async function loadTournamentBracket(tournamentId) {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetch(`http://localhost:8000/api/tournaments/${tournamentId}/bracket/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to load tournament bracket");
+    }
+
+    const data = await response.json();
+
+  } catch (error) {
+    displayMessage("Failed to load tournament bracket", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
+  }
+}
+
 async function loadAvailableTournaments() {
   const loadingOverlay = new LoadingOverlay();
   try {
@@ -124,8 +147,8 @@ async function loadAvailableTournaments() {
     tbody.innerHTML = tournaments
       .map(
         (tournament) => `
-        <tr>
-            <td>${tournament.tournamentName}</td>
+        <tr style="cursor: pointer">
+            <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${tournament.tournamentName}</td>
             <td>${tournament.creator}</td>
             <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
             <td>${tournament.status}</td>

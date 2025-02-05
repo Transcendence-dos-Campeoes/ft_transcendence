@@ -8,10 +8,9 @@ const elements = {
 		matches: "/components/matches.html",
 		tournaments: "/components/tournaments.html",
 		newgame: "/components/newgame.html",
-		joingame: "/components/joingame.html",
 		newtournament: "/components/newtournament.html",
-		jointournament: "/components/jointournament.html",
 		invites: "/components/invites.html",
+		tournamentBracket: "/components/tournamentBracket.html",
 	},
 };
 
@@ -72,7 +71,7 @@ async function renderElement(element) {
 			attachSettingsFormListener();
 		} else if (element === "newtournament") {
 			attachTournamentFormListener();
-		} else if (element === "jointournament") {
+		} else if (element === "tournaments") {
 			loadAvailableTournaments();
 		} else if (element === "matches") {
 			loadMatches();
