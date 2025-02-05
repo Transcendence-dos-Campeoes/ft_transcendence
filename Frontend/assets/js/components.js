@@ -76,6 +76,9 @@ async function renderElement(element) {
       loadAvailableTournaments();
     } else if (element === "matches") {
       loadMatches();
+    } else if (element === "newgame"){
+      waitgame();
+
     }
     console.log("✅ Component render complete:", element);
   } catch (error) {
