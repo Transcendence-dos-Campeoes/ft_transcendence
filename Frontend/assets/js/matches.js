@@ -1,3 +1,87 @@
+let regularMatchesData = [];
+let tournamentMatchesData = [];
+
+const getStatusBadge = (status) => {
+  const statusColors = {
+    active: "bg-success",
+    pending: "bg-warning",
+    finished: "bg-secondary",
+    cancelled: "bg-danger",
+  };
+  return `<span class="badge ${statusColors[status.toLowerCase()] || "bg-secondary"
+    }">${status}</span>`;
+};
+
+function renderRegularMatch(match, currentUser) {
+  return `<tr>
+          <td>${new Date(match.created_at).toLocaleDateString()}</td>
+              <td>${match.player1__username === currentUser
+      ? match.player2__username
+      : match.player1__username
+    }</td>
+              <td>${match.player1__username === currentUser
+      ? match.player1_score + " - " + match.player2_score
+      : match.player2_score + " - " + match.player1_score
+    }</td>
+              <td>${match.winner__username
+      ? match.winner__username === currentUser
+        ? '<span class="text-success">Win</span>'
+        : '<span class="text-danger">Loss</span>'
+      : "Undefined"
+    }</td>
+              <td>${getStatusBadge(match.status)}</td>
+          </tr>`;
+}
+
+function renderTournamentMatch(match, currentUser) {
+  return `<tr>
+            <td>${match.tournament__name}</td>
+            <td>${new Date(match.match__created_at).toLocaleDateString()}</td>
+            <td>${match.match__player1__username === currentUser
+      ? match.match__player2__username
+      : match.match__player1__username
+    }</td>
+            <td>${match.match__player1__username === currentUser
+      ? match.match__player1_score +
+      " - " +
+      match.match__player2_score
+      : match.match__player2_score +
+      " - " +
+      match.match__player1_score
+    }</td>
+            <td>${match.match__winner__username
+      ? match.match__winner__username === currentUser
+        ? '<span class="text-success">Win</span>'
+        : '<span class="text-danger">Loss</span>'
+      : "Undefined"
+    }</td>
+            <td>${getStatusBadge(match.match__status)}</td>
+          </tr>`;
+}
+
+function filterMatches(matches, filter, tableId, current_user, isRegularMatch) {
+  const filteredMatches = matches.filter(match => {
+    const searchTerm = filter.toLowerCase();
+
+    if (isRegularMatch) {
+      return match.player1__username.toLowerCase().includes(searchTerm) ||
+        match.player2__username.toLowerCase().includes(searchTerm) ||
+        match.status.toLowerCase().includes(searchTerm);
+    } else {
+      return match.tournament__name.toLowerCase().includes(searchTerm) ||
+        match.match__player1__username.toLowerCase().includes(searchTerm) ||
+        match.match__player2__username.toLowerCase().includes(searchTerm) ||
+        match.match__status.toLowerCase().includes(searchTerm);
+    }
+  });
+
+  document.getElementById(tableId).innerHTML = filteredMatches
+    .map(match => isRegularMatch ?
+      renderRegularMatch(match, current_user) :
+      renderTournamentMatch(match, current_user))
+    .join('');
+}
+
 async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
@@ -13,92 +97,21 @@ async function loadMatches() {
     }
 
     const data = await response.json();
-    const matches = document.getElementById("regular-matches");
+    regularMatchesData = data.regular_matches;
+    tournamentMatchesData = data.tournament_matches;
 
-    if (data.regular_matches.length === 0) {
-      matches.innerHTML = "";
-      return;
-    }
+    // Add event listeners for filters
+    document.getElementById('regular-matches-filter').addEventListener('input', (e) => {
+      filterMatches(regularMatchesData, e.target.value, 'regular-matches', data.current_user, true);
+    });
 
-    const getStatusBadge = (status) => {
-      const statusColors = {
-        active: "bg-success",
-        pending: "bg-warning",
-        finished: "bg-secondary",
-        cancelled: "bg-danger",
-      };
-      return `<span class="badge ${
-        statusColors[status.toLowerCase()] || "bg-secondary"
-      }">${status}</span>`;
-    };
+    document.getElementById('tournament-matches-filter').addEventListener('input', (e) => {
+      filterMatches(tournamentMatchesData, e.target.value, 'tournament-matches', data.current_user, false);
+    });
 
-    matches.innerHTML = data.regular_matches
-      .map(
-        (match) => `
-          <tr>
-          <td>${new Date(match.created_at).toLocaleDateString()}</td>
-              <td>${
-                match.player1__username === data.current_user
-                  ? match.player2__username
-                  : match.player1__username
-              }</td>
-              <td>${
-                match.player1__username === data.current_user
-                  ? match.player1_score + " - " + match.player2_score
-                  : match.player2_score + " - " + match.player1_score
-              }</td>
-              <td>${
-                match.winner__username
-                  ? match.winner__username === data.current_user
-                    ? '<span class="text-success">Win</span>'
-                    : '<span class="text-danger">Loss</span>'
-                  : "Undefined"
-              }</td>
-              <td>${getStatusBadge(match.status)}</td>
-          </tr>
-      `
-      )
-      .join("");
-
-    const tournaments = document.getElementById("tournament-matches");
-
-    if (data.tournament_matches.length === 0) {
-      tournaments.innerHTML = "";
-      return;
-    }
-
-    tournaments.innerHTML = data.tournament_matches
-      .map(
-        (match) => `
-          <tr>
-            <td>${match.tournament__name}</td>
-            <td>${new Date(match.match__created_at).toLocaleDateString()}</td>
-            <td>${
-              match.match__player1__username === data.current_user
-                ? match.match__player2__username
-                : match.match__player1__username
-            }</td>
-            <td>${
-              match.match__player1__username === data.current_user
-                ? match.match__player1_score +
-                  " - " +
-                  match.match__player2_score
-                : match.match__player2_score +
-                  " - " +
-                  match.match__player1_score
-            }</td>
-            <td>${
-              match.match__winner__username
-                ? match.match__winner__username === data.current_user
-                  ? '<span class="text-success">Win</span>'
-                  : '<span class="text-danger">Loss</span>'
-                : "Undefined"
-            }</td>
-            <td>${getStatusBadge(match.match__status)}</td>
-          </tr>
-      `
-      )
-      .join("");
+    // Initial render
+    filterMatches(regularMatchesData, '', 'regular-matches', data.current_user, true);
+    filterMatches(tournamentMatchesData, '', 'tournament-matches', data.current_user, false);
   } catch (error) {
     displayMessage("Failed to load matches", MessageType.ERROR);
   } finally {
