@@ -63,6 +63,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_game_update(data)
         elif data['type'] == 'end_game':
             self.handle_end_game(data)
+        elif data['type'] == 'waiting_game':
+            self.handle_waitlist(data)
+        elif data['type'] == 'close_await':
+            self.handle_close_await(data)
 
     def handle_invite(self, data):
         async_to_sync(self.channel_layer.group_send)(
@@ -265,10 +269,54 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps(event))
         
     def player_move(self, event):
-        # if (event['user'] != self.scope['user'].username):
-            self.send(text_data=json.dumps(event))
+        self.send(text_data=json.dumps(event))
 
     def end_game(self, event):
         self.send(text_data=json.dumps(event))
+
+    def check_open_games():
+        for group_name, channels in group_channel_map.items():
+            if len(channels) == 1:
+                return group_name
+        return None
+    
+    def handle_waitlist(self, event):
+        group = OnlinePlayersConsumer.check_open_games()
+        if group is None:
+            game_group_name = f"game_{uuid.uuid4()}"
+            async_to_sync(self.channel_layer.group_add)(game_group_name, self.channel_name)
+
+            if game_group_name not in group_channel_map:
+                group_channel_map[game_group_name] = []
+            group_channel_map[game_group_name].append(self.channel_name)
+        
+        else:
+            user_in_group = [channel_user_map[channel_name].username for channel_name in group_channel_map[group]][0]
+            print (user_in_group)
+            group_channel_map[group].append(self.channel_name)
+            self.send(text_data=json.dumps({
+                'type': 'start_game',
+                'from': self.scope['user'].username,
+                'game_group': group,
+                'player': 'player2'
+            }))
+            async_to_sync(self.channel_layer.group_send)(group, {
+                'type': 'start_game',
+                'from':user_in_group,
+                'game_group': group,
+                'player': 'player1'
+            })
+            match_serializer = MatchSerializer(data={
+            'player2': SiteUser.objects.get(username=self.scope['user'].username).id,
+            'player1': SiteUser.objects.get(username=user_in_group).id,
+            'status': 'active'
+            })
+            if match_serializer.is_valid():
+                match = match_serializer.save()
+                group_match_map[game_group_name] = match.id
+                print( group_match_map[group])
+            else:
+                print("Validation errors:", match_serializer.errors)
+
 
     

@@ -1,4 +1,4 @@
-window.onload = checkAndRunTwoFA;
+// window.onload = checkAndRunTwoFA;
 
 function checkAndRunTwoFA() {
 	const currentUrl = window.location.href;
@@ -16,6 +16,13 @@ function checkAndRunTwoFA() {
 		console.log(currentUrl);
 	}
 }
+
+function cancelVerification() {
+	// Redirect to the home page or another appropriate page
+	localStorage.clear();
+	window.location.href = "https://localhost/login";
+}
+
 
 async function two_fa_enable() {
 	try {
