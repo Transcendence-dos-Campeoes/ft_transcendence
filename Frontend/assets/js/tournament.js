@@ -110,12 +110,49 @@ async function loadTournamentBracket(tournamentId) {
     }
 
     const data = await response.json();
-
+    renderBracket(data);
   } catch (error) {
     displayMessage("Failed to load tournament bracket", MessageType.ERROR);
   } finally {
     loadingOverlay.hide();
   }
+}
+
+function renderBracket(data) {
+  const container = document.getElementById('tournament-bracket-container');
+  const rounds = Object.entries(data.rounds).sort((a, b) => a[0] - b[0]);
+
+  let bracketHtml = '<div class="tournament-bracket d-flex">';
+
+  rounds.forEach(([roundNum, matches]) => {
+    bracketHtml += `
+      <div class="round mx-3">
+          <h5 class="text-center mb-3">Round ${roundNum}</h5>
+          <div class="matches">
+              ${matches.map(match => `
+                  <div class="match-container mb-3">
+                      <div class="match-connector"></div>
+                      <div class="match card bg-dark">
+                          <div class="card-body p-2">
+                              <div class="player ${match.winner === match.player1 ? 'winner' : ''}">
+                                  <span>${match.player1 || 'TBD'}</span>
+                                  <span class="score">${match.player1_score || '0'}</span>
+                              </div>
+                              <div class="player ${match.winner === match.player2 ? 'winner' : ''}">
+                                  <span>${match.player2 || 'TBD'}</span>
+                                  <span class="score">${match.player2_score || '0'}</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              `).join('')}
+          </div>
+      </div>
+  `;
+  });
+
+  bracketHtml += '</div>';
+  container.innerHTML = bracketHtml;
 }
 
 async function loadAvailableTournaments() {
@@ -160,6 +197,16 @@ async function loadAvailableTournaments() {
                         ${tournament.currentPlayers < 4 ? "disabled" : ""}
                     >
                         Start Tournament
+                    </button>
+                    <button 
+                        class="btn btn-primary btn-sm" 
+                        onclick="joinTournament(${tournament.id})"
+                        ${tournament.currentPlayers >= tournament.maxPlayers
+              ? "disabled"
+              : ""
+            }
+                    >
+                        Join
                     </button>`
             : `<button 
                         class="btn btn-primary btn-sm" 
