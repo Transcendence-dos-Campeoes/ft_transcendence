@@ -31,55 +31,55 @@ function formatErrorMessages(errors) {
 
 // Page loader
 async function renderPage(page) {
-  console.log(`Attempting to render page: ${page}`);
-  if (router.currentPage === page) return;
+	console.log(`Attempting to render page: ${page}`);
+	if (router.currentPage === page) return;
 
-  // Check authentication before navigating to home page
-  if (page !== "login" && page !== "register" && page !== "42") {
-    console.log("Navigating to home, checking and refreshing token...");
-    const isAuthenticated = await checkAndRefreshToken();
-    if (!isAuthenticated) {
-      console.log("User not authenticated, redirecting to login page.");
-      page = "login";
-    }
-    checkUserStatus();
-  }
+	// Check authentication before navigating to home page
+	if (page !== "login" && page !== "register" && page !== "42" && page !== "two_fa_enable" && page !== "two_fa_verify") {
+		console.log("Navigating to home, checking and refreshing token...");
+		await checkUserStatus();
+		const isAuthenticated = await checkAndRefreshToken();
+		if (!isAuthenticated) {
+			console.log("User not authenticated, redirecting to login page.");
+			page = "login";
+		}
+	}
 
-  try {
-    const screen = document.querySelector(".screen-container");
-    screen.classList.remove("zoom-in", "zoom-out");
+	try {
+		const screen = document.querySelector(".screen-container");
+		screen.classList.remove("zoom-in", "zoom-out");
 
-    if (page === "home") {
-      screen.classList.add("zoom-in");
-    } else if (router.currentPage === "home") {
-      screen.classList.add("zoom-out");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      screen.classList.remove("zoom-out");
-    }
+		if (page === "home") {
+			screen.classList.add("zoom-in");
+		} else if (router.currentPage === "home") {
+			screen.classList.add("zoom-out");
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			screen.classList.remove("zoom-out");
+		}
 
-    // Load the new page
-    const mainContent = document.getElementById("main-content");
-    const response = await fetch(router.pages[page]);
-    const html = await response.text();
-    mainContent.innerHTML = html;
+		// Load the new page
+		const mainContent = document.getElementById("main-content");
+		const response = await fetch(router.pages[page]);
+		const html = await response.text();
+		mainContent.innerHTML = html;
 
-    if (page === "login") {
-      attachLoginFormListener();
-    } else if (page === "register") {
-      attachRegisterFormListener();
-    } else if (page === "home") {
-      updateUserProfile();
-      load_profile_pic();
-      renderElement("overview");
-      lobbyLoad();
-    } else if (page === "pong") {
-      startGame(data.game_group, socket);
-    }
-    history.pushState({ page: page }, "", `/${page}`);
-    router.currentPage = page;
-  } catch (error) {
-    console.error("Error loading page:", error);
-  }
+		if (page === "login") {
+			attachLoginFormListener();
+		} else if (page === "register") {
+			attachRegisterFormListener();
+		} else if (page === "home") {
+			updateUserProfile();
+			load_profile_pic();
+			renderElement("overview");
+			lobbyLoad();
+		} else if (page === "pong") {
+			startGame(data.game_group, socket);
+		}
+		history.pushState({ page: page }, "", `/${page}`);
+		router.currentPage = page;
+	} catch (error) {
+		console.error("Error loading page:", error);
+	}
 }
 
 // Handle browser back/forward
