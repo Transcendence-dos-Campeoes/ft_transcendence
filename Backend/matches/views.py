@@ -13,13 +13,19 @@ from .serializers import MatchSerializer
 def getRecentMatches(request):
     try:
         # Get 10 most recent matches
-        matches = Match.objects.all().order_by('-created_at')[:10]
+        matches = Match.objects.filter(
+            player1__isnull=False,
+            player2__isnull=False
+        ).order_by('-created_at')[:10]
         
         # Get 10 most recent tournaments
         tournaments = Tournament.objects.all().order_by('-created_at')[:10]
 
         # Calculate global statistics
-        total_matches = Match.objects.count()
+        total_matches = Match.objects.filter(
+            player1__isnull=False,
+            player2__isnull=False
+        ).count()
         total_tournaments = Tournament.objects.count()
         total_players = SiteUser.objects.count()
         
