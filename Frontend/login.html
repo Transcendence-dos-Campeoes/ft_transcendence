@@ -1,8 +1,8 @@
 <div class="screen-content">
     <h1 class="fw-bold mb-2 fs-3 text-center text-white">Come play Pong!</h1>
     
-	<form id="loginForm" class="p-2">
-		<div id="errorMessages" class="alert alert-danger d-none"></div>
+    <form id="loginForm" class="p-2">
+        <div id="errorMessages" class="alert alert-danger d-none"></div>
         <div class="form-floating mb-2">
             <input type="text" class="form-control form-control-sm rounded-2" id="floatingUsername" placeholder="Username">
             <label for="floatingUsername">Username</label>
@@ -16,24 +16,25 @@
             Dont't have an account? 
         </p>
         <p class="text-center text-white small mb-2">
-			<a href="/register" onclick="renderPage('register')" class="text-primary text-decoration-none fw-bold">Sign up here!</a>
-		</p>
+            <a href="/register" onclick="event.preventDefault(); renderPage('register')" class="text-primary text-decoration-none fw-bold">Sign up here!</a>
+        </p>
         <hr class="my-2">
         <h2 class="fs-6 fw-bold mb-2 text-center text-white">Or use your 42Porto Account</h2>
-		<style>
-			.login-button {
-				background-color: #00babc;
-			}
+        <style>
+            .login-button {
+                background-color: #00babc;
+            }
 
-			.login-button:hover {
-				background-color: #008f8f;
-			}
-		</style>
-        <button type="button" class="login-button text-black py-2 px-3 rounded-2 w-100 d-flex align-items-center justify-content-center">
+            .login-button:hover {
+                background-color: #008f8f;
+            }
+        </style>
+        <button type="button" class="login-button text-black py-2 px-3 rounded-2 w-100 d-flex align-items-center justify-content-center" onclick="startOAuth()">
             <small>Sign in with</small>&nbsp&nbsp&nbsp;
             <img src="/assets/img/42Logo.png" alt="42 Logo" style="width: 30px; height: 30px; background: transparent;" class="ml-2">
         </button>
     </form>
 </div>
 
-<script src="assets/js/login.js"></script>  
+<script src="assets/js/login.js"></script>
+<script src="assets/js/42.js"></script>

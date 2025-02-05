@@ -1,0 +1,6 @@
+
+
+function socket_communication() 
+{
+    
+}

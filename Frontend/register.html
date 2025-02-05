@@ -22,7 +22,7 @@
         <button class="w-100 mb-2 btn btn-sm rounded-2 btn-primary" type="submit">Sign up</button>
         <p class="text-center text-white small mb-2">
             Already have an account? 
-            <a href="/login" onclick="renderPage('login')" class="text-primary text-decoration-none fw-bold">Login here</a>
+            <a href="/login" onclick="event.preventDefault(); renderPage('login')" class="text-primary text-decoration-none fw-bold">Login here</a>
         </p>
         <hr class="my-2">
         <h2 class="fs-6 fw-bold mb-2 text-center text-white">Or use your 42Porto Account</h2>
@@ -35,7 +35,7 @@
 				background-color: #008f8f;
 			}
 		</style>
-        <button type="button" class="login-button text-black py-2 px-3 rounded-2 w-100 d-flex align-items-center justify-content-center">
+        <button type="button" class="login-button text-black py-2 px-3 rounded-2 w-100 d-flex align-items-center justify-content-center" onclick="startOAuth()">
             <small>Sign up with</small>&nbsp&nbsp&nbsp;
             <img src="/assets/img/42Logo.png" alt="42 Logo" style="width: 30px; height: 30px; background: transparent;" class="ml-2">
         </button>

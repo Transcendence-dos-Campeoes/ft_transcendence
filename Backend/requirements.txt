@@ -8,3 +8,7 @@ djangorestframework-simplejwt==5.4
 channels==4.2.0
 daphne==4.1.2
 channels_redis
+requests==2.32.2
+Pillow==11.1
+pyotp==2.9.0
+qrcode==8.0

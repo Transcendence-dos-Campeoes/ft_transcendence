@@ -1,5 +1,13 @@
+@font-face {
+  font-family: "Public Pixel";
+  src: url("../fonts/PublicPixel-rv0pA.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-  font-family: "Silkscreen", cursive;
+  font-family: "Public Pixel", sans-serif;
+  font-size: 12px; 
 }
 
 .screen-container {
@@ -128,7 +136,7 @@ body {
   border: 2px solid #1e3056;
   box-shadow: 0 0 20px rgba(30, 48, 86, 0.4),
     inset 0 0 10px rgba(30, 48, 86, 0.4);
-  animation: speakerGlow 2s infinite;
+  animation: speakerGlow 0.5s infinite;
 }
 
 @keyframes speakerGlow {
