@@ -66,7 +66,7 @@ async function joinTournament(tournamentId) {
     }
 
     displayMessage("Successfully joined tournament!", MessageType.SUCCESS);
-    loadAvailableTournaments(); // Refresh the list
+    // loadAvailableTournaments(); // Refresh the list
   } catch (error) {
     displayMessage("Failed to join tournament", MessageType.ERROR);
   } finally {
