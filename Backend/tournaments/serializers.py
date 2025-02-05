@@ -18,7 +18,7 @@ class TournamentSerializer(serializers.ModelSerializer):
         return TournamentPlayer.objects.filter(tournament=obj).count()
 
     def validate_maxPlayers(self, value):
-        if value < 4 or value > 24:
+        if value < 4 or value > 32:
             raise serializers.ValidationError("Number of players must be between 4 and 24")
         return value
 
@@ -69,87 +69,3 @@ class TournamentPlayerSerializer(serializers.ModelSerializer):
             status='accepted'
         )
         return tournament_player
-    
-class StartTournamentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tournament
-        fields = ['id', 'status']
-        read_only_fields = ['id']
-
-    def validate(self, data):
-        tournament = self.instance
-        if tournament.status != 'pending':
-            raise serializers.ValidationError("Tournament already started")
-        
-        players_count = tournament.players.filter(status='accepted').count()
-        if players_count < 4:
-            raise serializers.ValidationError("Need at least 4 players")
-            
-        data['status'] = 'active'
-        return data
-
-    def create_bracket(self, tournament):
-        players = list(tournament.players.filter(status='accepted'))
-        import random
-        random.shuffle(players)
-        
-        # Update seeds
-        for i, player in enumerate(players):
-            player.seed = i + 1
-            player.save()
-            
-        round_number = 1
-        match_number = 1
-        matches = []
-
-        # Create first round matches
-        for i in range(0, len(players), 2):
-            if i + 1 < len(players):
-                match = Match.objects.create(
-                    player1=players[i].player,
-                    player2=players[i+1].player,
-                    status='pending'
-                )
-                tournament_match = TournamentMatch.objects.create(
-                    tournament=tournament,
-                    match=match,
-                    round_number=round_number,
-                    match_number=match_number
-                )
-                matches.append(tournament_match)
-                match_number += 1
-
-        # Link matches for next rounds
-        while len(matches) > 1:
-            next_round = []
-            for i in range(0, len(matches), 2):
-                if i + 1 < len(matches):
-                    # Create match with temporary players (will be updated when previous matches finish)
-                    match = Match.objects.create(
-                        player1=players[0].player,  # Temporary player
-                        player2=players[1].player,  # Temporary player
-                        status='pending'
-                    )
-                    next_match = TournamentMatch.objects.create(
-                        tournament=tournament,
-                        match=match,
-                        round_number=round_number + 1,
-                        match_number=match_number
-                    )
-                    matches[i].next_match = next_match
-                    matches[i+1].next_match = next_match
-                    matches[i].save()
-                    matches[i+1].save()
-                    next_round.append(next_match)
-                    match_number += 1
-            matches = next_round
-            round_number += 1
-
-    def update(self, instance, validated_data):
-        # Create bracket before changing status
-        self.create_bracket(instance)
-        # Update tournament status
-        instance.status = validated_data.get('status', instance.status)
-        instance.started_at = timezone.now()
-        instance.save()
-        return instance

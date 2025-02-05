@@ -8,10 +8,9 @@ const elements = {
 		matches: "/components/matches.html",
 		tournaments: "/components/tournaments.html",
 		newgame: "/components/newgame.html",
-		joingame: "/components/joingame.html",
 		newtournament: "/components/newtournament.html",
-		jointournament: "/components/jointournament.html",
 		invites: "/components/invites.html",
+		tournamentBracket: "/components/tournamentBracket.html",
 	},
 };
 
@@ -27,13 +26,13 @@ function clearNavLinkButtons() {
 async function renderElement(element) {
 	console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
-	
+
 	const isAuthenticated = await checkAndRefreshToken();
 	if (!isAuthenticated) {
 		console.log("User not authenticated, redirecting to login page.");
 		throw new Error("User not authenticated");
 	}
-	
+
 	try {
 		loadingOverlay.show();
 		clearNavLinkButtons();
@@ -60,30 +59,29 @@ async function renderElement(element) {
 		content.innerHTML = html;
 		elements.currentElement = element;
 
-    console.log("🎯 Initializing component:", element);
-    if (element === "profile") {
-      await loadProfileData();
-    } else if (element === "overview") {
-      loadChart();
-    } else if (element === "invites") {
-      new FriendSystem();
-    } else if (element === "settings") {
-      await loadSettingsData();
-      attachSettingsFormListener();
-    } else if (element === "newtournament") {
-      attachTournamentFormListener();
-    } else if (element === "jointournament") {
-      loadAvailableTournaments();
-    } else if (element === "matches") {
-      loadMatches();
-    } else if (element === "newgame"){
+		console.log("🎯 Initializing component:", element);
+		if (element === "profile") {
+			await viewProfile();
+		} else if (element === "overview") {
+			loadChart();
+		} else if (element === "invites") {
+			new FriendSystem();
+		} else if (element === "settings") {
+			await loadSettingsData();
+			attachSettingsFormListener();
+		} else if (element === "newtournament") {
+			attachTournamentFormListener();
+		} else if (element === "tournaments") {
+			loadAvailableTournaments();
+		} else if (element === "matches") {
+			loadMatches();
+		} else if (element === "newgame"){
       waitgame();
-
     }
-    console.log("✅ Component render complete:", element);
-  } catch (error) {
-    console.error("Error loading element:", error);
-  } finally {
-    loadingOverlay.hide();
-  }
+		console.log("✅ Component render complete:", element);
+	} catch (error) {
+		console.error("Error loading element:", error);
+	} finally {
+		loadingOverlay.hide();
+	}
 }

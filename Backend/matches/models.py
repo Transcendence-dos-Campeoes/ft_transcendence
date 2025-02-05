@@ -11,11 +11,14 @@ class Match(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    player1 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='matches_as_player1')
-    player2 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='matches_as_player2')
+    player1 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, 
+                               related_name='matches_as_player1', null=True, blank=True)
+    player2 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, 
+                               related_name='matches_as_player2', null=True, blank=True)
     player1_score = models.IntegerField(default=0)
     player2_score = models.IntegerField(default=0)
-    winner = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, null=True, related_name='matches_won')
+    winner = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, 
+                              null=True, blank=True, related_name='matches_won')
     status = models.CharField(max_length=20, choices=MATCH_STATUS, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
