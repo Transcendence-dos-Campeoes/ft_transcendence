@@ -17,7 +17,44 @@ function checkAndRunTwoFA() {
 	}
 }
 
+function cancelRegistration() {
+	// Redirect to the home page or another appropriate page
+	const messageModal = new MessageModal(MessageType.INVITE);
+	messageModal.show(
+		"Are you sure you want to cancel your account registration? All your progress will be lost.",
+		"Cancel Account Registration"
+	).then(async (accept) => {
+		if (accept) {
+			console.log("Account registration cancelled.");
+			try {
+				const response = await fetch("http://localhost:8000/api/users/delete/", {
+					method: "DELETE",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${localStorage.getItem("access")}`,
+					},
+					credentials: "include"
+				});
+
+				const responseText = await response.text();
+
+				if (response.ok) {
+					console.log("Account registration canceled.");
+					localStorage.clear();
+					window.location.href = "https://localhost/register";
+				}
+			} catch (error) {
+				console.error("Error:", error);
+				displayMessage("An error occurred while deleting user", MessageType.ERROR);
+			}
+		} else {
+			console.log("Account registration continued.");
+		}
+	});
+}
+
 function cancelVerification() {
+	console.log("2FA verification canceled.");
 	// Redirect to the home page or another appropriate page
 	localStorage.clear();
 	window.location.href = "https://localhost/login";
@@ -84,16 +121,13 @@ async function verifyOtpCode() {
 			console.log("OTP verification successful.");
 			const responseData = await response.json();
 			console.log("Response Data:", responseData);
-			displayMessage("OTP verification successful", MessageType.SUCCESS);
 			renderPage("home")
 		} else {
 			console.log("OTP verification failed.");
 			const errorData = await response.json();
 			console.log("Error Data:", errorData);
-			displayMessage("OTP verification failed", MessageType.ERROR);
 		}
 	} catch (error) {
 		console.error("Error:", error);
-		displayMessage("An error occurred while verifying OTP.", MessageType.ERROR);
 	}
 }
