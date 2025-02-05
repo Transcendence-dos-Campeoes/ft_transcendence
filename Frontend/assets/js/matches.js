@@ -118,6 +118,9 @@ async function loadMatches() {
     regularMatchesData = data.regular_matches;
     tournamentMatchesData = data.tournament_matches;
 
+    const noTournamentsDiv = document.getElementById("no-tournaments-matches");
+    const noRegularDiv = document.getElementById("no-regular-matches");
+
     ['date', 'opponent', 'result', 'status'].forEach(filterType => {
       document.getElementById(`regular-matches-filter-${filterType}`).addEventListener('input', (e) => {
         const filters = {
@@ -126,7 +129,13 @@ async function loadMatches() {
           result: document.getElementById('regular-matches-filter-result').value,
           status: document.getElementById('regular-matches-filter-status').value
         };
-        filterRegularMatches(regularMatchesData, filters, data.current_user);
+        if (regularMatchesData.length !== 0) {
+          noRegularDiv.classList.add("d-none");
+          filterRegularMatches(regularMatchesData, filters, data.current_user);
+        }
+        else {
+          noRegularDiv.classList.remove("d-none");
+        }
       });
     });
 
@@ -138,11 +147,32 @@ async function loadMatches() {
           result: document.getElementById('tournament-matches-filter-result').value,
           status: document.getElementById('tournament-matches-filter-status').value
         };
-        filterTournamentMatches(regularMatchesData, filters, data.current_user);
+        if (tournamentMatchesData.length !== 0) {
+          noTournamentsDiv.classList.add("d-none");
+          filterTournamentMatches(tournamentMatchesData, filters, data.current_user);
+        }
+        else {
+          noTournamentsDiv.classList.remove("d-none");
+        }
       });
     });
-    filterRegularMatches(regularMatchesData, {}, data.current_user);
-    filterTournamentMatches(tournamentMatchesData, {}, data.current_user);
+
+    if (tournamentMatchesData.length !== 0) {
+      noTournamentsDiv.classList.add("d-none");
+      filterTournamentMatches(tournamentMatchesData, {}, data.current_user);
+    }
+    else {
+      noTournamentsDiv.classList.remove("d-none");
+    }
+
+    if (regularMatchesData.length !== 0) {
+      noRegularDiv.classList.add("d-none");
+      filterRegularMatches(regularMatchesData, {}, data.current_user);
+    }
+    else {
+      noRegularDiv.classList.remove("d-none");
+    }
+
   } catch (error) {
     displayMessage("Failed to load matches", MessageType.ERROR);
   } finally {
