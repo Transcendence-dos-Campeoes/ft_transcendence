@@ -18,6 +18,35 @@
                     <h4>Tournament Matches</h4>
                 </div>
                 <div class="card-body">
+                    <div class="p-3">
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <input type="text" class="form-control bg-dark text-white"
+                                    id="tournament-matches-filter-date" placeholder="Date">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control bg-dark text-white"
+                                    id="tournament-matches-filter-opponent" placeholder="Opponent">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <select class="form-select bg-dark text-white" id="tournament-matches-filter-result">
+                                    <option value="" selected>Result</option>
+                                    <option value="win">Win</option>
+                                    <option value="loss">Loss</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <select class="form-select bg-dark text-white" id="tournament-matches-filter-status">
+                                    <option value="" selected>Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="accepted">Accepted</option>
+                                    <option value="finished">Finished</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
                         <table class="table table-hover text-white">
                             <thead>
@@ -37,13 +66,47 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
+
+    <div class="row">
+        <div class="col-12">
             <!-- Regular Matches Section -->
             <div class="card bg-transparent border-light">
                 <div class="card-header">
                     <h4>Regular Matches</h4>
                 </div>
                 <div class="card-body">
+                    <div class="p-3">
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <input type="text" class="form-control bg-dark text-white"
+                                    id="regular-matches-filter-date" placeholder="Date">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control bg-dark text-white"
+                                    id="regular-matches-filter-opponent" placeholder="Opponent">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <select class="form-select bg-dark text-white" id="regular-matches-filter-result">
+                                    <option value="" selected>Select Result</option>
+                                    <option value="win">Win</option>
+                                    <option value="loss">Loss</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <select class="form-select bg-dark text-white" id="regular-matches-filter-status">
+                                    <option value="" selected>Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="accepted">Accepted</option>
+                                    <option value="finished">Finished</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
                         <table class="table table-hover text-white">
                             <thead>

@@ -25,16 +25,15 @@ function clearNavLinkButtons() {
 	});
 }
 async function renderElement(element) {
-	await checkUserStatus();
 	console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
-
+	
 	const isAuthenticated = await checkAndRefreshToken();
 	if (!isAuthenticated) {
 		console.log("User not authenticated, redirecting to login page.");
 		throw new Error("User not authenticated");
 	}
-
+	
 	try {
 		loadingOverlay.show();
 		clearNavLinkButtons();
