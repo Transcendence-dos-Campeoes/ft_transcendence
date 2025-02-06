@@ -36,4 +36,6 @@ class Match(models.Model):
         ).select_related('player1', 'player2', 'winner')
 
     def __str__(self):
-        return f"Match {self.id}: {self.player1.username} vs {self.player2.username}"
+        player1_name = self.player1.username if self.player1 else 'TBD'
+        player2_name = self.player2.username if self.player2 else 'TBD'
+        return f"Match {self.id}: {player1_name} vs {player2_name}"
