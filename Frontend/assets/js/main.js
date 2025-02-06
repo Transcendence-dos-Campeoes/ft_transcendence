@@ -168,7 +168,10 @@ async function checkAndRefreshToken() {
 }
 
 async function refreshToken() {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const refresh = localStorage.getItem("refresh");
 		const response = await fetch("http://localhost:8000/api/token/refresh/", {
 			method: "POST",
@@ -196,11 +199,16 @@ async function refreshToken() {
 	} catch (error) {
 		console.error("Error refreshing Access token:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 async function load_profile_pic() {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const response = await fetch("http://localhost:8000/api/users/profile/", {
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -221,13 +229,18 @@ async function load_profile_pic() {
 		}
 	} catch {
 		displayMessage("Failed to load profile data", MessageType.ERROR);
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 
 async function checkUserStatus() {
 	console.log("Check User Status called.")
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const response = await fetch("http://localhost:8000/api/users/check_status/", {
 			method: "GET",
 			headers: {
@@ -244,12 +257,18 @@ async function checkUserStatus() {
 	} catch (error) {
 		console.error("Error checking user status:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 async function check2faenabled() {
 	console.log("check2faenabled called.")
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
+
 		const response = await fetch("http://localhost:8000/api/users/check_status/", {
 			method: "GET",
 			headers: {
@@ -266,5 +285,7 @@ async function check2faenabled() {
 	} catch (error) {
 		console.error("Error checking 2fa status:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
