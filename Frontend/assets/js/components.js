@@ -79,6 +79,7 @@ async function renderElement(element) {
 		} else if (element === "newgame") {
 			waitgame();
 		} else if (element === "changeMap") {
+			loadMaps();
 			attachChangeMapFormListener();
 		}
 		console.log("✅ Component render complete:", element);

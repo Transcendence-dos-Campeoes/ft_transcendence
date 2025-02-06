@@ -2,8 +2,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import SiteUser
-from .models import Friend
+from .models import SiteUser, Friend, GameMap
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -99,3 +98,22 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         validated_data['requester'] = self.context['request'].user
         validated_data['status'] = 'pending'
         return super().create(validated_data)
+    
+class GameMapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameMap
+        fields = ['id', 'name', 'ball_color', 'background_color', 'paddle_color', 'wall_color']
+
+class UserGameMapSerializer(serializers.ModelSerializer):
+    selected_map = GameMapSerializer() 
+
+    class Meta:
+        model = SiteUser
+        fields = ['id', 'username', 'selected_map']
+
+    def update(self, instance, validated_data):
+        map_data = validated_data.pop('selected_map', None)
+        if map_data:
+            map_instance = GameMap.objects.get(id=map_data.get('id'))
+            instance.selected_map = map_instance
+        return super().update(instance, validated_data)

@@ -1,6 +1,27 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+
+class GameMap(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    ball_color = models.CharField(max_length=7)
+    background_color = models.CharField(max_length=7)
+    paddle_color = models.CharField(max_length=7)
+    wall_color = models.CharField(max_length=7)
+
+    @classmethod
+    def get_default_map(cls):
+        default_map, _ = cls.objects.get_or_create(
+            name='Classic',
+            defaults={
+                'ball_color': '#FFFFFF',
+                'background_color': '#000000',
+                'paddle_color': '#FFFFFF',
+                'wall_color': '#FFFFFF'
+            }
+        )
+        return default_map.id
+
 class SiteUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -27,6 +48,12 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     is_otp_verified = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
+    selected_map = models.ForeignKey(
+        GameMap,
+        on_delete=models.SET_NULL,
+        null=True,
+        default=GameMap.get_default_map
+    )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
@@ -79,4 +106,3 @@ class Friend(models.Model):
     def decline(self):
         self.status = 'declined'
         self.save()
-
