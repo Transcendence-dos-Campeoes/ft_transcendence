@@ -75,7 +75,9 @@ async function joinTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
+  const loadingOverlay = new LoadingOverlay();
   try {
+    loadingOverlay.show();
     const response = await fetch(
       `http://localhost:8000/api/tournaments/${tournamentId}/start/`,
       {
@@ -92,6 +94,8 @@ async function startTournament(tournamentId) {
     loadAvailableTournaments();
   } catch (error) {
     displayMessage("Failed to start tournament", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
 
