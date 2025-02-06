@@ -133,57 +133,62 @@ async function verifyOtpCode() {
 }
 
 async function requestOtp() {
-	const username = localStoragsendMailResponsee.getItem("username");
-	const email = localStorage.getItem("email");
-
+	const email = document.getElementById("emailInputRecover").value;
 	try {
 		// Request a new 2FA QR code
 		const enableResponse = await fetch(
-			"http://localhost:8000/api/users/twofa/enable/",
+			"http://localhost:8000/api/users/setRecoverOTP/",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${localStorage.getItem("access")}`,
 				},
-				body: JSON.stringify({ username }), // Send the username
+				body: JSON.stringify({ email }), // Send the username
 			}
 		);
 
 		if (!enableResponse.ok) {
 			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to enable 2FA", MessageType.ERROR);
+			displayMessage("Failed to setRecoverOTP", MessageType.ERROR);
 			return;
 		}
 
 		const enableData = await enableResponse.json();
-		console.log("2FA enabled successfully:", enableData);
+		console.log("Email with recover OTP sent succesfully:", enableData);
+	} catch (error) {
+		console.error("Error during 2FA recovery:", error);
+		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
+	}
+}
 
-		// Send the email with the new QR code
-		const otpMailResponse = await fetch(
-			"http://localhost:8000/api/users/sendOTPmail/",
+async function checkRecoverOTP() {
+	const otp_code = document.getElementById("otpInputRecover").value;
+	console.log(otp_code);
+	try {
+		const enableResponse = await fetch(
+			"http://localhost:8000/api/users/checkRecoverOTP/",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${localStorage.getItem("access")}`,
 				},
-				body: JSON.stringify({ email, qr_code: enableData.qr_code }), // Send the email and QR code
+				body: JSON.stringify({ otp_code }),
 			}
 		);
 
-		if (otpMailResponse.ok) {
-			console.log("Recovery email sent successfully.");
-			const responseData = await otpMailResponse.json();
-			console.log("Response Data:", responseData);
-			displayMessage("Recovery email sent successfully", MessageType.SUCCESS);
-		} else {
-			console.log("Failed to send recovery email.");
-			const errorData = await otpMailResponse.json();
+		if (!enableResponse.ok) {
+			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to send recovery email", MessageType.ERROR);
+			displayMessage("Failed to checkRecoverOTP", MessageType.ERROR);
+			return;
 		}
+
+		const enableData = await enableResponse.json();
+		console.log("2FA reset successfully:", enableData);
+		displayMessage("2FA reset successfully", MessageType.SUCCESS);
 	} catch (error) {
 		console.error("Error during 2FA recovery:", error);
 		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
