@@ -160,7 +160,7 @@ async function loadChart() {
         .map(
           (tournament) => `
           <tr>
-              <td>${tournament.name}</td>
+              <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${tournament.name}</td>
               <td>${getStatusBadge(tournament.status)}</td>
               <td>${tournament.player_count}</td>
               <td>${new Date(tournament.created_at).toLocaleDateString()}</td>
