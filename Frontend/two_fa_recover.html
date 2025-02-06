@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Disable 2FA</title>
+	<style>
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
+
+		.container {
+			text-align: center;
+		}
+
+		input {
+			display: block;
+			margin: 10px auto;
+		}
+
+		button {
+			display: block;
+			margin: 10px auto;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Disable 2FA</h1>
+		<div>
+			<p style="margin-top: 20px;">Enter your email to receive a one-time password (OTP) for disabling 2FA:</p>
+			<input type="email" id="emailInput" placeholder="Enter your email" style="margin-bottom: 20px;">
+			<button id="requestOtpButton" onclick="requestOtp()">Request OTP</button>
+		</div>
+		<div>
+			<p>Enter the OTP sent to your email:</p>
+			<input type="text" id="otpInput" placeholder="Enter OTP" required>
+			<button id="verifyOtpButton">Verify OTP</button>
+		</div>
+		<div id="message"></div>
+	</div>
+	<script src="assets/js/disable_2fa.js"></script>
+</body>
+
+</html>

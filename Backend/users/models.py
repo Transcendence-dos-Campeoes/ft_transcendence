@@ -23,6 +23,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
     two_fa_secret = models.CharField(max_length=32, blank=True, null=True)
+    otp_recover_secret = models.CharField(max_length=32, blank=True, null=True)
     two_fa_enabled = models.BooleanField(default=False)
     is_otp_verified = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)

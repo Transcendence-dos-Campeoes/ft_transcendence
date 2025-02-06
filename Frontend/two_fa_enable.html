@@ -4,21 +4,46 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Enable Two-Factor Authentication</title>
+	<title>Enable 2FA</title>
+	<style>
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
+
+		.container {
+			text-align: center;
+		}
+
+		input {
+			display: block;
+			margin: 10px auto;
+		}
+
+		button {
+			display: block;
+			margin: 10px auto;
+		}
+	</style>
 </head>
 
 <body>
-	<h1>Enable Two-Factor Authentication</h1>
-	<div>
-		<p>Scan the QR code below with your authenticator app:</p>
-		<img id="qrCodeImage" alt="QR Code for 2FA" style="width: 200px; height: 200px;">
-	</div>
-	<div>
-		<p>Enter the OTP code from your authenticator app:</p>
-		<input type="text" id="otpCode" placeholder="Enter OTP code">
-		<button type="text" id="otpCode" placeholder="Enter OTP code" onclick="verifyOtpCode()"
-			style="background-color: green; color: white;">Verify OTP</button>
-		<button onclick="cancelRegistration()" style="background-color: red; color: white;">Cancel</button>
+	<div class="container">
+		<h1>Enable 2FA</h1>
+		<div>
+			<p>Scan the QR code with your authenticator app</p>
+			<p>and enter the OTP code it generates:</p>
+			<img id="qrCodeImage" alt="QR Code for 2FA" style="width: 200px; height: 200px; margin: 20px;">
+		</div>
+		<div>
+			<input type="text" id="otpCode" placeholder="Enter OTP code">
+			<button type="text" id="otpCode" placeholder="Enter OTP code" onclick="verifyOtpCode()"
+				style="background-color: green; color: white;">Verify OTP</button>
+			<button onclick="cancelRegistration()" style="background-color: red; color: white;">Cancel</button>
+		</div>
 	</div>
 	<script src="assets/js/2fa.js"></script>
 </body>

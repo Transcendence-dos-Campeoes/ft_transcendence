@@ -132,8 +132,8 @@ async function verifyOtpCode() {
 	}
 }
 
-async function recover2FA() {
-	const username = localStorage.getItem("username");
+async function requestOtp() {
+	const username = localStoragsendMailResponsee.getItem("username");
 	const email = localStorage.getItem("email");
 
 	try {
@@ -161,8 +161,8 @@ async function recover2FA() {
 		console.log("2FA enabled successfully:", enableData);
 
 		// Send the email with the new QR code
-		const sendMailResponse = await fetch(
-			"http://localhost:8000/api/users/sendmail/",
+		const otpMailResponse = await fetch(
+			"http://localhost:8000/api/users/sendOTPmail/",
 			{
 				method: "POST",
 				headers: {
@@ -173,14 +173,14 @@ async function recover2FA() {
 			}
 		);
 
-		if (sendMailResponse.ok) {
+		if (otpMailResponse.ok) {
 			console.log("Recovery email sent successfully.");
-			const responseData = await sendMailResponse.json();
+			const responseData = await otpMailResponse.json();
 			console.log("Response Data:", responseData);
 			displayMessage("Recovery email sent successfully", MessageType.SUCCESS);
 		} else {
 			console.log("Failed to send recovery email.");
-			const errorData = await sendMailResponse.json();
+			const errorData = await otpMailResponse.json();
 			console.log("Error Data:", errorData);
 			displayMessage("Failed to send recovery email", MessageType.ERROR);
 		}

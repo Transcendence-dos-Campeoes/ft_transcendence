@@ -654,8 +654,9 @@ from django.conf import settings
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([JSONParser])
-def sendMail(request):
+def sendOTPmail(request):
     try:
+
         totp = pyotp.TOTP(
             s="fihfi34i5g34789gfbvg3",
             interval=300
@@ -692,3 +693,23 @@ def sendMail(request):
         return Response({'message': 'Email with QR code sent'}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def setRecoverOTP(request):
+    try:
+        if request.email == request.user.email:
+            request.user.otp_recover_secret = pyotp.random_base32();
+            return Response({'message': 'Email with QR code sent'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'incorrect email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def getRecoverOTP(request):

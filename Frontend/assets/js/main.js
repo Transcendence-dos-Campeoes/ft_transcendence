@@ -8,7 +8,8 @@ const router = {
 		pong: "/pong.html",
 		42: "/42.html",
 		two_fa_enable: "two_fa_enable.html",
-		two_fa_verify: "two_fa_verify.html"
+		two_fa_verify: "two_fa_verify.html",
+		two_fa_recover: "two_fa_recover.html"
 	},
 };
 
@@ -35,7 +36,7 @@ async function renderPage(page) {
 	if (router.currentPage === page) return;
 
 	// Check authentication before navigating to home page
-	if (page !== "login" && page !== "register" && page !== "42" && page !== "two_fa_enable" && page !== "two_fa_verify") {
+	if (page !== "login" && page !== "register" && page !== "42" && page !== "two_fa_enable" && page !== "two_fa_verify" && page !== "two_fa_recover") {
 		console.log("Navigating to home, checking and refreshing token...");
 		const isAuthenticated = await checkAndRefreshToken();
 		const isVerified = await checkUserStatus();
