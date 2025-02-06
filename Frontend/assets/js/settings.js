@@ -31,7 +31,7 @@ async function attachSettingsFormListener() {
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
     }
-	console.log(formData)
+    console.log(formData)
     try {
       loadingOverlay.show();
       const response = await fetch(
@@ -44,7 +44,7 @@ async function attachSettingsFormListener() {
           body: formData,
         }
       );
-	  
+
       if (!response.ok) {
         throw new Error("Failed to update profile");
       }
@@ -112,6 +112,58 @@ async function attachSettingsFormListener() {
     } catch (error) {
       console.error("❌ Password updating:", error);
       displayMessage("Failed to update password", MessageType.ERROR);
+    } finally {
+      loadingOverlay.hide();
+    }
+  });
+}
+
+async function attachChangeMapFormListener() {
+  const form = document.getElementById("profile-form");
+  if (!form) {
+    console.error("Change map form not found");
+    return;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    console.log("📝 Submitting change map form");
+    const loadingOverlay = new LoadingOverlay();
+
+    const mapLayout = document.getElementById("map-layout-input").value;
+
+    const formData = new FormData();
+    formData.append("mapLayout", mapLayout);
+
+    console.log(formData)
+    try {
+      loadingOverlay.show();
+      const response = await fetch(
+        "http://localhost:8000/api/users/settings/map/",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update map layout");
+      }
+
+      const data = await response.json();
+      console.log("✅ Map layout updated:", data);
+
+      document.getElementById("map-layout-input").value = data.mapLayout;
+
+      // Show success message
+      displayMessage("Map layout updated successfully", MessageType.SUCCESS);
+      renderElement("settings");
+    } catch (error) {
+      console.error("❌ Error updating map layout:", error);
+      displayMessage("Failed to change the map layout", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }

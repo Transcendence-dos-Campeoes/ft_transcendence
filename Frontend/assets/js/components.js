@@ -11,6 +11,7 @@ const elements = {
 		newtournament: "/components/newtournament.html",
 		invites: "/components/invites.html",
 		tournamentBracket: "/components/tournamentBracket.html",
+		changeMap: "/components/changeMap.html",
 	},
 };
 
@@ -75,9 +76,11 @@ async function renderElement(element) {
 			loadAvailableTournaments();
 		} else if (element === "matches") {
 			loadMatches();
-		} else if (element === "newgame"){
-      waitgame();
-    }
+		} else if (element === "newgame") {
+			waitgame();
+		} else if (element === "changeMap") {
+			attachChangeMapFormListener();
+		}
 		console.log("✅ Component render complete:", element);
 	} catch (error) {
 		console.error("Error loading element:", error);
