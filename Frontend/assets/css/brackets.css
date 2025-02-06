@@ -1,0 +1,140 @@
+.tournament-bracket {
+  overflow-x: auto;
+  padding: 20px;
+}
+
+.round {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.match-container {
+  position: relative;
+  margin: 40px 0;
+}
+
+/* Horizontal lines */
+.match-container::after {
+  content: "";
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  width: 20px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.round:not(:first-child) .match-connector {
+  position: absolute;
+  left: -13px;
+  width: 20px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 50%;
+}
+
+/* Vertical lines - downward */
+.round:nth-child(1) .match-container:nth-child(odd)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 52%;
+  height: 61%;
+}
+
+/* Vertical lines - upward */
+.round:nth-child(1) .match-container:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  bottom: 50%;
+  height: 61%;
+}
+
+/* Vertical lines - downward */
+.round:nth-child(2) .match-container:nth-child(odd)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 52%;
+  height: 122%;
+}
+
+/* Vertical lines - upward */
+.round:nth-child(2) .match-container:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  bottom: 50%;
+  height: 122%;
+}
+
+/* Vertical lines - downward */
+.round:nth-child(3) .match-container:nth-child(odd)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 52%;
+  height: 244%;
+}
+
+/* Vertical lines - upward */
+.round:nth-child(3) .match-container:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  bottom: 50%;
+  height: 244%;
+}
+
+/* Adjust spacing between rounds */
+.match-container {
+  margin: 5px 0;
+}
+
+/* Hide connectors for last round */
+.round:last-child .match-container::after,
+.round:last-child .match-container::before {
+  display: none;
+}
+
+.player {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+.player:last-child {
+  border-bottom: none;
+}
+
+.player.winner {
+  background-color: rgba(40, 167, 69, 0.2);
+}
+
+.score {
+  font-weight: bold;
+  margin-left: 10px;
+}

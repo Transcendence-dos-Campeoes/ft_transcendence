@@ -10,7 +10,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
 from .models import SiteUser, Friend
 from matches.models import Match
-from tournaments.models import TournamentPlayer
+from tournaments.models import TournamentPlayer, TournamentMatch
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -23,6 +23,14 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+import base64
+import qrcode
+import pyotp
+from io import BytesIO
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.parsers import JSONParser
+
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -60,6 +68,7 @@ def create_user(request):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': serializer.data['username'],
+            'email': serializer.data['email']
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,8 +83,11 @@ def loginUser(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         refresh = RefreshToken.for_user(user)
+        user.is_otp_verified = False
         user.save()
         return Response({
+            'two_fa_enabled': user.two_fa_enabled,
+            'email': user.email,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         })
@@ -92,6 +104,7 @@ def logoutUser(request):
         token.blacklist()
 
         user = request.user
+        user.is_otp_verified = False
         user.save()
 
         channel_layer = get_channel_layer()
@@ -181,7 +194,8 @@ def getUserProfile(request):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {
@@ -255,7 +269,8 @@ def getFriendProfile(request, username):
                 'player1_score',
                 'player2_score',
                 'created_at',
-                'winner__username'
+                'winner__username',
+                'status'
             ),
             'tournament_history': [
                 {
@@ -282,11 +297,19 @@ def getFriendProfile(request, username):
 def getUserMatches(request):
     try:
         user = request.user
-        matches = Match.get_player_matches(user)
+        all_matches = Match.get_player_matches(user)
         
-        regular_matches = matches.values(
+        # Get tournament match IDs
+        tournament_match_ids = TournamentMatch.objects.filter(
+            match__in=all_matches
+        ).values_list('match_id', flat=True)
+
+        # Get regular matches excluding tournament matches
+        regular_matches = all_matches.exclude(
+            id__in=tournament_match_ids
+        ).values(
             'id',
-            'player1__username',
+            'player1__username', 
             'player2__username',
             'player1_score',
             'player2_score',
@@ -295,9 +318,27 @@ def getUserMatches(request):
             'status'
         ).order_by('-created_at')
 
+        # Get tournament matches
+        tournament_matches = TournamentMatch.objects.filter(
+            match__in=all_matches
+        ).values(
+            'match__id',
+            'match__player1__username',
+            'match__player2__username', 
+            'match__player1_score',
+            'match__player2_score',
+            'match__created_at',
+            'match__winner__username',
+            'match__status',
+            'tournament__name',
+            'round_number', 
+            'match_number'
+        ).order_by('-match__created_at')
+
         return Response({
-            'matches': regular_matches,
-            'total_matches': matches.count(),
+            'regular_matches': regular_matches,
+            'tournament_matches': tournament_matches,
+            'total_matches': all_matches.count(),
             'current_user': user.username
         }, status=status.HTTP_200_OK)
         
@@ -490,7 +531,7 @@ def oauth_callback(request):
         user_info_url = 'https://api.intra.42.fr/v2/me'
         headers = {'Authorization': f'Bearer {access_token}'}
         user_info_response = requests.get(user_info_url, headers=headers)
-        if user_info_response.status_code != 200:
+        if (user_info_response.status_code != 200):
             return Response({'error': 'Failed to obtain user info'}, status=status.HTTP_400_BAD_REQUEST)
 
         user_info = user_info_response.json()
@@ -521,8 +562,133 @@ def oauth_callback(request):
             'access': str(refresh.access_token),
             'username': username,
             'email': user.email,
+            'two_fa_enabled': user.two_fa_enabled,
             'profile_image': request.build_absolute_uri(user.profile_image.url),
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def enable_two_fa(request):
+    try:
+        username = request.data.get('username')
+        user = request.user
+        if not username:
+            return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.two_fa_secret:
+            user.two_fa_secret = pyotp.random_base32()
+            user.save()
+
+        otp_uri = pyotp.totp.TOTP(user.two_fa_secret).provisioning_uri(
+            name=user.email,
+            issuer_name="ft_transcendence"
+        )
+
+        qr = qrcode.make(otp_uri)
+        buffer = BytesIO()
+        qr.save(buffer, format="PNG")
+        
+        buffer.seek(0)
+        qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        qr_code_data_uri = f"data:image/png;base64,{qr_code}"
+
+        # Store the QR code in the session
+        request.session['qr_code'] = qr_code_data_uri
+
+        return Response({
+            'message': '2FA enabled successfully',
+            'username': username,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'two_fa_enabled': user.two_fa_enabled,
+                'two_fa_secret': user.two_fa_secret
+            },
+            'qr_code': qr_code_data_uri
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_two_fa(request):
+    try:
+        username = request.data.get('username')
+        otp_code = request.data.get('otpCode')
+        user = request.user
+
+        if not username or not otp_code:
+            return Response({'error': 'Username and OTP code are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        totp = pyotp.TOTP(user.two_fa_secret)
+        if totp.verify(otp_code):
+            user.two_fa_enabled = True
+            user.is_otp_verified = True
+            user.save()
+            return Response({'message': 'OTP verification successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid OTP code'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_user_status(request):
+    username = request.data.get('username')
+    user = request.user
+    return Response({
+        'username': user.username,
+        'is_otp_verified': user.is_otp_verified,
+        'two_fa_enabled': user.two_fa_enabled
+    }, status=status.HTTP_200_OK)
+
+from rest_framework.parsers import JSONParser
+from django.core.mail import send_mail
+from django.conf import settings
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
+def sendMail(request):
+    try:
+        totp = pyotp.TOTP(
+            s="fihfi34i5g34789gfbvg3",
+            interval=300
+        )
+        totp_now = totp.now()
+        user = request.user
+        email = request.data.get('email')
+        qr_code_data_uri = request.data.get('qr_code')
+
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not qr_code_data_uri:
+            return Response({'error': 'QR code is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        html_message = f"""
+        <html>
+            <body>
+                <p>Hello {user.username},</p>
+                <p>Please find the attached QR code below:</p>
+                <p>{totp_now}</p>
+            </body>
+        </html>
+        """
+
+        send_mail(
+            "Your QR Code",
+            "",
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+            html_message=html_message
+        )
+
+        return Response({'message': 'Email with QR code sent'}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
