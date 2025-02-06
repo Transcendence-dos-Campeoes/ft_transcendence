@@ -5,6 +5,7 @@ const MessageType = {
   INFO: "info",
   INVITE: "invite",
   AWAIT: "await",
+  READY: "ready"
 };
 
 class MessageModal {
@@ -35,8 +36,8 @@ class MessageModal {
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
                       ${isError || isAwait || isSuccess ?
-        `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
-        : ''}
+                      `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
+                      : ''}
                       </div>
                   <div class="modal-body"></div>
                   ${!isError && !isAwait && !isSuccess ? `
@@ -58,11 +59,18 @@ class MessageModal {
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
 
-    this.modal.addEventListener('hide.bs.modal', () => {
-      if (this.type === MessageType.INVITE || this.type === MessageType.AWAIT) {
-        this.resolve(false);
-      }
-    });
+    // if (isAwait)
+    //   socket.addEventListener('message', function(event) {
+    //     const data = JSON.parse(event.data);
+    //     if (data.type === 'random_game') {
+    //         awaitModal.hide();
+    //   }
+    // });
+    // this.modal.addEventListener('hide.bs.modal', () => {
+    //   if (this.type === MessageType.INVITE || this.type === MessageType.AWAIT) {
+    //     this.resolve(false);
+    //   }
+    // });
   }
 
   show(message, title = null) {
