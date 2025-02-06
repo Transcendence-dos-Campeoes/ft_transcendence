@@ -1,0 +1,79 @@
+.pixel-text {
+  color: #0f0;
+  font-family: "Public Pixel", sans-serif;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: blink 1s infinite;
+}
+
+.pacman {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  margin: 2rem auto;
+}
+
+.pacman-top,
+.pacman-bottom {
+  width: 60px;
+  height: 30px;
+  background: #ff0;
+  position: absolute;
+  border-radius: 30px 30px 0 0;
+  animation: chomp 0.5s infinite;
+}
+
+.pacman-bottom {
+  bottom: 0;
+  border-radius: 0 0 30px 30px;
+  animation: chomp-bottom 0.5s infinite;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  animation: disappear 2s infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.dot:nth-child(3) {
+  animation-delay: 1s;
+}
+.dot:nth-child(4) {
+  animation-delay: 1.5s;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes chomp {
+  50% {
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes chomp-bottom {
+  50% {
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes disappear {
+  50% {
+    opacity: 0;
+  }
+}
