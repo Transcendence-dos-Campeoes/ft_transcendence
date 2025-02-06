@@ -32,6 +32,7 @@ function formatErrorMessages(errors) {
 // Page loader
 async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
+	const loadingOverlay = new LoadingOverlay();
 	if (router.currentPage === page) return;
 
 	// Check authentication before navigating to home page
@@ -46,6 +47,7 @@ async function renderPage(page) {
 	}
 
 	try {
+		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
 		screen.classList.remove("zoom-in", "zoom-out");
 
@@ -82,34 +84,36 @@ async function renderPage(page) {
 		router.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);
+	} finally {
+		loadingOverlay.hide();
 	}
+}
 
-	async function authenticateUserFlow(page) {
-		const isAuthenticated = await checkAndRefreshToken();
-		const isVerified = await checkUserStatus();
-		const twofaenabled = await check2faenabled();
-		if (!isAuthenticated && page === "login") {
-			localStorage.clear();
-			attachLoginFormListener();
+async function authenticateUserFlow(page) {
+	const isAuthenticated = await checkAndRefreshToken();
+	const isVerified = await checkUserStatus();
+	const twofaenabled = await check2faenabled();
+	if (!isAuthenticated && page === "login") {
+		localStorage.clear();
+		attachLoginFormListener();
+	}
+	else if (!isAuthenticated && page === "register") {
+		localStorage.clear();
+		attachRegisterFormListener();
+	}
+	else {
+		console.log("Authenticated");
+		if (!isVerified && !twofaenabled) {
+			console.log("Not verified and 2FA not enabled.");
+			renderPage("two_fa_enable");
 		}
-		else if (!isAuthenticated && page === "register") {
-			localStorage.clear();
-			attachRegisterFormListener();
+		else if (!isVerified && twofaenabled) {
+			console.log("Not verified but 2FA Enabled.");
+			renderPage("two_fa_verify");
 		}
 		else {
-			console.log("Authenticated");
-			if (!isVerified && !twofaenabled) {
-				console.log("Not verified and 2FA not enabled.");
-				renderPage("two_fa_enable");
-			}
-			else if (!isVerified && twofaenabled) {
-				console.log("Not verified but 2FA Enabled.");
-				renderPage("two_fa_verify");
-			}
-			else {
-				console.log("Verified.");
-				renderPage("home");
-			}
+			console.log("Verified.");
+			renderPage("home");
 		}
 	}
 }
