@@ -35,8 +35,8 @@ async function attachTournamentFormListener() {
       }
 
       // Show success message
-      displayMessage("Tournament created successfully", MessageType.SUCCESS);
       renderElement("overview");
+      displayMessage("Tournament created successfully", MessageType.SUCCESS);
     } catch (error) {
       console.error("❌ Error creating tournament:", error);
       displayMessage("Failed to create tournament", MessageType.ERROR);
@@ -66,7 +66,7 @@ async function joinTournament(tournamentId) {
     }
 
     displayMessage("Successfully joined tournament!", MessageType.SUCCESS);
-    // loadAvailableTournaments(); // Refresh the list
+    loadAvailableTournaments(); // Refresh the list
   } catch (error) {
     displayMessage("Failed to join tournament", MessageType.ERROR);
   } finally {
