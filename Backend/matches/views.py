@@ -42,7 +42,7 @@ def getRecentMatches(request):
             matches_played=Count('matches_as_player1', filter=Q(matches_as_player1__status='finished'), distinct=True) + 
                         Count('matches_as_player2', filter=Q(matches_as_player2__status='finished'), distinct=True),
             tournaments_played=Count('tournament_entries')
-        ).order_by('-matches_played')[:10]
+        ).order_by('-matches_played')[:5]
         
         data = {
             'recent_matches': matches.values(
