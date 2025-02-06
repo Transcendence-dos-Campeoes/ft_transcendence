@@ -8,7 +8,7 @@ const router = {
 		pong: "/pong.html",
 		42: "/42.html",
 		two_fa_enable: "two_fa_enable.html",
-		two_fa_verify: "two_fa_verify.html"
+		two_fa_verify: "two_fa_verify.html",
 	},
 };
 
@@ -32,6 +32,7 @@ function formatErrorMessages(errors) {
 // Page loader
 async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
+	const loadingOverlay = new LoadingOverlay();
 	if (router.currentPage === page) return;
 
 	// Check authentication before navigating to home page
@@ -46,6 +47,7 @@ async function renderPage(page) {
 	}
 
 	try {
+		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
 		screen.classList.remove("zoom-in", "zoom-out");
 
@@ -82,34 +84,36 @@ async function renderPage(page) {
 		router.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);
+	} finally {
+		loadingOverlay.hide();
 	}
+}
 
-	async function authenticateUserFlow(page) {
-		const isAuthenticated = await checkAndRefreshToken();
-		const isVerified = await checkUserStatus();
-		const twofaenabled = await check2faenabled();
-		if (!isAuthenticated && page === "login") {
-			localStorage.clear();
-			attachLoginFormListener();
+async function authenticateUserFlow(page) {
+	const isAuthenticated = await checkAndRefreshToken();
+	const isVerified = await checkUserStatus();
+	const twofaenabled = await check2faenabled();
+	if (!isAuthenticated && page === "login") {
+		localStorage.clear();
+		attachLoginFormListener();
+	}
+	else if (!isAuthenticated && page === "register") {
+		localStorage.clear();
+		attachRegisterFormListener();
+	}
+	else {
+		console.log("Authenticated");
+		if (!isVerified && !twofaenabled) {
+			console.log("Not verified and 2FA not enabled.");
+			renderPage("two_fa_enable");
 		}
-		else if (!isAuthenticated && page === "register") {
-			localStorage.clear();
-			attachRegisterFormListener();
+		else if (!isVerified && twofaenabled) {
+			console.log("Not verified but 2FA Enabled.");
+			renderPage("two_fa_verify");
 		}
 		else {
-			console.log("Authenticated");
-			if (!isVerified && !twofaenabled) {
-				console.log("Not verified and 2FA not enabled.");
-				renderPage("two_fa_enable");
-			}
-			else if (!isVerified && twofaenabled) {
-				console.log("Not verified but 2FA Enabled.");
-				renderPage("two_fa_verify");
-			}
-			else {
-				console.log("Verified.");
-				renderPage("home");
-			}
+			console.log("Verified.");
+			renderPage("home");
 		}
 	}
 }
@@ -164,7 +168,10 @@ async function checkAndRefreshToken() {
 }
 
 async function refreshToken() {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const refresh = localStorage.getItem("refresh");
 		const response = await fetch("http://localhost:8000/api/token/refresh/", {
 			method: "POST",
@@ -192,11 +199,16 @@ async function refreshToken() {
 	} catch (error) {
 		console.error("Error refreshing Access token:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 async function load_profile_pic() {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const response = await fetch("http://localhost:8000/api/users/profile/", {
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -217,13 +229,18 @@ async function load_profile_pic() {
 		}
 	} catch {
 		displayMessage("Failed to load profile data", MessageType.ERROR);
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 
 async function checkUserStatus() {
 	console.log("Check User Status called.")
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
 		const response = await fetch("http://localhost:8000/api/users/check_status/", {
 			method: "GET",
 			headers: {
@@ -240,12 +257,18 @@ async function checkUserStatus() {
 	} catch (error) {
 		console.error("Error checking user status:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 async function check2faenabled() {
 	console.log("check2faenabled called.")
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
+
 		const response = await fetch("http://localhost:8000/api/users/check_status/", {
 			method: "GET",
 			headers: {
@@ -262,5 +285,7 @@ async function check2faenabled() {
 	} catch (error) {
 		console.error("Error checking 2fa status:", error);
 		return false;
+	} finally {
+		loadingOverlay.hide();
 	}
 }

@@ -22,8 +22,10 @@ function attachRegisterFormListener() {
 		}
 
 		const data = { username: username, email: email, password: password };
+		const loadingOverlay = new LoadingOverlay();
 
 		try {
+			loadingOverlay.show();
 			const response = await fetch("http://localhost:8000/api/users/create/", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -67,6 +69,8 @@ function attachRegisterFormListener() {
 				"An error occurred while registering the user",
 				MessageType.ERROR
 			);
+		} finally {
+			loadingOverlay.hide();
 		}
 	});
 }

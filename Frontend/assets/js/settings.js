@@ -119,7 +119,10 @@ async function attachSettingsFormListener() {
 }
 
 async function loadSettingsData() {
+  const loadingOverlay = new LoadingOverlay();
+
   try {
+    loadingOverlay.show();
     const response = await fetch("http://localhost:8000/api/users/settings/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -154,6 +157,8 @@ async function loadSettingsData() {
     document.getElementById("profile-created").textContent = createdDate;
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
 
