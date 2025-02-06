@@ -12,7 +12,6 @@ const elements = {
 		invites: "/components/invites.html",
 		tournamentBracket: "/components/tournamentBracket.html",
 		changeMap: "/components/changeMap.html",
-		loading: "/components/loading.html",
 	},
 };
 

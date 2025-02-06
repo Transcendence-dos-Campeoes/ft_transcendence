@@ -9,7 +9,6 @@ const router = {
 		42: "/42.html",
 		two_fa_enable: "two_fa_enable.html",
 		two_fa_verify: "two_fa_verify.html",
-		loading: "loading.html"
 	},
 };
 
