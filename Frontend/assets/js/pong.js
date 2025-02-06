@@ -85,6 +85,7 @@ function resetValues() {
 
 function startGame(gameGroup, socket) {
         resetValues();
+        
         if (data['player'] === "player1")
         {
             isHost = true;
@@ -100,7 +101,6 @@ function startGame(gameGroup, socket) {
         initializeGame(socket, gameGroup, actualPlayer);
         socket.onmessage = async function(event) {
             const data = JSON.parse(event.data);
-            console.log("Game message received:", data); // Debugging line
             
             if (data.type === 'game_update') {
                 player1 = data.player1;
@@ -137,7 +137,7 @@ function initializeGame(socket, gameGroup, actualPlayer) {
     context = board.getContext("2d");
 
     if (!gameRunning) return;
-
+    
     animationFrameId = requestAnimationFrame(() => update(context, socket, gameGroup));
     draw(context);
 
@@ -197,7 +197,7 @@ async function update(context, socket, gameGroup) {
         }
 
     // Draw the updated state
-    
+        console.log(socket);
     // Send game state updates if the current client is the host
         const currentUser = localStorage.getItem("username");
         socket.send(JSON.stringify({

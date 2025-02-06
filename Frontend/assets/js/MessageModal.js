@@ -5,6 +5,7 @@ const MessageType = {
   INFO: "info",
   INVITE: "invite",
   AWAIT: "await",
+  READY: "ready"
 };
 
 class MessageModal {
@@ -34,7 +35,7 @@ class MessageModal {
               <div class="modal-content bg-dark text-white border-secondary">
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
-                      ${isError || isAwait ?
+                      ${isError || isAwait || isSuccess ?
                       `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
                       : ''}
                       </div>
@@ -58,11 +59,18 @@ class MessageModal {
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
 
-    this.modal.addEventListener('hide.bs.modal', () => {
-      if (this.type === MessageType.INVITE || this.type === MessageType.AWAIT) {
-        this.resolve(false);
-      }
-    });
+    // if (isAwait)
+    //   socket.addEventListener('message', function(event) {
+    //     const data = JSON.parse(event.data);
+    //     if (data.type === 'random_game') {
+    //         awaitModal.hide();
+    //   }
+    // });
+    // this.modal.addEventListener('hide.bs.modal', () => {
+    //   if (this.type === MessageType.INVITE || this.type === MessageType.AWAIT) {
+    //     this.resolve(false);
+    //   }
+    // });
   }
 
   show(message, title = null) {
@@ -85,7 +93,7 @@ class MessageModal {
       const isError = this.type === "error";
       titleElement.className = isSuccess ? "modal-title text-success" : "modal-title text-danger";
       titleElement.innerHTML = isSuccess ? "Success" : "Error";
-      if (!isError) {
+      if (!isError && !isSuccess) {
         footerElement.querySelector('.btn-primary').style.display = 'inline-block';
       }
     }
