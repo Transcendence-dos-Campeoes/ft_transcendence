@@ -34,12 +34,12 @@ class MessageModal {
               <div class="modal-content bg-dark text-white border-secondary">
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
-                      ${isError || isAwait ?
-                      `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
-                      : ''}
+                      ${isError || isAwait || isSuccess ?
+        `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
+        : ''}
                       </div>
                   <div class="modal-body"></div>
-                  ${!isError && !isAwait && !isSuccess? `
+                  ${!isError && !isAwait && !isSuccess ? `
                   <div class="modal-footer border-secondary">
                       <span class="timer"></span>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -53,7 +53,7 @@ class MessageModal {
     this.modal = modal;
     this.bsModal = new bootstrap.Modal(modal);
 
-    if (!isError && !isAwait && !isSuccess) { 
+    if (!isError && !isAwait && !isSuccess) {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
@@ -73,8 +73,8 @@ class MessageModal {
     if (title) {
       titleElement.innerHTML = title;
       titleElement.className = "modal-title"; // Reset class to default
-      if (footerElement && footerElement.hasChildNodes()){
-        if (title === "Invite Sent" ) {
+      if (footerElement && footerElement.hasChildNodes()) {
+        if (title === "Invite Sent") {
           footerElement.querySelector('.btn-primary').style.display = 'none';
         } else {
           footerElement.querySelector('.btn-primary').style.display = 'inline-block';
@@ -85,7 +85,7 @@ class MessageModal {
       const isError = this.type === "error";
       titleElement.className = isSuccess ? "modal-title text-success" : "modal-title text-danger";
       titleElement.innerHTML = isSuccess ? "Success" : "Error";
-      if (!isError) {
+      if (!isError && !isSuccess) {
         footerElement.querySelector('.btn-primary').style.display = 'inline-block';
       }
     }

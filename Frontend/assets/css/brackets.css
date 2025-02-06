@@ -35,7 +35,7 @@
 
 .round:not(:first-child) .match-connector {
   position: absolute;
-  left: -15px;
+  left: -13px;
   width: 20px;
   height: 2px;
   background: rgba(255, 255, 255, 0.2);
@@ -43,39 +43,74 @@
 }
 
 /* Vertical lines - downward */
-.match-container:nth-child(odd)::before {
+.round:nth-child(1) .match-container:nth-child(odd)::before {
   content: "";
   position: absolute;
   right: -20px;
   width: 2px;
   background: rgba(255, 255, 255, 0.2);
-  top: 50%;
-  height: 65%;
+  top: 52%;
+  height: 61%;
 }
 
 /* Vertical lines - upward */
-.match-container:nth-child(even)::before {
+.round:nth-child(1) .match-container:nth-child(even)::before {
   content: "";
   position: absolute;
   right: -20px;
   width: 2px;
   background: rgba(255, 255, 255, 0.2);
   bottom: 50%;
-  height: 65%;
+  height: 61%;
+}
+
+/* Vertical lines - downward */
+.round:nth-child(2) .match-container:nth-child(odd)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 52%;
+  height: 122%;
+}
+
+/* Vertical lines - upward */
+.round:nth-child(2) .match-container:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  bottom: 50%;
+  height: 122%;
+}
+
+/* Vertical lines - downward */
+.round:nth-child(3) .match-container:nth-child(odd)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 52%;
+  height: 244%;
+}
+
+/* Vertical lines - upward */
+.round:nth-child(3) .match-container:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  bottom: 50%;
+  height: 244%;
 }
 
 /* Adjust spacing between rounds */
-.round:nth-child(1) .match-container {
-  margin: 10px 0;
-}
-.round:nth-child(2) .match-container {
-  margin: 20px 0;
-}
-.round:nth-child(3) .match-container {
-  margin: 70px 0;
-}
-.round:nth-child(4) .match-container {
-  margin: 150px 0;
+.match-container {
+  margin: 5px 0;
 }
 
 /* Hide connectors for last round */
