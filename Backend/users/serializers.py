@@ -105,15 +105,14 @@ class GameMapSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'ball_color', 'background_color', 'paddle_color', 'wall_color']
 
 class UserGameMapSerializer(serializers.ModelSerializer):
-    selected_map = GameMapSerializer() 
+    selected_map = GameMapSerializer(read_only=True)  # Read-only for GET
+    selected_map_id = serializers.PrimaryKeyRelatedField(  # Write-only for PUT
+        queryset=GameMap.objects.all(),
+        source='selected_map',
+        write_only=True,
+        required=False
+    )
 
     class Meta:
         model = SiteUser
-        fields = ['id', 'username', 'selected_map']
-
-    def update(self, instance, validated_data):
-        map_data = validated_data.pop('selected_map', None)
-        if map_data:
-            map_instance = GameMap.objects.get(id=map_data.get('id'))
-            instance.selected_map = map_instance
-        return super().update(instance, validated_data)
+        fields = ['id', 'username', 'selected_map', 'selected_map_id']

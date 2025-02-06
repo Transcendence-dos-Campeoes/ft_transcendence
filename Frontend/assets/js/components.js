@@ -80,7 +80,6 @@ async function renderElement(element) {
 			waitgame();
 		} else if (element === "changeMap") {
 			loadMaps();
-			attachChangeMapFormListener();
 		}
 		console.log("✅ Component render complete:", element);
 	} catch (error) {

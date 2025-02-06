@@ -118,58 +118,6 @@ async function attachSettingsFormListener() {
   });
 }
 
-async function attachChangeMapFormListener() {
-  const form = document.getElementById("profile-form");
-  if (!form) {
-    console.error("Change map form not found");
-    return;
-  }
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    console.log("📝 Submitting change map form");
-    const loadingOverlay = new LoadingOverlay();
-
-    const mapLayout = document.getElementById("map-layout-input").value;
-
-    const formData = new FormData();
-    formData.append("mapLayout", mapLayout);
-
-    console.log(formData)
-    try {
-      loadingOverlay.show();
-      const response = await fetch(
-        "http://localhost:8000/api/users/settings/map/update/",
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update map layout");
-      }
-
-      const data = await response.json();
-      console.log("✅ Map layout updated:", data);
-
-      document.getElementById("map-layout-input").value = data.mapLayout;
-
-      // Show success message
-      displayMessage("Map layout updated successfully", MessageType.SUCCESS);
-      renderElement("settings");
-    } catch (error) {
-      console.error("❌ Error updating map layout:", error);
-      displayMessage("Failed to change the map layout", MessageType.ERROR);
-    } finally {
-      loadingOverlay.hide();
-    }
-  });
-}
-
 async function loadSettingsData() {
   try {
     const response = await fetch("http://localhost:8000/api/users/settings/", {
@@ -210,7 +158,9 @@ async function loadSettingsData() {
 }
 
 async function loadMaps() {
+  const loadingOverlay = new LoadingOverlay();
   try {
+    loadingOverlay.show();
     const response = await fetch("http://localhost:8000/api/users/settings/maps/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -227,22 +177,18 @@ async function loadMaps() {
     mapContainer.innerHTML = '';
 
     data.maps.forEach(map => {
+      const isSelected = data.selected_map.selected_map.id === map.id;
       mapContainer.innerHTML += `
         <div class="col-md-3 mb-4">
-          <div class="card bg-dark border-light">
+          <div class="card bg-dark ${isSelected ? 'border-success' : 'border-light'}" 
+               onclick="selectMap(${map.id})"
+               style="cursor: pointer">
             <div class="card-body">
               <h5 class="card-title text-center">${map.name}</h5>
               <div class="map-preview mb-3" style="height: 200px; background-color: ${map.background_color};">
-                <!-- Left paddle -->
                 <div class="paddle left" style="background-color: ${map.paddle_color}"></div>
-                
-                <!-- Right paddle -->
                 <div class="paddle right" style="background-color: ${map.paddle_color}"></div>
-                
-                <!-- Ball -->
                 <div class="ball" style="background-color: ${map.ball_color}"></div>
-                
-                <!-- Walls -->
                 <div class="wall top" style="background-color: ${map.wall_color}"></div>
                 <div class="wall bottom" style="background-color: ${map.wall_color}"></div>
               </div>
@@ -254,7 +200,32 @@ async function loadMaps() {
 
   } catch (error) {
     displayMessage("Failed to load maps", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
 
+async function selectMap(mapId) {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetch("http://localhost:8000/api/users/settings/map/update/", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+      body: JSON.stringify({ selected_map_id: mapId })
+    });
+
+    if (!response.ok) throw new Error("Failed to update map");
+
+    await loadMaps();
+    displayMessage("Map updated successfully", MessageType.SUCCESS);
+  } catch (error) {
+    displayMessage("Failed to update map", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
+  }
+}
 
