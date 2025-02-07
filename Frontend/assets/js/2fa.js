@@ -8,7 +8,13 @@ function checkAndRunTwoFA() {
 		renderPage("two_fa_enable")
 		console.log("Matched two_fa_enable URL");
 		two_fa_enable();
-	} else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
+	}
+	else if (currentUrl.match('https://localhost/two_fa_re_enable') != null) {
+		renderPage("two_fa_re_enable")
+		console.log("Matched two_fa_re_enable URL");
+		two_fa_enable();
+	}
+	else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
 		renderPage("two_fa_verify")
 	}
 	else {
@@ -132,60 +138,62 @@ async function verifyOtpCode() {
 	}
 }
 
-async function recover2FA() {
-	const username = localStorage.getItem("username");
-	const email = localStorage.getItem("email");
-
+async function requestOtp() {
+	const email = document.getElementById("emailInputRecover").value;
 	try {
 		// Request a new 2FA QR code
 		const enableResponse = await fetch(
-			"http://localhost:8000/api/users/twofa/enable/",
+			"http://localhost:8000/api/users/setRecoverOTP/",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${localStorage.getItem("access")}`,
 				},
-				body: JSON.stringify({ username }), // Send the username
+				body: JSON.stringify({ email }), // Send the username
 			}
 		);
 
 		if (!enableResponse.ok) {
 			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to enable 2FA", MessageType.ERROR);
 			return;
 		}
 
 		const enableData = await enableResponse.json();
-		console.log("2FA enabled successfully:", enableData);
+		console.log("Email with recover OTP sent succesfully:", enableData);
+	} catch (error) {
+		console.error("Error during 2FA recovery:", error);
+	}
+}
 
-		// Send the email with the new QR code
-		const sendMailResponse = await fetch(
-			"http://localhost:8000/api/users/sendmail/",
+async function checkRecoverOTP() {
+	const otp_code = document.getElementById("otpInputRecover").value;
+	console.log(otp_code);
+	try {
+		const enableResponse = await fetch(
+			"http://localhost:8000/api/users/checkRecoverOTP/",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${localStorage.getItem("access")}`,
 				},
-				body: JSON.stringify({ email, qr_code: enableData.qr_code }), // Send the email and QR code
+				body: JSON.stringify({ otp_code }),
 			}
 		);
 
-		if (sendMailResponse.ok) {
-			console.log("Recovery email sent successfully.");
-			const responseData = await sendMailResponse.json();
-			console.log("Response Data:", responseData);
-			displayMessage("Recovery email sent successfully", MessageType.SUCCESS);
-		} else {
-			console.log("Failed to send recovery email.");
-			const errorData = await sendMailResponse.json();
+		if (!enableResponse.ok) {
+			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to send recovery email", MessageType.ERROR);
+			return;
 		}
+
+		const enableData = await enableResponse.json();
+		console.log("2FA reset successfully:", enableData);
+		history.pushState({}, '', 'https://localhost/two_fa_re_enable');
+		checkAndRunTwoFA()
 	} catch (error) {
 		console.error("Error during 2FA recovery:", error);
-		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
 	}
 }

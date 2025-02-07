@@ -34,7 +34,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.parsers import JSONParser
 
-
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
 
@@ -668,7 +667,7 @@ def verify_two_fa(request):
             return Response({'error': 'Username and OTP code are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         totp = pyotp.TOTP(user.two_fa_secret)
-        if totp.verify(otp_code):
+        if totp.verify(otp_code, for_time=None, valid_window=1):
             user.two_fa_enabled = True
             user.is_otp_verified = True
             user.save()
@@ -691,42 +690,59 @@ def check_user_status(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([JSONParser])
-def sendMail(request):
+def setRecoverOTP(request):
+    email = request.data.get('email')
     try:
-        totp = pyotp.TOTP(
-            s="fihfi34i5g34789gfbvg3",
-            interval=300
-        )
-        totp_now = totp.now()
+        if email == request.user.email:
+            request.user.otp_recover_secret = pyotp.random_base32()
+            request.user.save()
+            totp = pyotp.TOTP(request.user.otp_recover_secret, interval=300)
+            otp_code = totp.now()
+
+            html_message = f"""
+            <html>
+                <body>
+                    <p>Hello {request.user.username},</p>
+                    <p>Please find your OTP below:</p>
+                    <p>{otp_code}</p>
+                    <p>Remember that you have 5 minutes before it expires.</p>
+                </body>
+            </html>
+            """
+
+            send_mail(
+                "Your OTP Recovery Code",
+                "",
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently=False,
+                html_message=html_message
+            )
+            return Response({'message': 'Email with OTP sent'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Incorrect email'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+      
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def checkRecoverOTP(request):
+    try:
+        otp_code = request.data.get('otp_code')
         user = request.user
-        email = request.data.get('email')
-        qr_code_data_uri = request.data.get('qr_code')
 
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        if not qr_code_data_uri:
-            return Response({'error': 'QR code is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.otp_recover_secret:
+            return Response({'error': 'OTP recovery secret is not set'}, status=status.HTTP_400_BAD_REQUEST)
 
-        html_message = f"""
-        <html>
-            <body>
-                <p>Hello {user.username},</p>
-                <p>Please find the attached QR code below:</p>
-                <p>{totp_now}</p>
-            </body>
-        </html>
-        """
-
-        send_mail(
-            "Your QR Code",
-            "",
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-            html_message=html_message
-        )
-
-        return Response({'message': 'Email with QR code sent'}, status=status.HTTP_200_OK)
+        totp = pyotp.TOTP(user.otp_recover_secret, interval=300)
+        if totp.verify(otp_code, for_time=None, valid_window=1):
+            user.two_fa_enabled = False
+            user.is_otp_verified = False
+            user.two_fa_secret = None
+            user.otp_recover_secret = None
+            user.save()
+            return Response({'message': '2FA disabled successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Incorrect OTP'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
