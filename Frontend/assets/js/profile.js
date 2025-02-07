@@ -143,7 +143,7 @@ function loadProfileData(data) {
       .map(
         (tournament) => `
     <tr>
-      <td>${new Date(tournament.date).toLocaleDateString()}</td>
+      <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${new Date(tournament.date).toLocaleDateString()}</td>
       <td>${tournament.name}</td>
       <td>${tournament.position}</td>
       <td>${tournament.total_players}</td>

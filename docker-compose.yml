@@ -1,17 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  backend:
-    build: ./Backend
-    volumes:
-      - ./Backend:/usr/src/app/
-    ports:
-      - 8000:8000
-    env_file:
-      - ./.env
-    depends_on:
-      - db
-      - redis
 
   db:
     image: postgres:15
@@ -21,26 +10,120 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data/
 
+  backend:
+    build: ./Backend 
+    env_file:
+      - ./.env
+    volumes:
+      - backend_vol:/usr/src/app/
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - redis
+
+
   frontend:
     build: ./Frontend
     volumes:
-      - ./Frontend:/var/www/html
+      - frontend_vol:/var/www/html
     ports:
-      - 443:443
+      - 9000:9000
     depends_on:
       - db
       - backend
-  
+
+  server:
+    ports:
+      - 443:443
+    expose:
+      - 443
+    build: ./Server
+    env_file:
+      - ./.env
+    restart: on-failure
+    depends_on:
+      - backend
+      - frontend
+
   redis:
     image: redis:5
     restart: always
     ports:
       - 6379:6379
 
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_vol:/etc/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    restart: always
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    env_file:
+      - ./.env
+    volumes:
+      - grafana_dash_vol:/var/lib/grafana/dashboards
+      - grafana_pro_vol:/etc/grafana/provisioning
+    restart: always
+
 volumes:
   pgdata:
     driver: local
     driver_opts:
       type: none
-      device: ${HOME}/ft_transcendence/Database
+      device: ${PWD}/Database
+      o: bind
+  frontend_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/Frontend
+      o: bind
+  backend_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/Backend
+      o: bind
+  prometheus_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/Prometheus
+      o: bind
+  grafana_dash_vol:
+    driver: local
+    driver_opts:
+      type: non
+      device: ${PWD}/Grafana/dashboards
+      o: bind
+  grafana_pro_vol:
+    driver: local
+    driver_opts:
+      type: non
+      device: ${PWD}/Grafana/provisioning
       o: bind

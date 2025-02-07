@@ -35,7 +35,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 class TournamentPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentPlayer
-        fields = ['id', 'player', 'status', 'seed']  # Remove tournament from fields
+        fields = ['id', 'player', 'status', 'seed']
         read_only_fields = ['id', 'player', 'seed']
 
     def validate(self, data):

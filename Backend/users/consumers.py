@@ -1,6 +1,6 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
-
+import time
 from asgiref.sync import async_to_sync
 from .models import SiteUser
 
@@ -14,6 +14,7 @@ channel_user_map = {}
 group_channel_map = {}
 
 group_match_map = {}
+match_ready = {} 
 
 def get_channel_name(username):
     for channel_name, user in channel_user_map.items():
@@ -65,8 +66,12 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_end_game(data)
         elif data['type'] == 'waiting_game':
             self.handle_waitlist(data)
-        elif data['type'] == 'close_await':
-            self.handle_close_await(data)
+        elif data['type'] == 'random_ready':
+            self.handle_ready(data)
+        # elif data['type'] == 'random_game':
+        #     self.handle_random(data)
+        # elif data['type'] == 'close_await':
+        #     self.handle_close_await(data)
 
     def handle_invite(self, data):
         async_to_sync(self.channel_layer.group_send)(
@@ -186,8 +191,9 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
     def start_game(self, event):
         print(event)
-        if (event['from'] == self.scope['user'].username):
-            self.send(text_data=json.dumps(event))
+        print(self.scope['user'].username)
+        # if (event['from'] == self.scope['user'].username):
+        self.send(text_data=json.dumps(event))
     
     def starting_game(self, event):
         self.send(text_data=json.dumps(event))
@@ -274,6 +280,9 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def end_game(self, event):
         self.send(text_data=json.dumps(event))
 
+
+#Handle randomized games
+
     def check_open_games():
         for group_name, channels in group_channel_map.items():
             if len(channels) == 1:
@@ -282,6 +291,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     
     def handle_waitlist(self, event):
         group = OnlinePlayersConsumer.check_open_games()
+        print(group)
         if group is None:
             game_group_name = f"game_{uuid.uuid4()}"
             async_to_sync(self.channel_layer.group_add)(game_group_name, self.channel_name)
@@ -293,18 +303,25 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         else:
             user_in_group = [channel_user_map[channel_name].username for channel_name in group_channel_map[group]][0]
             print (user_in_group)
+            async_to_sync(self.channel_layer.group_add)(group, self.channel_name)
             group_channel_map[group].append(self.channel_name)
+            if group not in match_ready:
+                match_ready[group] = []
+            match_ready[group] = 0
+            time.sleep(1)
             self.send(text_data=json.dumps({
-                'type': 'start_game',
-                'from': self.scope['user'].username,
+                'type': 'random_game',
+                'from': user_in_group,
                 'game_group': group,
-                'player': 'player2'
+                'player': 'player2',
+                'opponent': user_in_group
             }))
             async_to_sync(self.channel_layer.group_send)(group, {
-                'type': 'start_game',
+                'type': 'random_game',
                 'from':user_in_group,
                 'game_group': group,
-                'player': 'player1'
+                'player': 'player1',
+                'opponent':  self.scope['user'].username
             })
             match_serializer = MatchSerializer(data={
             'player2': SiteUser.objects.get(username=self.scope['user'].username).id,
@@ -313,10 +330,33 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             })
             if match_serializer.is_valid():
                 match = match_serializer.save()
-                group_match_map[game_group_name] = match.id
+                group_match_map[group] = match.id
                 print( group_match_map[group])
             else:
                 print("Validation errors:", match_serializer.errors)
 
+    def random_game(self, event):
+        self.send(text_data=json.dumps(event))
 
+    def handle_ready(self, event):
+        if event['game_group'] not in match_ready:
+            match_ready[event['game_group']] = 0
+        print(match_ready[event['game_group']])
+        if match_ready[event['game_group']] == 0:
+            match_ready[event['game_group']] = 1
+        else:
+            print(event)
+            match_ready[event['game_group']] = 2
+            self.send(text_data=json.dumps({
+                'type': 'start_game',
+                'from': event['from'],
+                'game_group': event['game_group'],
+                'player': event['player']
+            }))
+            async_to_sync(self.channel_layer.group_send)(event['game_group'], {
+                'type': 'start_game',
+                'from': event['from'],
+                'game_group': event['game_group'],
+                'player': event['player']
+            })
     
