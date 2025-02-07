@@ -66,7 +66,7 @@ services:
     image: prom/node-exporter
     container_name: node-exporter
     ports:
-      - "9100:9100"
+      - "9200:9200"
     restart: always
     volumes:
       - /proc:/host/proc:ro
