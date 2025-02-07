@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-
 class GameMap(models.Model):
     name = models.CharField(max_length=50, unique=True)
     ball_color = models.CharField(
@@ -24,45 +23,6 @@ class GameMap(models.Model):
 
     def __str__(self):
         return self.name
-
-    @classmethod
-    def get_default_map(cls):
-        default_map, _ = cls.objects.get_or_create(
-            name='Classic',
-            defaults={
-                'ball_color': '#FFFFFF',
-                'background_color': '#000000',
-                'paddle_color': '#FFFFFF',
-                'wall_color': '#FFFFFF'
-            }
-        )
-        maps = [
-            {
-                'name': 'Neon',
-                'ball_color': '#FF00FF',
-                'background_color': '#000000',
-                'paddle_color': '#00FF00',
-                'wall_color': '#0000FF'
-            },
-            {
-                'name': 'Ocean',
-                'ball_color': '#0080FF',
-                'background_color': '#000040',
-                'paddle_color': '#00FFFF',
-                'wall_color': '#0000FF'
-            },
-            {
-                'name': 'Sunset',
-                'ball_color': '#FFD700',
-                'background_color': '#1A0000',
-                'paddle_color': '#FF4500',
-                'wall_color': '#800000'
-            }
-        ]
-        
-        for map_data in maps:
-            cls.objects.get_or_create(name=map_data['name'], defaults=map_data)
-        return default_map.id
 
 class SiteUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -95,7 +55,6 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
         GameMap,
         on_delete=models.SET_NULL,
         null=True,
-        default=GameMap.get_default_map
     )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
