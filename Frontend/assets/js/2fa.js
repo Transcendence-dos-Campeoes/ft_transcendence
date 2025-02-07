@@ -8,7 +8,13 @@ function checkAndRunTwoFA() {
 		renderPage("two_fa_enable")
 		console.log("Matched two_fa_enable URL");
 		two_fa_enable();
-	} else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
+	}
+	else if (currentUrl.match('https://localhost/two_fa_re_enable') != null) {
+		renderPage("two_fa_re_enable")
+		console.log("Matched two_fa_re_enable URL");
+		two_fa_enable();
+	}
+	else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
 		renderPage("two_fa_verify")
 	}
 	else {
@@ -151,7 +157,6 @@ async function requestOtp() {
 		if (!enableResponse.ok) {
 			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to setRecoverOTP", MessageType.ERROR);
 			return;
 		}
 
@@ -159,7 +164,6 @@ async function requestOtp() {
 		console.log("Email with recover OTP sent succesfully:", enableData);
 	} catch (error) {
 		console.error("Error during 2FA recovery:", error);
-		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
 	}
 }
 
@@ -182,15 +186,14 @@ async function checkRecoverOTP() {
 		if (!enableResponse.ok) {
 			const errorData = await enableResponse.json();
 			console.log("Error Data:", errorData);
-			displayMessage("Failed to checkRecoverOTP", MessageType.ERROR);
 			return;
 		}
 
 		const enableData = await enableResponse.json();
 		console.log("2FA reset successfully:", enableData);
-		displayMessage("2FA reset successfully", MessageType.SUCCESS);
+		history.pushState({}, '', 'https://localhost/two_fa_re_enable');
+		checkAndRunTwoFA()
 	} catch (error) {
 		console.error("Error during 2FA recovery:", error);
-		displayMessage("An error occurred during 2FA recovery", MessageType.ERROR);
 	}
 }

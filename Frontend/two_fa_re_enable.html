@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Re-Enable 2FA</title>
+	<style>
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
+
+		.container {
+			text-align: center;
+		}
+
+		input {
+			display: block;
+			margin: 10px auto;
+		}
+
+		button {
+			display: block;
+			margin: 10px auto;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Re-Enable 2FA</h1>
+		<div>
+			<p>Scan the QR code with your authenticator app</p>
+			<p>and enter the OTP code it generates:</p>
+			<img id="qrCodeImage" alt="QR Code for 2FA" style="width: 200px; height: 200px; margin: 20px;">
+		</div>
+		<div>
+			<input type="text" id="otpCode" placeholder="Enter OTP code">
+			<button type="text" id="otpCode" placeholder="Enter OTP code" onclick="verifyOtpCode()"
+				style="background-color: green; color: white;">Verify OTP</button>
+			<button onclick="cancelVerification()" style="background-color: red; color: white;">Cancel</button>
+		</div>
+	</div>
+	<script src="assets/js/2fa.js"></script>
+</body>
+
+</html>
