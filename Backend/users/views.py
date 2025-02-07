@@ -7,8 +7,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
-from .models import SiteUser, Friend
+from rest_framework.parsers import JSONParser
+from django.core.mail import send_mail
+from django.conf import settings
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, GameMapSerializer, UserGameMapSerializer
+from .models import SiteUser, Friend, GameMap
 from matches.models import Match
 from tournaments.models import TournamentPlayer, TournamentMatch
 from django.shortcuts import get_object_or_404
@@ -367,6 +370,45 @@ def getUserSettings(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getMaps(request):
+    try:
+        maps = GameMap.objects.all()
+        maps_serializer = GameMapSerializer(maps, many=True)
+        
+        user_map_serializer = UserGameMapSerializer(request.user)
+        
+        return Response({
+            'maps': maps_serializer.data,
+            'selected_map': user_map_serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
+def updateMap(request):
+    try:
+        user = request.user
+        serializer = UserGameMapSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -646,10 +688,6 @@ def check_user_status(request):
         'is_otp_verified': user.is_otp_verified,
         'two_fa_enabled': user.two_fa_enabled
     }, status=status.HTTP_200_OK)
-
-from rest_framework.parsers import JSONParser
-from django.core.mail import send_mail
-from django.conf import settings
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

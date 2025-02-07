@@ -8,12 +8,12 @@ class LoadingOverlay {
     this.overlay = document.createElement("div");
     this.overlay.className = "loading-overlay";
     this.overlay.innerHTML = `
-            <div class="spinner-container">
-                <div class="spinner-border text-light" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
+    <div class="arcade-screen">
+      <div class="gif-container">
+        <img src="../assets/img/loading.gif" alt="Loading animation" />
+      </div>
+    </div>
+  `;
     document.body.appendChild(this.overlay);
   }
 

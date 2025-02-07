@@ -31,7 +31,7 @@ async function attachSettingsFormListener() {
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
     }
-	console.log(formData)
+    console.log(formData)
     try {
       loadingOverlay.show();
       const response = await fetch(
@@ -44,7 +44,7 @@ async function attachSettingsFormListener() {
           body: formData,
         }
       );
-	  
+
       if (!response.ok) {
         throw new Error("Failed to update profile");
       }
@@ -119,7 +119,10 @@ async function attachSettingsFormListener() {
 }
 
 async function loadSettingsData() {
+  const loadingOverlay = new LoadingOverlay();
+
   try {
+    loadingOverlay.show();
     const response = await fetch("http://localhost:8000/api/users/settings/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -154,5 +157,80 @@ async function loadSettingsData() {
     document.getElementById("profile-created").textContent = createdDate;
   } catch (error) {
     displayMessage("Failed to load profile data", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
 }
+
+async function loadMaps() {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetch("http://localhost:8000/api/users/settings/maps/", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch maps");
+    }
+
+    const data = await response.json();
+    const mapContainer = document.getElementById("map-container");
+
+    mapContainer.innerHTML = '';
+
+    data.maps.forEach(map => {
+      const isSelected = data.selected_map.selected_map.id === map.id;
+      mapContainer.innerHTML += `
+        <div class="col-md-3 mb-4">
+          <div class="card bg-dark ${isSelected ? 'border-success' : 'border-light'}" 
+               onclick="selectMap(${map.id})"
+               style="cursor: pointer">
+            <div class="card-body">
+              <h5 class="card-title text-center">${map.name}</h5>
+              <div class="map-preview mb-3" style="height: 200px; background-color: ${map.background_color};">
+                <div class="paddle left" style="background-color: ${map.paddle_color}"></div>
+                <div class="paddle right" style="background-color: ${map.paddle_color}"></div>
+                <div class="ball" style="background-color: ${map.ball_color}"></div>
+                <div class="wall top" style="background-color: ${map.wall_color}"></div>
+                <div class="wall bottom" style="background-color: ${map.wall_color}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+  } catch (error) {
+    displayMessage("Failed to load maps", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
+  }
+}
+
+async function selectMap(mapId) {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetch("http://localhost:8000/api/users/settings/map/update/", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+      body: JSON.stringify({ selected_map_id: mapId })
+    });
+
+    if (!response.ok) throw new Error("Failed to update map");
+
+    await loadMaps();
+    displayMessage("Map updated successfully", MessageType.SUCCESS);
+  } catch (error) {
+    displayMessage("Failed to update map", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
+  }
+}
+
