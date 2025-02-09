@@ -1,194 +1,148 @@
-// Router state
-const router = {
-  currentPage: null,
-  pages: {
-    home: "/home.html",
-    login: "/login.html",
-    register: "/register.html",
-    pong: "/pong.html",
-    42: "/42.html",
-  },
-};
-
-function displayMessage(message, type) {
-  const modal = new MessageModal(type);
-  modal.show(message);
-}
-
-function formatErrorMessages(errors) {
-  let formattedErrors = "";
-  for (const [field, messages] of Object.entries(errors)) {
-    formattedErrors += `<strong>${
-      field.charAt(0).toUpperCase() + field.slice(1)
-    }:</strong><br>`;
-    messages.forEach((message) => {
-      formattedErrors += `- ${message}<br>`;
-    });
-  }
-  return formattedErrors;
-}
-
-// Check if user is authenticated
-function isAuthenticated() {
-  return !!localStorage.getItem("access");
-}
-
-// Page loader
-async function renderPage(page) {
-  console.log(`Attempting to render page: ${page}`);
-  if (router.currentPage === page) return;
-
-  // Check authentication before navigating to home page
-  if (page === "home") {
-    console.log("Navigating to home, checking and refreshing token...");
-    const isAuthenticated = await checkAndRefreshToken();
-    if (!isAuthenticated) {
-      console.log("User not authenticated, redirecting to login page.");
-      page = "login";
-    }
+class PongGame {
+  constructor(data, socket) {
+      console.log("PongGame Initialized!");
+      this.scene = new THREE.Scene();
+      this.data = data; // Store the received data
+      this.socket = socket; // Store the socket connection
+      this.player1Score = 0;
+      this.player2Score = 0;
+      this.init();
   }
 
-  try {
-    const screen = document.querySelector(".screen-container");
-    screen.classList.remove("zoom-in", "zoom-out");
-
-    if (page === "home") {
-      screen.classList.add("zoom-in");
-    } else if (router.currentPage === "home") {
-      screen.classList.add("zoom-out");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      screen.classList.remove("zoom-out");
-    }
-
-    // Load the new page
-    const mainContent = document.getElementById("main-content");
-    const response = await fetch(router.pages[page]);
-    const html = await response.text();
-    mainContent.innerHTML = html;
-
-    if (page === "login") {
-      attachLoginFormListener();
-    } else if (page === "register") {
-      attachRegisterFormListener();
-    } else if (page === "home") {
-      updateUserProfile();
-      load_profile_pic();
-      renderElement("overview");
-      lobbyLoad();
-    }
-    else if (page==="pong")
-    { 
-      startGame(data.game_group, socket);
-    }
-    history.pushState({ page: page }, '', `/${page}`);
-    router.currentPage = page;
-  } catch (error) {
-    console.error("Error loading page:", error);
-  }
-}
-
-// Handle browser back/forward
-window.addEventListener("popstate", (e) => {
-  if (e.state?.page) {
-    renderPage(e.state.page);
-  }
-});
-
-// Load initial page
-window.addEventListener("load", () => {
-  const initialPage = window.location.pathname.slice(1) || "home";
-  renderPage(initialPage);
-});
-
-async function checkAndRefreshToken() {
-  console.log("checkAndRefreshToken called");
-  const accessTokenExpiry = parseInt(
-    localStorage.getItem("access_token_expiry"),
-    10
-  );
-  const currentTime = new Date().getTime();
-
-  if (isNaN(accessTokenExpiry)) {
-    console.error("Invalid access token expiry time");
-    logout();
-    return false;
+  init() {
+      this.setupCamera();
+      this.setupRenderer();
+      this.setupLighting();
+      this.setupGameElements();
+      this.setupGlowingGrid();
+      this.setupControls();
+      document.body.appendChild(this.renderer.domElement);
+      this.animate();
   }
 
-  const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
-  console.log("Current Time:", new Date(currentTime).toLocaleString());
-  console.log("Expiry Time:", new Date(accessTokenExpiry).toLocaleString());
-  console.log(
-    "Expiry minus five minutes:",
-    new Date(expiry_minus_five).toLocaleString()
-  );
-
-  if (currentTime > expiry_minus_five) {
-    // 5 minutes before expiry
-    console.log("Token Expired, refreshing token.");
-    const refreshSuccess = await refreshToken();
-    if (!refreshSuccess) {
-      console.log("Refresh unsuccessful.");
-      logout();
-      return false;
-    }
-    console.log("Refresh successful.");
+  setupCamera() {
+      this.camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+      this.camera.position.set(6.5, 0, 3);
+      this.camera.rotation.set(0.0, 1, 1.57);
   }
-  return true;
-}
 
-async function refreshToken() {
-  try {
-    const refresh = localStorage.getItem("refresh");
-    const response = await fetch("http://localhost:8000/api/token/refresh/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refresh }),
-    });
+  setupRenderer() {
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.setClearColor("#0A001E"); // Dark Purple (Neon Style)
+  }
 
-    const responseData = await response.json();
-    if (response.ok) {
-      localStorage.setItem("access", responseData.access);
-      const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
-      console.log(
-        "New Access Token Expiry:",
-        new Date(accessTokenExpiry).toLocaleString()
-      );
-      localStorage.setItem("access_token_expiry", accessTokenExpiry);
-      console.log("Token refreshed successfully");
-      return true;
-    } else {
-      console.error("Failed to refresh Access token:", responseData);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error refreshing Access token:", error);
-    return false;
+  setupLighting() {
+      this.ambientLight = new THREE.AmbientLight(0x5500AA, 1);
+      this.scene.add(this.ambientLight);
+
+      this.spotLight = new THREE.SpotLight(0xffffff, 2, 10, Math.PI / 4, 1);
+      this.spotLight.position.set(0, 5, 5);
+      this.spotLight.castShadow = true;
+      this.scene.add(this.spotLight);
+  }
+
+  setupGameElements() {
+      this.setupPaddles();
+      this.setupSquareBall();
+      this.setupWalls();
+      this.resetBall();
+  }
+
+  setupPaddles() {
+      const paddleMaterial = new THREE.MeshStandardMaterial({
+          color: "#FF00FF", // Neon Pink
+          emissive: "#FF00FF",
+          emissiveIntensity: 1.5,
+          metalness: 0.8,
+          roughness: 0.2
+      });
+
+      const paddleGeometry = new THREE.BoxGeometry(0.3, 1.2, 0.3);
+      this.leftPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
+      this.rightPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
+
+      this.leftPaddle.position.set(-4, 0, 0.2);
+      this.rightPaddle.position.set(4, 0, 0.2);
+
+      this.scene.add(this.leftPaddle, this.rightPaddle);
+  }
+
+  setupSquareBall() {
+      const squareMaterial = new THREE.MeshStandardMaterial({
+          color: "#00FFFF", // Neon Cyan
+          emissive: "#00FFFF",
+          emissiveIntensity: 2.0,
+          metalness: 1.0,
+          roughness: 0.1
+      });
+
+      const squareGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+      this.ball = new THREE.Mesh(squareGeometry, squareMaterial);
+      this.scene.add(this.ball);
+  }
+
+  setupWalls() {
+      const wallMaterial = new THREE.MeshStandardMaterial({
+          color: "#FFCC00",
+          emissive: "#FFCC00",
+          emissiveIntensity: 1.5,
+          transparent: true,
+          opacity: 0.5 // 🔥 Corrected: 50% transparent walls
+      });
+
+      const wallThickness = 0.1; // 🔥 Thinner walls
+      this.topWall = new THREE.Mesh(new THREE.BoxGeometry(9, wallThickness, 0.2), wallMaterial);
+      this.bottomWall = new THREE.Mesh(new THREE.BoxGeometry(9, wallThickness, 0.2), wallMaterial);
+
+      this.topWall.position.set(0, 2.5, 0.2);
+      this.bottomWall.position.set(0, -2.5, 0.2);
+
+      this.scene.add(this.topWall, this.bottomWall);
+  }
+
+  setupGlowingGrid() {
+      const gridMaterial = new THREE.LineBasicMaterial({ color: "#00FF00" }); // Green Grid
+
+      const gridWidth = 8.5;
+      const gridHeight = 4.5;
+      const gridSpacing = 0.5;
+      const fieldGroup = new THREE.Group();
+
+      for (let i = -gridWidth / 2; i <= gridWidth / 2; i += gridSpacing) {
+          const vertPoints = [new THREE.Vector3(i, -gridHeight / 2, 0), new THREE.Vector3(i, gridHeight / 2, 0)];
+          const vertGeometry = new THREE.BufferGeometry().setFromPoints(vertPoints);
+          fieldGroup.add(new THREE.Line(vertGeometry, gridMaterial));
+      }
+
+      for (let i = -gridHeight / 2; i <= gridHeight / 2; i += gridSpacing) {
+          const horizPoints = [new THREE.Vector3(-gridWidth / 2, i, 0), new THREE.Vector3(gridWidth / 2, i, 0)];
+          const horizGeometry = new THREE.BufferGeometry().setFromPoints(horizPoints);
+          fieldGroup.add(new THREE.Line(horizGeometry, gridMaterial));
+      }
+
+      fieldGroup.position.z = -0.2;
+      this.scene.add(fieldGroup);
+  }
+
+  setupControls() {
+      this.keys = {};
+      window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
+      window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+  }
+
+  animate() {
+      requestAnimationFrame(() => this.animate());
+      this.renderer.render(this.scene, this.camera);
   }
 }
 
-async function load_profile_pic() {
-  try {
-    const response = await fetch("http://localhost:8000/api/users/profile/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch profile data");
-    }
-
-    const data = await response.json();
-    localStorage.setItem("profile_image", data.profile_image);
-    // document.getElementById('photo_URL'.url = localStorage.photo_URL);
-
-    const photoElement = document.getElementById("profile-photo-home");
-    if (photoElement) {
-      photoElement.src = data.profile_image;
-    }
-  } catch {
-    displayMessage("Failed to load profile data", MessageType.ERROR);
-  }
+// 🔥 Function to Start the Game (Now Passing `data` and `socket`)
+function startGame(data, socket) {
+  console.log("Game starting... f() StartGame", data.gameGroup, socket);
+  new PongGame(data, socket); // Pass data & socket to PongGame
 }
+
+// ✅ Corrected Event Listener
+window.addEventListener("load", () => startGame({ gameGroup: null }, null));
