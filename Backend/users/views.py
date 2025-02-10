@@ -144,7 +144,7 @@ def deleteUser(request):
     except Exception as e:
         return Response(
             {"error": str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -222,7 +222,7 @@ def getUserProfile(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -297,7 +297,7 @@ def getFriendProfile(request, username):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -353,7 +353,7 @@ def getUserMatches(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -378,7 +378,7 @@ def getUserSettings(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -398,7 +398,7 @@ def getMaps(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['PUT'])
@@ -417,7 +417,7 @@ def updateMap(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['PUT'])
@@ -436,7 +436,7 @@ def updateUserProfile(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['PUT'])
@@ -472,7 +472,7 @@ def updateUserPassword(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -623,7 +623,7 @@ def oauth_callback(request):
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -668,7 +668,7 @@ def enable_two_fa(request):
             'qr_code': qr_code_data_uri
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -690,7 +690,7 @@ def verify_two_fa(request):
         else:
             return Response({'error': 'Invalid OTP code'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -737,7 +737,7 @@ def setRecoverOTP(request):
         else:
             return Response({'error': 'Incorrect email'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
       
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -760,4 +760,4 @@ def checkRecoverOTP(request):
         else:
             return Response({'error': 'Incorrect OTP'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
