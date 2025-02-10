@@ -22,7 +22,6 @@ from .schema import schema_view
 import users.urls
 import tournaments.urls
 import matches.urls
-import Pong.urls
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,

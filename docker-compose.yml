@@ -15,8 +15,6 @@ services:
       - ./.env
     volumes:
       - ./Backend:/usr/src/app/
-    ports:
-      - 8000:8000
     expose:
       - 8000
     depends_on:
@@ -27,8 +25,6 @@ services:
     build: ./Frontend
     volumes:
       - ./Frontend:/var/www/html
-    # ports:
-    #   - 9000:9000
     expose:
       - 9000
     depends_on:
@@ -83,6 +79,8 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    expose:
+      - 3000
     depends_on:
       - prometheus
     env_file:
@@ -91,4 +89,3 @@ services:
       - ./Grafana/dashboards:/var/lib/grafana/dashboards
       - ./Grafana/provisioning:/etc/grafana/provisioning
     restart: always
-
