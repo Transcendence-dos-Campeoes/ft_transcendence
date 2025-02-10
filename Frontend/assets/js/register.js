@@ -26,7 +26,7 @@ function attachRegisterFormListener() {
 
 		try {
 			loadingOverlay.show();
-			const response = await fetch(`http://${window.location.origin}:8000/api/users/create/`, {
+			const response = await fetch(`${window.location.origin}:8000/api/users/create/`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
