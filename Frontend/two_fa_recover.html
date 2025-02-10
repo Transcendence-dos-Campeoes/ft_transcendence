@@ -1,52 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Disable 2FA</title>
-	<style>
-		body {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			height: 100vh;
-			margin: 0;
-		}
-
-		.container {
-			text-align: center;
-		}
-
-		input {
-			display: block;
-			margin: 10px auto;
-		}
-
-		button {
-			display: block;
-			margin: 10px auto;
-		}
-	</style>
-</head>
-
-<body>
-	<div class="container">
-		<h1>Disable 2FA</h1>
-		<div>
-			<p style="margin-top: 20px;">Enter your email to receive a one-time password (OTP) for disabling 2FA:</p>
-			<input type="email" autocomplete="email" id="emailInputRecover" placeholder="Enter your email"
-				style="margin-bottom: 20px;">
-			<button id="requestOtpButton" onclick="requestOtp()">Request OTP</button>
+<div class="screen">
+	<div class="container-fluid overflow-auto d-flex flex-column h-100">
+		<div class="row mt-4 mb-2 justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
+				<h1>Disable 2FA</h1>
+				<div>
+					<p style="margin-top: 20px;">Enter your email to receive a one-time password (OTP) for disabling
+						2FA:</p>
+					<input type="email" autocomplete="email" id="emailInputRecover" placeholder="Enter your email"
+						style="margin-bottom: 20px;">
+					<button id="requestOtpButton" onclick="requestOtp()">Request OTP</button>
+				</div>
+				<div>
+					<p>Enter the OTP sent to your email:</p>
+					<input type="text" id="otpInputRecover" placeholder="Enter OTP" required>
+					<button id="verifyOtpButton" onclick="checkRecoverOTP()">Verify OTP</button>
+				</div>
+				<div id="message"></div>
+			</div>
 		</div>
-		<div>
-			<p>Enter the OTP sent to your email:</p>
-			<input type="text" id="otpInputRecover" placeholder="Enter OTP" required>
-			<button id="verifyOtpButton" onclick="checkRecoverOTP()">Verify OTP</button>
-		</div>
-		<div id="message"></div>
 	</div>
-	<script src="assets/js/2fa.js"></script>
-</body>
-
-</html>
+</div>
