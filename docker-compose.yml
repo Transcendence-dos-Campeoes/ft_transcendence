@@ -64,7 +64,7 @@ services:
     image: prom/node-exporter
     container_name: node-exporter
     ports:
-      - "9200:9200"
+      - "9100:9100"
     restart: always
     volumes:
       - /proc:/host/proc:ro
@@ -79,8 +79,6 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
-    expose:
-      - 3000
     depends_on:
       - prometheus
     env_file:
