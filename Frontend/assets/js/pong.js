@@ -114,7 +114,7 @@ function startGame(gameGroup, socket) {
                     if (data.player == 'player1')
                         player1.velocityY = data.velocityY;
                     else
-                    player2.velocityY = data.velocityY;
+                        player2.velocityY = data.velocityY;
             }
             if (data.type === 'end_game')
             {

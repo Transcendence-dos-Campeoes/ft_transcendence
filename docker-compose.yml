@@ -27,8 +27,10 @@ services:
     build: ./Frontend
     volumes:
       - frontend_vol:/var/www/html
-    ports:
-      - 9000:9000
+    # ports:
+    #   - 9000:9000
+    expose:
+      - 9000
     depends_on:
       - db
       - backend
