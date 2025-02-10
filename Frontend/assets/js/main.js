@@ -243,7 +243,7 @@ async function checkUserStatus() {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`http://${window.location.host}:8000/api/users/check_status/`, {
+		const response = await fetch(`${window.location.host}:8000/api/users/check_status/`, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
@@ -271,7 +271,7 @@ async function check2faenabled() {
 	try {
 		loadingOverlay.show();
 
-		const response = await fetch(`http://${window.location.host}:8000/api/users/check_status/`, {
+		const response = await fetch(`${window.location.origin}:8000/api/users/check_status/`, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
