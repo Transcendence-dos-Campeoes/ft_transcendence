@@ -1,6 +1,6 @@
 function startOAuth() {
 	const clientId = 'u-s4t2ud-a6f40a3d8815d6e54ce1c1ade89e13948ac4e875a56a593543068f6a77e7ddc4';
-	const redirectUri = encodeURIComponent('https://transcendence_brabos/42');
+	const redirectUri = encodeURIComponent(`${window.location.origin}/42`);
 	const scope = 'public';
 	const responseType = 'code';
 
@@ -13,15 +13,16 @@ function startOAuth() {
 window.onload = async function () {
 	const urlParams = new URLSearchParams(window.location.search);
 	const code = urlParams.get('code');
+	const redirectURI = `${window.location.origin}/42`;
 
 	if (code) {
 		try {
 			const response = await fetch(`${window.location.origin}/api/users/oauth_callback/`, {
-				method: 'POST', 
+				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ code: code })
+				body: JSON.stringify({ code: code, redirectURI: redirectURI })
 			});
 
 			if (!response.ok) {
