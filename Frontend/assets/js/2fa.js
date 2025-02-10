@@ -4,17 +4,17 @@ function checkAndRunTwoFA() {
 	const currentUrl = window.location.href;
 	console.log("Current URL:", currentUrl);
 
-	if (currentUrl.match('https://localhost/two_fa_enable') != null) {
+	if (currentUrl.match(`https://${window.location.origin}/two_fa_enable`) != null) {
 		renderPage("two_fa_enable")
 		console.log("Matched two_fa_enable URL");
 		two_fa_enable();
 	}
-	else if (currentUrl.match('https://localhost/two_fa_re_enable') != null) {
+	else if (currentUrl.match(`https://${window.location.origin}/two_fa_re_enable`) != null) {
 		renderPage("two_fa_re_enable")
 		console.log("Matched two_fa_re_enable URL");
 		two_fa_enable();
 	}
-	else if (currentUrl.match('https://localhost/two_fa_verify') != null) {
+	else if (currentUrl.match(`https:/${window.location.origin}/two_fa_verify`) != null) {
 		renderPage("two_fa_verify")
 	}
 	else {

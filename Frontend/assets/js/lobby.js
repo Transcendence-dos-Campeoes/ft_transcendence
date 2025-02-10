@@ -9,7 +9,7 @@ function lobbyLoad() {
   const token = localStorage.getItem("access");
   if (typeof socket === "undefined" || socket.readyState === WebSocket.CLOSED)
     socket = new WebSocket(
-      `ws://localhost:8000/ws/users/online-players/?token=${token}`
+      `ws://${window.location.origin}:8000/ws/users/online-players/?token=${token}`
     );
   else socket.send(JSON.stringify({ type: "lobby" }));
 

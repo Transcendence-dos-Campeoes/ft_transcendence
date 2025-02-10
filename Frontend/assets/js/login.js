@@ -37,11 +37,13 @@ async function login(username, password) {
 			localStorage.setItem("username", username);
 			localStorage.setItem("email", responseData.email);
 			if (responseData.two_fa_enabled == false) {
-				history.pushState({}, '', 'https://localhost/two_fa_enable');
+				const newUrl = `${window.location.origin}/two_fa_enable`;
+				history.pushState({}, '', newUrl);
 				checkAndRunTwoFA()
 			}
 			else {
-				history.pushState({}, '', 'https://localhost/two_fa_verify');
+				const newUrl = `${window.location.origin}/two_fa_verify`;
+				history.pushState({}, '', newUrl);
 				checkAndRunTwoFA();
 			}
 			// renderPage("home");

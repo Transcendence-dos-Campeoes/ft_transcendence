@@ -42,11 +42,11 @@ window.onload = async function () {
 			localStorage.setItem('email', data.email);
 			// Redirect to the home page or another page
 			if (data.two_fa_enabled == false) {
-				history.pushState({}, '', 'https://localhost/two_fa_enable');
+				history.pushState({}, '', `https://${window.location.origin}/two_fa_enable`);
 				checkAndRunTwoFA()
 			}
 			else {
-				history.pushState({}, '', 'https://localhost/two_fa_verify');
+				history.pushState({}, '', `https://${window.location.origin}/two_fa_verify`);
 				checkAndRunTwoFA();
 			}
 		} catch (error) {

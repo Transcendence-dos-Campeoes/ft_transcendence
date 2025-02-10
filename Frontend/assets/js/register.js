@@ -44,7 +44,8 @@ function attachRegisterFormListener() {
 				localStorage.setItem("username", responseData.user);
 				const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 30 minutes
 				localStorage.setItem("access_token_expiry", accessTokenExpiry);
-				history.pushState({}, '', 'https://localhost/two_fa_enable');
+				const newUrl = `${window.location.origin}/two_fa_enable`;
+				history.pushState({}, '', newUrl);
 				checkAndRunTwoFA()
 			} else if (!response.ok && response.status == 429) {
 				displayMessage(
