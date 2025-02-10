@@ -559,6 +559,7 @@ def deleteFriend(request, friend_id):
 @permission_classes([])
 def oauth_callback(request):
     try:
+        print(request)
         code = request.data.get('code')
         if not code:
             return Response({'error': 'Authorization code is missing'}, status=status.HTTP_400_BAD_REQUEST)
@@ -570,9 +571,10 @@ def oauth_callback(request):
             'client_id': 'u-s4t2ud-a6f40a3d8815d6e54ce1c1ade89e13948ac4e875a56a593543068f6a77e7ddc4',
             'client_secret': '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',
             'code': code,
-            'redirect_uri': 'https://localhost/42'
+            'redirect_uri': 'https://transcendence_brabos/42'
         }
         response = requests.post(token_url, data=data)
+        print(response)
         if response.status_code != 200:
             return Response({'error': 'Failed to obtain access token'}, status=status.HTTP_400_BAD_REQUEST)
 
