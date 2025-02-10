@@ -16,7 +16,7 @@ window.onload = async function () {
 
 	if (code) {
 		try {
-			const response = await fetch('http://localhost:8000/api/users/oauth_callback/', {
+			const response = await fetch(`${window.location.origin}:8000/api/users/oauth_callback/`, {
 				method: 'POST', 
 				headers: {
 					'Content-Type': 'application/json'
