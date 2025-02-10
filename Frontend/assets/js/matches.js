@@ -104,7 +104,7 @@ async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/users/matches/", {
+    const response = await fetch(`${window.location.origin}/api/users/matches/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },

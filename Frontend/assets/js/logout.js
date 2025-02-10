@@ -4,7 +4,7 @@ async function logout() {
 	if (!refresh) return;
 
 	try {
-		const response = await fetch("http://localhost:8000/api/users/logout/", {
+		const response = await fetch(`${window.location.origin}/api/users/logout/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

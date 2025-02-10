@@ -33,7 +33,7 @@ function cancelRegistration() {
 		if (accept) {
 			console.log("Account registration cancelled.");
 			try {
-				const response = await fetch("http://localhost:8000/api/users/delete/", {
+				const response = await fetch(`${window.location.origin}/api/users/delete/`, {
 					method: "DELETE",
 					headers: {
 						"Content-Type": "application/json",
@@ -73,7 +73,7 @@ async function two_fa_enable() {
 		console.log("Username from localStorage:", username);
 
 		const response = await fetch(
-			"http://localhost:8000/api/users/twofa/enable/",
+			`${window.location.origin}/api/users/twofa/enable/`,
 			{
 				method: "POST",
 				headers: {
@@ -112,7 +112,7 @@ async function verifyOtpCode() {
 		console.log("OTP Code:", otpCode);
 
 		const response = await fetch(
-			"http://localhost:8000/api/users/twofa/verify/",
+			`${window.location.origin}/api/users/twofa/verify/`,
 			{
 				method: "POST",
 				headers: {
@@ -143,7 +143,7 @@ async function requestOtp() {
 	try {
 		// Request a new 2FA QR code
 		const enableResponse = await fetch(
-			"http://localhost:8000/api/users/setRecoverOTP/",
+			`${window.location.origin}/api/users/setRecoverOTP/`,
 			{
 				method: "POST",
 				headers: {
@@ -172,7 +172,7 @@ async function checkRecoverOTP() {
 	console.log(otp_code);
 	try {
 		const enableResponse = await fetch(
-			"http://localhost:8000/api/users/checkRecoverOTP/",
+			`${window.location.origin}/api/users/checkRecoverOTP/`,
 			{
 				method: "POST",
 				headers: {

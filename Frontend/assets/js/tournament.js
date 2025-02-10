@@ -16,7 +16,7 @@ async function attachTournamentFormListener() {
     try {
       loadingOverlay.show();
       const response = await fetch(
-        "http://localhost:8000/api/tournaments/create/",
+        `${window.location.origin}/api/tournaments/create/`,
         {
           method: "POST",
           headers: {
@@ -52,7 +52,7 @@ async function joinTournament(tournamentId) {
   try {
     loadingOverlay.show();
     const response = await fetch(
-      `http://localhost:8000/api/tournaments/${tournamentId}/join/`,
+      `${window.location.origin}/api/tournaments/${tournamentId}/join/`,
       {
         method: "POST",
         headers: {
@@ -79,7 +79,7 @@ async function startTournament(tournamentId) {
   try {
     loadingOverlay.show();
     const response = await fetch(
-      `http://localhost:8000/api/tournaments/${tournamentId}/start/`,
+      `${window.location.origin}/api/tournaments/${tournamentId}/start/`,
       {
         method: "POST",
         headers: {
@@ -103,7 +103,7 @@ async function loadTournamentBracket(tournamentId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`http://localhost:8000/api/tournaments/${tournamentId}/bracket/`, {
+    const response = await fetch(`${window.location.origin}/api/tournaments/${tournamentId}/bracket/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },
@@ -163,7 +163,7 @@ async function loadAvailableTournaments() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/tournaments/get/", {
+    const response = await fetch(`${window.location.origin}/api/tournaments/get/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },

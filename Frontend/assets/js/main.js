@@ -175,7 +175,7 @@ async function refreshToken() {
 	try {
 		loadingOverlay.show();
 		const refresh = localStorage.getItem("refresh");
-		const response = await fetch("http://localhost:8000/api/token/refresh/", {
+		const response = await fetch(`${window.location.origin}/api/token/refresh/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -211,7 +211,7 @@ async function load_profile_pic() {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch("http://localhost:8000/api/users/profile/", {
+		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
 			},
@@ -243,7 +243,7 @@ async function checkUserStatus() {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch("http://localhost:8000/api/users/check_status/", {
+		const response = await fetch(`${window.location.origin}/api/users/check_status/`, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
@@ -271,7 +271,7 @@ async function check2faenabled() {
 	try {
 		loadingOverlay.show();
 
-		const response = await fetch("http://localhost:8000/api/users/check_status/", {
+		const response = await fetch(`${window.location.origin}/api/users/check_status/`, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
