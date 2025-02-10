@@ -2,7 +2,7 @@ async function loadChart() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/matches/get/", {
+    const response = await fetch(`${window.location.origin}:8000/api/matches/get/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },
