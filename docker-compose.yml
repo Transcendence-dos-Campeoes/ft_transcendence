@@ -26,7 +26,7 @@ services:
   frontend:
     build: ./Frontend
     volumes:
-      - frontend_vol:/var/www/html
+      - ./Frontend:/var/www/html
     # ports:
     #   - 9000:9000
     expose:
@@ -98,12 +98,6 @@ volumes:
     driver_opts:
       type: none
       device: ${PWD}/Database
-      o: bind
-  frontend_vol:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/Frontend
       o: bind
   backend_vol:
     driver: local
