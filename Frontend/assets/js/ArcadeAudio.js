@@ -53,29 +53,31 @@ class ArcadeAudio {
   }
 
   fadeIn() {
-    this.audio.play().catch((err) => console.log("Audio play failed:", err));
-    let volume = 0;
-    const fadeIn = setInterval(() => {
-      if (volume < 0.3) {
-        volume += 0.01;
-        this.audio.volume = volume;
+    if (!this.audio) return;
+
+    const fadeInterval = setInterval(() => {
+      if (this.audio.volume < 1) {
+        const newVolume = Math.min(this.audio.volume + 0.1, 1);
+        this.audio.volume = newVolume;
+        if (this.audio.paused) this.audio.play();
       } else {
-        clearInterval(fadeIn);
+        clearInterval(fadeInterval);
       }
-    }, 50);
+    }, 100);
   }
 
   fadeOut() {
-    let volume = this.audio.volume;
-    const fadeOut = setInterval(() => {
-      if (volume > 0) {
-        volume -= 0.01;
-        this.audio.volume = volume;
+    if (!this.audio) return;
+
+    const fadeInterval = setInterval(() => {
+      if (this.audio.volume > 0) {
+        const newVolume = Math.max(this.audio.volume - 0.1, 0);
+        this.audio.volume = newVolume;
       } else {
         this.audio.pause();
-        clearInterval(fadeOut);
+        clearInterval(fadeInterval);
       }
-    }, 50);
+    }, 100);
   }
 }
 
