@@ -225,9 +225,9 @@ async function load_profile_pic() {
 		localStorage.setItem("profile_image", data.profile_image);
 		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
 
-		const photoElement = document.getElementById("profile-photo-home");
-		if (photoElement) {
-			photoElement.src = data.profile_image;
+		const profileImg = document.getElementById("profile-photo-home");
+		if (profileImg && data.profile_image) {
+			profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;
 		}
 	} catch {
 		displayMessage("Failed to load profile data", MessageType.ERROR);

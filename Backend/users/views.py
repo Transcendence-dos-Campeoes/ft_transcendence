@@ -173,10 +173,16 @@ def getUserProfile(request):
         losses = total_matches - wins
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
+        # Encode profile image in base64
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -356,12 +362,17 @@ def getUserSettings(request):
     try:
         user = request.user
 
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         settings_data = {
             'username': user.username,
             'email': user.email,
             'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
         }
         return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
