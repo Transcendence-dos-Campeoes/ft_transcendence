@@ -175,7 +175,7 @@ async function refreshToken() {
 	try {
 		loadingOverlay.show();
 		const refresh = localStorage.getItem("refresh");
-		const response = await fetch(`${window.location.origin}:8000/api/token/refresh/`, {
+		const response = await fetch(`https://backend:8000/api/token/refresh/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -211,7 +211,7 @@ async function load_profile_pic() {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}:8000/api/users/profile/`, {
+		const response = await fetch(`https://backend:8000/api/users/profile/`, {
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
 			},
