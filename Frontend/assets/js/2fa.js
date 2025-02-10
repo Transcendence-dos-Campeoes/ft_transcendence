@@ -14,7 +14,7 @@ function checkAndRunTwoFA() {
 		console.log("Matched two_fa_re_enable URL");
 		two_fa_enable();
 	}
-	else if (currentUrl.match(`https:/${window.location.origin}/two_fa_verify`) != null) {
+	else if (currentUrl.match(`https://${window.location.origin}/two_fa_verify`) != null) {
 		renderPage("two_fa_verify")
 	}
 	else {
