@@ -47,7 +47,7 @@ function cancelRegistration() {
 				if (response.ok) {
 					console.log("Account registration canceled.");
 					localStorage.clear();
-					window.location.href = "https://localhost/register";
+					window.location.href = `${window.location.origin}/register`;
 				}
 			} catch (error) {
 				console.error("Error:", error);
@@ -63,7 +63,7 @@ function cancelVerification() {
 	console.log("2FA verification canceled.");
 	// Redirect to the home page or another appropriate page
 	localStorage.clear();
-	window.location.href = "https://localhost/login";
+	window.location.href = `${window.location.origin}/login`;
 }
 
 
