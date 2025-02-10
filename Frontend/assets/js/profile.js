@@ -156,7 +156,7 @@ function loadProfileData(data) {
 
 async function viewProfile() {
 	try {
-		const response = await fetch(`${window.location.origin}:8000/api/users/profile/`, {
+		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
 			},
@@ -179,7 +179,7 @@ async function viewFriendProfile(username) {
 	try {
 		loadingOverlay.show();
 		const response = await fetch(
-			`${window.location.origin}:8000/api/users/profile/${username}/`,
+			`${window.location.origin}/api/users/profile/${username}/`,
 			{
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -204,7 +204,7 @@ async function deleteAccount() {
 	const loadingOverlay = new LoadingOverlay();
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}:8000/api/users/delete/`, {
+		const response = await fetch(`${window.location.origin}/api/users/delete/`, {
 			method: "DELETE",
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,

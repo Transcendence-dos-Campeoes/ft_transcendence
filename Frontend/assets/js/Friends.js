@@ -16,7 +16,7 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch(`${window.location.origin}:8000/api/users/friends/`, {
+      const response = await fetch(`${window.location.origin}/api/users/friends/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -35,7 +35,7 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch(`${window.location.origin}:8000/api/users/invites/`, {
+      const response = await fetch(`${window.location.origin}/api/users/invites/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access")}`,
@@ -57,7 +57,7 @@ class FriendSystem {
     try {
       loadingOverlay.show();
       const response = await fetch(
-        `${window.location.origin}:8000/api/users/invite/create/`,
+        `${window.location.origin}/api/users/invite/create/`,
         {
           method: "POST",
           headers: {
@@ -82,7 +82,7 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      await fetch(`${window.location.origin}:8000/api/users/invite/update/`, {
+      await fetch(`${window.location.origin}/api/users/invite/update/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +109,7 @@ class FriendSystem {
     try {
       loadingOverlay.show();
       const response = await fetch(
-        `${window.location.origin}:8000/api/users/friend/delete/${friendId}/`,
+        `${window.location.origin}/api/users/friend/delete/${friendId}/`,
         {
           method: "DELETE",
           headers: {

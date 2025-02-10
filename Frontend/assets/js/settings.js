@@ -35,7 +35,7 @@ async function attachSettingsFormListener() {
     try {
       loadingOverlay.show();
       const response = await fetch(
-        `${window.location.origin}:8000/api/users/settings/update/`,
+        `${window.location.origin}/api/users/settings/update/`,
         {
           method: "PUT",
           headers: {
@@ -87,7 +87,7 @@ async function attachSettingsFormListener() {
     try {
       loadingOverlay.show();
       const response = await fetch(
-        `${window.location.origin}:8000/api/users/profile/update/password/`,
+        `${window.location.origin}/api/users/profile/update/password/`,
         {
           method: "PUT",
           headers: {
@@ -123,7 +123,7 @@ async function loadSettingsData() {
 
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}:8000/api/users/settings/`, {
+    const response = await fetch(`${window.location.origin}/api/users/settings/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },
@@ -166,7 +166,7 @@ async function loadMaps() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}:8000/api/users/settings/maps/`, {
+    const response = await fetch(`${window.location.origin}/api/users/settings/maps/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access")}`,
       },
@@ -214,7 +214,7 @@ async function selectMap(mapId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}:8000/api/users/settings/map/update/`, {
+    const response = await fetch(`${window.location.origin}/api/users/settings/map/update/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
