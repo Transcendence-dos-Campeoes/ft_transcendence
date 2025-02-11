@@ -168,7 +168,7 @@ def start_tournament(request, tournament_id):
     except Exception as e:
         return Response(
             {'error': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -224,5 +224,5 @@ def get_tournament_bracket(request, tournament_id):
     except Exception as e:
         return Response(
             {'error': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )

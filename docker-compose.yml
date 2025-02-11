@@ -15,8 +15,6 @@ services:
       - ./.env
     volumes:
       - ./Backend:/usr/src/app/
-    ports:
-      - 8000:8000
     expose:
       - 8000
     depends_on:
@@ -27,8 +25,6 @@ services:
     build: ./Frontend
     volumes:
       - ./Frontend:/var/www/html
-    # ports:
-    #   - 9000:9000
     expose:
       - 9000
     depends_on:
@@ -64,11 +60,23 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
     restart: always
 
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    env_file:
+      - ./.env
+    volumes:
+      - ./Alertmanager/config:/etc/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+
   node-exporter:
     image: prom/node-exporter
     container_name: node-exporter
     ports:
-      - "9200:9200"
+      - "9100:9100"
     restart: always
     volumes:
       - /proc:/host/proc:ro
@@ -89,6 +97,5 @@ services:
       - ./.env
     volumes:
       - ./Grafana/dashboards:/var/lib/grafana/dashboards
-      - ./Grafana/provisioning:/etc/grafana/provisioning
+      - ./Grafana/provisioning:/etc/grafana/provisioning:ro
     restart: always
-
