@@ -37,7 +37,6 @@ async function logout() {
 }
 
 async function clearLocalStorage() {
-	socket.close();
 	localStorage.clear();
 	renderPage("login");
 }

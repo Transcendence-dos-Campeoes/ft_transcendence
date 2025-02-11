@@ -134,7 +134,11 @@ async function renderAuthPage(page, responseStruct) {
 }
 
 async function fetchWithAuth(url, options = {}) {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
+
 		let response = await fetch(`${window.location.origin}${url}`, {
 			...options,
 			headers: {
@@ -169,11 +173,17 @@ async function fetchWithAuth(url, options = {}) {
 	} catch (error) {
 		logout();
 		throw error;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
 async function fetchWithDiffAuth(url, options = {}, tokens) {
+	const loadingOverlay = new LoadingOverlay();
+
 	try {
+		loadingOverlay.show();
+
 		let response = await fetch(`${window.location.origin}${url}`, {
 			...options,
 			headers: {
@@ -200,6 +210,8 @@ async function fetchWithDiffAuth(url, options = {}, tokens) {
 	} catch (error) {
 		logout();
 		throw error;
+	} finally {
+		loadingOverlay.hide();
 	}
 }
 
@@ -219,6 +231,7 @@ async function refreshToken() {
 
 		const data = await response.json();
 		localStorage.setItem('access', data.access);
+		localStorage.setItem('refresh', data.refresh);
 		return true;
 	} catch {
 		return false;
@@ -241,6 +254,7 @@ async function refreshTokenDiff(tokens) {
 
 		const data = await response.json();
 		localStorage.setItem('access', data.access);
+		localStorage.setItem('refresh', data.refresh);
 		return true;
 	} catch {
 		return false;
