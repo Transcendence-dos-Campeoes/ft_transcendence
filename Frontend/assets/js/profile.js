@@ -236,3 +236,33 @@ function updateUserProfile() {
 		userDisplay.textContent = username;
 	}
 }
+
+async function load_profile_pic() {
+	const loadingOverlay = new LoadingOverlay();
+
+	try {
+		loadingOverlay.show();
+		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("access")}`,
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error("Failed to fetch profile data");
+		}
+
+		const data = await response.json();
+		localStorage.setItem("profile_image", data.profile_image);
+		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
+
+		const profileImg = document.getElementById("profile-photo-home");
+		if (profileImg && data.profile_image) {
+			profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;
+		}
+	} catch {
+		displayMessage("Failed to load profile data", MessageType.ERROR);
+	} finally {
+		loadingOverlay.hide();
+	}
+}

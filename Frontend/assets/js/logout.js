@@ -11,7 +11,7 @@ async function logout() {
 				Authorization: `Bearer ${localStorage.getItem("access")}`,
 			},
 			body: JSON.stringify({ refresh }),
-			credentials: "include", // Include cookies in the request
+			credentials: "include",
 		});
 		socket.close();
 		if (response.ok) {
@@ -37,5 +37,7 @@ async function logout() {
 		}
 	} catch (error) {
 		console.error("Error logging out:", error);
+		localStorage.clear();
+		renderPage("login");
 	}
 }

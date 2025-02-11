@@ -43,11 +43,9 @@ async function handle42Callback() {
 
 			// Redirect to the appropriate page based on 2FA status
 			if (data.two_fa_enabled == false) {
-				history.pushState({}, '', '/two_fa_enable');
-				checkAndRunTwoFA();
+				renderPage("two_fa_enable");
 			} else {
-				history.pushState({}, '', '/two_fa_verify');
-				checkAndRunTwoFA();
+				renderPage("two_fa_verify");
 			}
 		} catch (error) {
 			console.error('Error:', error);

@@ -7,10 +7,10 @@ const router = {
 		register: "/register.html",
 		pong: "/pong.html",
 		42: "/42.html",
-		two_fa_enable: "two_fa_enable.html",
-		two_fa_verify: "two_fa_verify.html",
-		two_fa_recover: "two_fa_recover.html",
-		two_fa_re_enable: "two_fa_re_enable.html"
+		two_fa_enable: "/two_fa_enable.html",
+		two_fa_verify: "/two_fa_verify.html",
+		two_fa_recover: "/two_fa_recover.html",
+		two_fa_re_enable: "/two_fa_re_enable.html"
 	},
 };
 
@@ -31,19 +31,25 @@ function formatErrorMessages(errors) {
 	return formattedErrors;
 }
 
+async function isAuthenticated() {
+	try {
+		const response = await fetchWithAuth('/api/users/verify/');
+		return response.ok;
+	} catch {
+		return false;
+	}
+}
+
 // Page loader
 async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 	if (router.currentPage === page) return;
 
-	// Check authentication before navigating to home page
-	if (page !== "login" && page !== "register" && page !== "42" && page !== "two_fa_enable" && page !== "two_fa_verify" && page !== "two_fa_recover" && page !== "two_fa_re_enable") {
-		console.log("Navigating to home, checking and refreshing token...");
-		const isAuthenticated = await checkAndRefreshToken();
-		const isVerified = await checkUserStatus();
-		if (!isAuthenticated || !isVerified) {
-			console.log("User not authenticated or verified, redirecting to login page.");
+	if (page === "home" || page === "pong") {
+		const authenticated = await isAuthenticated();
+		if (!authenticated) {
+			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
 	}
@@ -68,7 +74,7 @@ async function renderPage(page) {
 		mainContent.innerHTML = html;
 
 		if (page === "login") {
-			await authenticateUserFlow(page);
+			attachLoginFormListener();
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
@@ -80,7 +86,7 @@ async function renderPage(page) {
 			startGame(data.game_group, socket);
 		}
 		else if (page === "two_fa_enable") {
-			two_fa_enable();
+			get_two_fa_qr();
 		} else if (page === "42") {
 			handle42Callback();
 		}
@@ -93,32 +99,34 @@ async function renderPage(page) {
 	}
 }
 
-async function authenticateUserFlow(page) {
-	const isAuthenticated = await checkAndRefreshToken();
-	const isVerified = await checkUserStatus();
-	const twofaenabled = await check2faenabled();
-	if (!isAuthenticated && page === "login") {
-		localStorage.clear();
-		attachLoginFormListener();
-	}
-	else if (!isAuthenticated && page === "register") {
-		localStorage.clear();
-		attachRegisterFormListener();
-	}
-	else {
-		console.log("Authenticated");
-		if (!isVerified && !twofaenabled) {
-			console.log("Not verified and 2FA not enabled.");
-			renderPage("two_fa_enable");
+async function fetchWithAuth(url, options = {}) {
+	try {
+		let response = await fetch(`${window.location.origin}${url}`, {
+			...options,
+			headers: {
+				...options.headers,
+				'Authorization': `Bearer ${localStorage.getItem('access')}`
+			}
+		});
+
+		if (response.status === 401) {
+			const refreshed = await refreshToken();
+			if (!refreshed) {
+				logout();
+				return;
+			}
+			response = await fetch(`${window.location.origin}${url}`, {
+				...options,
+				headers: {
+					...options.headers,
+					'Authorization': `Bearer ${localStorage.getItem('access')}`
+				}
+			});
 		}
-		else if (!isVerified && twofaenabled) {
-			console.log("Not verified but 2FA Enabled.");
-			renderPage("two_fa_verify");
-		}
-		else {
-			console.log("Verified.");
-			renderPage("home");
-		}
+		return response;
+	} catch (error) {
+		logout();
+		throw error;
 	}
 }
 
@@ -134,162 +142,3 @@ window.addEventListener("load", () => {
 	const initialPage = window.location.pathname.slice(1) || "home";
 	renderPage(initialPage);
 });
-
-async function checkAndRefreshToken() {
-	console.log("checkAndRefreshToken called");
-	const accessTokenExpiry = parseInt(
-		localStorage.getItem("access_token_expiry"),
-		10
-	);
-	const currentTime = new Date().getTime();
-
-	if (isNaN(accessTokenExpiry)) {
-		console.error("Invalid access token expiry time");
-		logout();
-		return false;
-	}
-
-	const expiry_minus_five = accessTokenExpiry - 5 * 60 * 1000;
-	console.log("Current Time:", new Date(currentTime).toLocaleString());
-	console.log("Expiry Time:", new Date(accessTokenExpiry).toLocaleString());
-	console.log(
-		"Expiry minus five minutes:",
-		new Date(expiry_minus_five).toLocaleString()
-	);
-
-	if (currentTime > expiry_minus_five) {
-		// 5 minutes before expiry
-		console.log("Token Expired, refreshing token.");
-		const refreshSuccess = await refreshToken();
-		if (!refreshSuccess) {
-			console.log("Refresh unsuccessful.");
-			logout();
-			return false;
-		}
-		console.log("Refresh successful.");
-	}
-	return true;
-}
-
-async function refreshToken() {
-	const loadingOverlay = new LoadingOverlay();
-
-	try {
-		loadingOverlay.show();
-		const refresh = localStorage.getItem("refresh");
-		const response = await fetch(`${window.location.origin}/api/token/refresh/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ refresh }),
-		});
-
-		const responseData = await response.json();
-		if (response.ok) {
-			localStorage.setItem("access", responseData.access);
-			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
-			console.log(
-				"New Access Token Expiry:",
-				new Date(accessTokenExpiry).toLocaleString()
-			);
-			localStorage.setItem("access_token_expiry", accessTokenExpiry);
-			console.log("Token refreshed successfully");
-			return true;
-		} else {
-			console.error("Failed to refresh Access token:", responseData);
-			return false;
-		}
-	} catch (error) {
-		console.error("Error refreshing Access token:", error);
-		return false;
-	} finally {
-		loadingOverlay.hide();
-	}
-}
-
-async function load_profile_pic() {
-	const loadingOverlay = new LoadingOverlay();
-
-	try {
-		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
-		});
-
-		if (!response.ok) {
-			throw new Error("Failed to fetch profile data");
-		}
-
-		const data = await response.json();
-		localStorage.setItem("profile_image", data.profile_image);
-		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
-
-		const profileImg = document.getElementById("profile-photo-home");
-		if (profileImg && data.profile_image) {
-			profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;
-		}
-	} catch {
-		displayMessage("Failed to load profile data", MessageType.ERROR);
-	} finally {
-		loadingOverlay.hide();
-	}
-}
-
-
-async function checkUserStatus() {
-	console.log("Check User Status called.")
-	const loadingOverlay = new LoadingOverlay();
-
-	try {
-		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}/api/users/check_status/`, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
-		});
-		const responseData = await response.json();
-		if (response.ok && responseData.is_otp_verified) {
-			return true;
-		} else {
-			return false;
-		}
-	} catch (error) {
-		console.error("Error checking user status:", error);
-		return false;
-	} finally {
-		loadingOverlay.hide();
-	}
-}
-
-async function check2faenabled() {
-	console.log("check2faenabled called.")
-	const loadingOverlay = new LoadingOverlay();
-
-	try {
-		loadingOverlay.show();
-
-		const response = await fetch(`${window.location.origin}/api/users/check_status/`, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
-		});
-		const responseData = await response.json();
-		if (response.ok && responseData.two_fa_enabled) {
-			return true;
-		} else {
-			return false;
-		}
-	} catch (error) {
-		console.error("Error checking 2fa status:", error);
-		return false;
-	} finally {
-		loadingOverlay.hide();
-	}
-}

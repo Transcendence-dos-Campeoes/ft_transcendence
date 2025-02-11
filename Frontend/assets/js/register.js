@@ -34,19 +34,14 @@ function attachRegisterFormListener() {
 
 			const responseText = await response.text();
 			if (response.ok) {
-				console.log("User Registered Succesfully");
 				const responseData = JSON.parse(responseText);
-				console.log(responseData);
-				// Store the tokens and expiration time in localStorage or a cookie
+
 				localStorage.setItem("access", responseData.access);
 				localStorage.setItem("refresh", responseData.refresh);
 				localStorage.setItem("email", responseData.email);
 				localStorage.setItem("username", responseData.user);
-				const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 30 minutes
-				localStorage.setItem("access_token_expiry", accessTokenExpiry);
-				const newUrl = `${window.location.origin}/two_fa_enable`;
-				history.pushState({}, '', newUrl);
-				checkAndRunTwoFA()
+
+				renderPage("two_fa_enable")
 			} else if (!response.ok && response.status == 429) {
 				displayMessage(
 					"Too many requests. Please try again later.",
