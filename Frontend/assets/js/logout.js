@@ -1,6 +1,7 @@
 // Logout function
 async function logout() {
 	socket.close();
+	const refresh = localStorage.getItem("refresh");
 	try {
 		const response = await fetchWithAuth("/api/users/logout/", {
 			method: "POST",
