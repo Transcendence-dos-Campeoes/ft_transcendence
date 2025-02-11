@@ -125,8 +125,9 @@ async function renderAuthPage(page, responseStruct) {
 			attach2FAVerifyFormListener(responseStruct);
 		} else if (page === "two_fa_recover") {
 			attach2FaRecoverFormListener(responseStruct);
+		} else if (page === "two_fa_re_enable") {
+			attach2FaReEnableFormListener(responseStruct);
 		}
-		history.pushState({ page: page }, "", `/${page}`);
 		routerAuth.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);

@@ -19,12 +19,11 @@ function attach2FAVerifyFormListener(responseStruct) {
 	});
 
 	disableBtn.addEventListener("click", () => {
-		renderAuthPage("two_fa_recover");
+		renderAuthPage("two_fa_recover", responseStruct);
 	});
 }
 
 function attach2FAEnableFormListener(responseStruct) {
-	console.log("cao");
 	const form = document.getElementById("twoFaEnableForm");
 	const cancelBtn = document.getElementById("cancel");
 
@@ -45,7 +44,6 @@ function attach2FAEnableFormListener(responseStruct) {
 }
 
 function attach2FaRecoverFormListener(responseStruct) {
-	console.log("cao");
 	const form = document.getElementById("twoFaRecoverForm");
 	const cancelBtn = document.getElementById("cancel");
 	const requestBtn = document.getElementById("request");
@@ -69,10 +67,30 @@ function attach2FaRecoverFormListener(responseStruct) {
 
 	cancelBtn.addEventListener("click", async function (event) {
 		event.preventDefault();
-		await cancelRegistration(responseStruct);
+		cancelVerification();
+	});
+}
+
+function attach2FaReEnableFormListener(responseStruct) {
+	const form = document.getElementById("twoFaReEnableForm");
+	const cancelBtn = document.getElementById("cancel");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpCode").value;
+		await verifyOtpCode(responseStruct, code);
 	});
 
+	cancelBtn.addEventListener("click", async function () {
+		await cancelRegistration(responseStruct);
+	});
 }
+
 
 
 async function cancelRegistration(responseStruct) {
@@ -185,7 +203,7 @@ async function requestOtp(responseStruct, email) {
 
 async function checkRecoverOTP(responseStruct, otp_code) {
 	try {
-		const response = await fetchWithAuth('/api/users/checkRecoverOTP/', {
+		const response = await fetchWithDiffAuth('/api/users/checkRecoverOTP/', {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
@@ -198,7 +216,7 @@ async function checkRecoverOTP(responseStruct, otp_code) {
 			return;
 		}
 
-		renderPage("two_fa_re_enable")
+		renderAuthPage("two_fa_re_enable", responseStruct)
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify recovery code", MessageType.ERROR);
