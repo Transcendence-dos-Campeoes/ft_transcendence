@@ -13,7 +13,6 @@ const router = {
 const routerAuth = {
 	currentPage: null,
 	pages: {
-		42: "/42.html",
 		two_fa_enable: "/two_fa_enable.html",
 		two_fa_verify: "/two_fa_verify.html",
 		two_fa_recover: "/two_fa_recover.html",
@@ -40,11 +39,7 @@ function formatErrorMessages(errors) {
 
 async function isAuthenticated() {
 	try {
-		const response = await fetch(`${window.location.origin}/api/users/verify/`, {
-			headers: {
-				'Authorization': `Bearer ${localStorage.getItem('access')}`
-			}
-		});
+		const response = await fetchWithAuth("/api/users/verify/");
 		return response.ok;
 	} catch {
 		return false;
@@ -151,9 +146,15 @@ async function fetchWithAuth(url, options = {}) {
 		if (response.status === 401) {
 			const refreshed = await refreshToken();
 			if (!refreshed) {
-				logout();
+				clearLocalStorage();
 				return;
 			}
+			socket.close();
+			if (typeof socket === "undefined" || socket.readyState === WebSocket.CLOSED)
+				socket = new WebSocket(
+					`wss://${window.location.host}/ws/users/online-players/?token=${localStorage.getItem('access')}`
+				);
+			else socket.send(JSON.stringify({ type: "lobby" }));
 			response = await fetch(`${window.location.origin}${url}`, {
 				...options,
 				headers: {
@@ -182,7 +183,7 @@ async function fetchWithDiffAuth(url, options = {}, tokens) {
 		if (response.status === 401) {
 			const refreshed = await refreshTokenDiff(tokens);
 			if (!refreshed) {
-				logout();
+				clearLocalStorage();
 				return;
 			}
 			response = await fetch(`${window.location.origin}${url}`, {

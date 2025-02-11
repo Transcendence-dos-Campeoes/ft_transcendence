@@ -1,19 +1,15 @@
 // Logout function
 async function logout() {
-	const refresh = localStorage.getItem("refresh");
-	if (!refresh) return;
-
+	socket.close();
 	try {
-		const response = await fetch(`${window.location.origin}/api/users/logout/`, {
+		const response = await fetchWithAuth("/api/users/logout/", {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
+				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({ refresh }),
 			credentials: "include",
 		});
-		socket.close();
 		if (response.ok) {
 			localStorage.clear();
 			renderPage("login");
@@ -26,10 +22,7 @@ async function logout() {
 				responseData = { detail: "An error occurred" };
 			}
 			if (responseData.detail === "Token is already blacklisted") {
-				localStorage.removeItem("access");
-				localStorage.removeItem("refresh");
-				localStorage.removeItem("access_token_expiry");
-				localStorage.removeItem("username");
+				localStorage.clear();
 				renderPage("login");
 			} else {
 				console.error("Failed to log out:", responseData);
@@ -40,4 +33,10 @@ async function logout() {
 		localStorage.clear();
 		renderPage("login");
 	}
+}
+
+async function clearLocalStorage() {
+	socket.close();
+	localStorage.clear();
+	renderPage("login");
 }

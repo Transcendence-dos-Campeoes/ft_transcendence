@@ -28,8 +28,8 @@ async function renderElement(element) {
 	console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
 
-	const isAuthenticated = await checkAndRefreshToken();
-	if (!isAuthenticated) {
+	const authenticated = await isAuthenticated();
+	if (!authenticated) {
 		console.log("User not authenticated, redirecting to login page.");
 		throw new Error("User not authenticated");
 	}

@@ -34,16 +34,10 @@ async function attachSettingsFormListener() {
     console.log(formData)
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        `${window.location.origin}/api/users/settings/update/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await fetchWithAuth("/api/users/settings/update/", {
+        method: "PUT",
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update profile");
@@ -86,21 +80,17 @@ async function attachSettingsFormListener() {
 
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        `${window.location.origin}/api/users/profile/update/password/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: JSON.stringify({
-            currPassword: currPassword,
-            newPassword: newPassword,
-            confPassword: confPassword,
-          }),
-        }
-      );
+      const response = await fetchWithAuth("/api/users/profile/update/password/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          currPassword: currPassword,
+          newPassword: newPassword,
+          confPassword: confPassword,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update password");
@@ -123,11 +113,7 @@ async function loadSettingsData() {
 
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/users/settings/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/users/settings/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch profile data");
@@ -166,11 +152,7 @@ async function loadMaps() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/users/settings/maps/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/users/settings/maps/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch maps");
@@ -214,11 +196,10 @@ async function selectMap(mapId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/users/settings/map/update/`, {
+    const response = await fetchWithAuth("/api/users/settings/map/update/", {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ selected_map_id: mapId })
     });

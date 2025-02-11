@@ -156,12 +156,7 @@ function loadProfileData(data) {
 
 async function viewProfile() {
 	try {
-		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
-		});
-
+		const response = await fetchWithAuth("/api/users/profile/");
 		if (!response.ok) {
 			throw new Error("Failed to fetch profile data");
 		}
@@ -178,15 +173,7 @@ async function viewFriendProfile(username) {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch(
-			`${window.location.origin}/api/users/profile/${username}/`,
-			{
-				headers: {
-					Authorization: `Bearer ${localStorage.getItem("access")}`,
-				},
-			}
-		);
-
+		const response = await fetch(`/api/users/profile/${username}/`);
 		if (!response.ok) {
 			throw new Error("Failed to fetch profile data");
 		}
@@ -204,11 +191,8 @@ async function deleteAccount() {
 	const loadingOverlay = new LoadingOverlay();
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}/api/users/delete/`, {
-			method: "DELETE",
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
+		const response = await fetchWithAuth("/api/users/delete/", {
+			method: "DELETE"
 		});
 
 		if (response.ok) {
@@ -242,11 +226,7 @@ async function load_profile_pic() {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`${window.location.origin}/api/users/profile/`, {
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("access")}`,
-			},
-		});
+		const response = await fetchWithAuth("/api/users/profile/");
 
 		if (!response.ok) {
 			throw new Error("Failed to fetch profile data");
@@ -254,7 +234,6 @@ async function load_profile_pic() {
 
 		const data = await response.json();
 		localStorage.setItem("profile_image", data.profile_image);
-		// document.getElementById('photo_URL'.url = localStorage.photo_URL);
 
 		const profileImg = document.getElementById("profile-photo-home");
 		if (profileImg && data.profile_image) {
