@@ -34,6 +34,7 @@ function renderRegularMatch(match, currentUser) {
 }
 
 function renderTournamentMatch(match, currentUser) {
+  const joinButton = match.match__status.toLowerCase() === 'pending' ? `<button class="btn btn-primary" onclick='joinMatch("${encodeURIComponent(JSON.stringify(match))}", "${currentUser}")'>Join</button>` : '';
   return `<tr>
             <td>${match.tournament__name}</td>
             <td>${new Date(match.match__created_at).toLocaleDateString()}</td>
@@ -56,7 +57,58 @@ function renderTournamentMatch(match, currentUser) {
       : "Undefined"
     }</td>
             <td>${getStatusBadge(match.match__status)}</td>
+            <td>${joinButton}</td>
           </tr>`;
+}
+
+// PLAY TOURNAMENT MATCHES
+function joinMatch(encodedMatch, currentUser) {
+  const match = JSON.parse(decodeURIComponent(encodedMatch));
+  console.log(`Joining match with ID: ${match.match__id}`);
+  console.log(`Player1: ${match.match__player1__username}`);
+  console.log(`Player2: ${match.match__player2__username}`);
+
+  const players = data.players_data.map(player => player.username);
+
+  if (players.includes(match.match__player1__username) && players.includes(match.match__player2__username)) {
+    console.log("Both players are in the players_data list.");
+    const opponent = match.match__player1__username === currentUser ? match.match__player2__username : match.match__player1__username;
+    waitingModal = new MessageModal(MessageType.INVITE);
+    declineModal = new DeclineModal(MessageType.INFO);
+  
+    socket.send(
+      JSON.stringify({
+        type: "invite_tournament_game",
+        from: currentUser,
+        to: opponent,
+        game: match.match__id,
+        player1: match.match__player1__username,
+        player2: match.match__player1__username,
+      })
+    );
+  
+    waitingModal.show(`Waiting for ${opponent} to accept your game invite...`, "Invite Sent").then((accept) => {
+      if (!accept) {
+        socket.send(
+          JSON.stringify({
+            type: "decline_invite",
+            from: currentUser,
+            to: opponent,
+            game: match.match__id,
+          })
+        );
+      }
+    });
+  
+  
+  } else {
+    console.log("One or both players are not in the players_data list.");
+  }
+  // messageModal = new MessageModal(MessageType.INVITE);
+
+
+  
+  // You can add an API call here to join the match
 }
 
 function filterRegularMatches(matches, filters, current_user) {
