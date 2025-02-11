@@ -129,7 +129,7 @@ function lobbyLoad() {
   };
 
   socket.onclose = function (event) {
-    console.error("WebSocket closed:", event);
+    console.log("WebSocket closed:", event);
   };
 
   socket.onerror = function (error) {
