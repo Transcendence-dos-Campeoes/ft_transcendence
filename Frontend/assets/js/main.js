@@ -52,10 +52,14 @@ async function renderPage(page) {
 	if (router.currentPage === page) return;
 
 	if (page === "home" || page === "pong") {
-		const authenticated = await isAuthenticated();
-		if (!authenticated) {
+		if (!await isAuthenticated()) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
+		}
+	} else {
+		if (await isAuthenticated()) {
+			console.log("User authenticated, redirecting to home page.");
+			page = "home";
 		}
 	}
 
@@ -149,17 +153,18 @@ async function fetchWithAuth(url, options = {}) {
 
 		if (response.status === 401) {
 			const refreshed = await refreshToken();
+			console.log(refreshed);
 			if (!refreshed) {
 				clearLocalStorage();
 				return;
 			}
-			if (socket.readyState !== WebSocket.CLOSED) {
-				socket.close();
-				socket = new WebSocket(
-					`wss://${window.location.host}/ws/users/online-players/?token=${localStorage.getItem('access')}`
-				);
-				console.log("creating new socket");
-			}
+			// if (socket.readyState !== WebSocket.CLOSED) {
+			// 	socket.close();
+			// 	socket = new WebSocket(
+			// 		`wss://${window.location.host}/ws/users/online-players/?token=${localStorage.getItem('access')}`
+			// 	);
+			// 	console.log("creating new socket");
+			// }
 
 			response = await fetch(`${window.location.origin}${url}`, {
 				...options,
