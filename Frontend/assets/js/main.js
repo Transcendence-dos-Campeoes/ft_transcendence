@@ -149,12 +149,14 @@ async function fetchWithAuth(url, options = {}) {
 				clearLocalStorage();
 				return;
 			}
-			socket.close();
-			if (typeof socket === "undefined" || socket.readyState === WebSocket.CLOSED)
+			if (socket.readyState !== WebSocket.CLOSED) {
+				socket.close();
 				socket = new WebSocket(
 					`wss://${window.location.host}/ws/users/online-players/?token=${localStorage.getItem('access')}`
 				);
-			else socket.send(JSON.stringify({ type: "lobby" }));
+				console.log("creating new socket");
+			}
+
 			response = await fetch(`${window.location.origin}${url}`, {
 				...options,
 				headers: {
