@@ -4,16 +4,14 @@ function attachLoginFormListener() {
 		console.error("Form not found");
 		return;
 	}
-	document
-		.getElementById("loginForm")
-		.addEventListener("submit", async function (event) {
-			event.preventDefault();
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
 
-			const username = document.getElementById("floatingUsername").value;
-			const password = document.getElementById("floatingPassword").value;
+		const username = document.getElementById("floatingUsername").value;
+		const password = document.getElementById("floatingPassword").value;
 
-			await login(username, password);
-		});
+		await login(username, password);
+	});
 }
 
 async function login(username, password) {
@@ -29,15 +27,17 @@ async function login(username, password) {
 		if (response.ok) {
 			const responseData = JSON.parse(responseText);
 
-			localStorage.setItem("access", responseData.access);
-			localStorage.setItem("refresh", responseData.refresh);
-			localStorage.setItem("username", username);
-			localStorage.setItem("email", responseData.email);
+			const responseStruct = {
+				access: responseData.access,
+				refresh: responseData.refresh,
+				username: username,
+				email: responseData.email
+			};
 			if (responseData.two_fa_enabled == false) {
-				renderPage("two_fa_enable");
+				renderAuthPage("two_fa_enable", responseStruct);
 			}
 			else {
-				renderPage("two_fa_verify")
+				renderAuthPage("two_fa_verify", responseStruct)
 			}
 		} else if (!response.ok && response.status == 429) {
 			displayMessage(

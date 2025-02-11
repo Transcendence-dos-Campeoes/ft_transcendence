@@ -36,12 +36,14 @@ function attachRegisterFormListener() {
 			if (response.ok) {
 				const responseData = JSON.parse(responseText);
 
-				localStorage.setItem("access", responseData.access);
-				localStorage.setItem("refresh", responseData.refresh);
-				localStorage.setItem("email", responseData.email);
-				localStorage.setItem("username", responseData.user);
+				const responseStruct = {
+					access: responseData.access,
+					refresh: responseData.refresh,
+					username: responseData.user,
+					email: responseData.email
+				};
 
-				renderPage("two_fa_enable")
+				renderAuthPage("two_fa_enable", responseStruct);
 			} else if (!response.ok && response.status == 429) {
 				displayMessage(
 					"Too many requests. Please try again later.",

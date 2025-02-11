@@ -6,6 +6,13 @@ const router = {
 		login: "/login.html",
 		register: "/register.html",
 		pong: "/pong.html",
+		42: "/42.html"
+	},
+};
+
+const routerAuth = {
+	currentPage: null,
+	pages: {
 		42: "/42.html",
 		two_fa_enable: "/two_fa_enable.html",
 		two_fa_verify: "/two_fa_verify.html",
@@ -33,7 +40,11 @@ function formatErrorMessages(errors) {
 
 async function isAuthenticated() {
 	try {
-		const response = await fetchWithAuth('/api/users/verify/');
+		const response = await fetch(`${window.location.origin}/api/users/verify/`, {
+			headers: {
+				'Authorization': `Bearer ${localStorage.getItem('access')}`
+			}
+		});
 		return response.ok;
 	} catch {
 		return false;
@@ -84,14 +95,42 @@ async function renderPage(page) {
 			lobbyLoad();
 		} else if (page === "pong") {
 			startGame(data.game_group, socket);
-		}
-		else if (page === "two_fa_enable") {
-			get_two_fa_qr();
 		} else if (page === "42") {
 			handle42Callback();
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
+	} catch (error) {
+		console.error("Error loading page:", error);
+	} finally {
+		loadingOverlay.hide();
+	}
+}
+
+async function renderAuthPage(page, responseStruct) {
+	console.log(`Attempting to render page: ${page}`);
+	const loadingOverlay = new LoadingOverlay();
+	if (routerAuth.currentPage === page) return;
+
+	try {
+		loadingOverlay.show();
+		const screen = document.querySelector(".screen-container");
+		screen.classList.remove("zoom-in", "zoom-out");
+
+		// Load the new page
+		const mainContent = document.getElementById("main-content");
+		const response = await fetch(routerAuth.pages[page]);
+		const html = await response.text();
+		mainContent.innerHTML = html;
+
+		if (page === "two_fa_enable") {
+			get_two_fa_qr(responseStruct);
+			attach2FAEnableFormListener(responseStruct);
+		} else if (page === "two_fa_verify") {
+			attach2FAVerifyFormListener(responseStruct);
+		}
+		history.pushState({ page: page }, "", `/${page}`);
+		routerAuth.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);
 	} finally {
@@ -127,6 +166,81 @@ async function fetchWithAuth(url, options = {}) {
 	} catch (error) {
 		logout();
 		throw error;
+	}
+}
+
+async function fetchWithDiffAuth(url, options = {}, tokens) {
+	try {
+		let response = await fetch(`${window.location.origin}${url}`, {
+			...options,
+			headers: {
+				...options.headers,
+				'Authorization': `Bearer ${tokens.access}`
+			}
+		});
+
+		if (response.status === 401) {
+			const refreshed = await refreshTokenDiff(tokens);
+			if (!refreshed) {
+				logout();
+				return;
+			}
+			response = await fetch(`${window.location.origin}${url}`, {
+				...options,
+				headers: {
+					...options.headers,
+					'Authorization': `Bearer ${tokens.access}`
+				}
+			});
+		}
+		return response;
+	} catch (error) {
+		logout();
+		throw error;
+	}
+}
+
+async function refreshToken() {
+	try {
+		const response = await fetch(`${window.location.origin}/api/token/refresh/`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				refresh: localStorage.getItem('refresh')
+			})
+		});
+
+		if (!response.ok) {
+			return false;
+		}
+
+		const data = await response.json();
+		localStorage.setItem('access', data.access);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function refreshTokenDiff(tokens) {
+	try {
+		const response = await fetch(`${window.location.origin}/api/token/refresh/`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				refresh: tokens.refresh
+			})
+		});
+
+		if (!response.ok) {
+			return false;
+		}
+
+		const data = await response.json();
+		localStorage.setItem('access', data.access);
+		return true;
+	} catch {
+		return false;
 	}
 }
 

@@ -33,19 +33,17 @@ async function handle42Callback() {
 			const data = await response.json();
 			console.log('OAuth login successful:', data);
 
-			// Store the access token and other data
-			localStorage.setItem('access', data.access);
-			localStorage.setItem('refresh', data.refresh);
-			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
-			localStorage.setItem('access_token_expiry', accessTokenExpiry);
-			localStorage.setItem('username', data.username);
-			localStorage.setItem('email', data.email);
+			const responseStruct = {
+				access: data.access,
+				refresh: data.refresh,
+				username: data.username,
+				email: data.email
+			};
 
-			// Redirect to the appropriate page based on 2FA status
 			if (data.two_fa_enabled == false) {
-				renderPage("two_fa_enable");
+				renderAuthPage("two_fa_enable", responseStruct);
 			} else {
-				renderPage("two_fa_verify");
+				renderAuthPage("two_fa_verify", responseStruct);
 			}
 		} catch (error) {
 			console.error('Error:', error);

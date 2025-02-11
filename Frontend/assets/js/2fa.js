@@ -1,4 +1,51 @@
-async function cancelRegistration() {
+function attach2FAVerifyFormListener(responseStruct) {
+	const form = document.getElementById("otpForm");
+	const cancelBtn = document.getElementById("cancel");
+	const disableBtn = document.getElementById("disable");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpCode").value;
+		await verifyOtpCode(responseStruct, code);
+	});
+
+	cancelBtn.addEventListener("click", () => {
+		cancelVerification();
+	});
+
+	disableBtn.addEventListener("click", () => {
+		renderPage("two_fa_recover");
+	});
+}
+
+function attach2FAEnableFormListener(responseStruct) {
+	console.log("cao");
+	const form = document.getElementById("twoFaEnableForm");
+	const cancelBtn = document.getElementById("cancel");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpCode").value;
+		await verifyOtpCode(responseStruct, code);
+	});
+
+	cancelBtn.addEventListener("click", async function () {
+		await cancelRegistration(responseStruct);
+	});
+}
+
+
+async function cancelRegistration(responseStruct) {
 	const messageModal = new MessageModal(MessageType.INVITE);
 	const result = await messageModal.show(
 		"Are you sure you want to cancel your account registration? All your progress will be lost.",
@@ -8,13 +55,13 @@ async function cancelRegistration() {
 	if (!result) return;
 
 	try {
-		const response = await fetchWithAuth('/api/users/delete/', {
+		const response = await fetchWithDiffAuth('/api/users/delete/', {
 			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			credentials: 'include'
-		});
+		}, responseStruct);
 
 		if (!response.ok) {
 			throw new Error('Failed to delete account');
@@ -35,14 +82,14 @@ function cancelVerification() {
 }
 
 
-async function get_two_fa_qr() {
+async function get_two_fa_qr(responseStruct) {
 	try {
-		const response = await fetchWithAuth('/api/users/twofa/enable/', {
+		const response = await fetchWithDiffAuth('/api/users/twofa/enable/', {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			}
-		});
+		}, responseStruct);
 
 		if (!response.ok) {
 			throw new Error('Failed to enable 2FA');
@@ -59,19 +106,21 @@ async function get_two_fa_qr() {
 	}
 }
 
-async function verifyOtpCode() {
+async function verifyOtpCode(responseStruct, otpCode) {
 	try {
-		const otpCode = document.getElementById("otpCode").value;
-
-		const response = await fetchWithAuth('/api/users/twofa/verify/', {
+		const response = await fetchWithDiffAuth('/api/users/twofa/verify/', {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({ otpCode })
-		});
+		}, responseStruct);
 
 		if (response.ok) {
+			localStorage.setItem('access', responseStruct.access);
+			localStorage.setItem('refresh', responseStruct.refresh);
+			localStorage.setItem('username', responseStruct.username);
+			localStorage.setItem('email', responseStruct.email);
 			renderPage("home");
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);
@@ -82,16 +131,15 @@ async function verifyOtpCode() {
 	}
 }
 
-async function requestOtp() {
-	const email = document.getElementById("emailInputRecover").value;
+async function requestOtp(responseStruct, email) {
 	try {
-		const response = await fetchWithAuth('/api/users/setRecoverOTP/', {
+		const response = await fetchWithDiffAuth('/api/users/setRecoverOTP/', {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({ email })
-		});
+		}, responseStruct);
 
 		if (!response.ok) {
 			const errorData = await response.json();
@@ -105,9 +153,7 @@ async function requestOtp() {
 	}
 }
 
-async function checkRecoverOTP() {
-	const otp_code = document.getElementById("otpInputRecover").value;
-
+async function checkRecoverOTP(responseStruct, otp_code) {
 	try {
 		const response = await fetchWithAuth('/api/users/checkRecoverOTP/', {
 			method: "POST",
@@ -115,7 +161,7 @@ async function checkRecoverOTP() {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({ otp_code })
-		});
+		}, responseStruct);
 
 		if (!response.ok) {
 			displayMessage("Invalid recovery code", MessageType.ERROR);
