@@ -60,6 +60,16 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
     restart: always
 
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./Alertmanager/config:/etc/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+
   node-exporter:
     image: prom/node-exporter
     container_name: node-exporter
@@ -85,5 +95,5 @@ services:
       - ./.env
     volumes:
       - ./Grafana/dashboards:/var/lib/grafana/dashboards
-      - ./Grafana/provisioning:/etc/grafana/provisioning
+      - ./Grafana/provisioning:/etc/grafana/provisioning:ro
     restart: always

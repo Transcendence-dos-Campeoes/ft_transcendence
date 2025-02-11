@@ -1,0 +1,14 @@
+global:
+  smtp_smarthost: "smtp.gmail.com:587"
+  smtp_from: "osbrabosmegabosses@gmail.com"
+  smtp_auth_username: "osbrabosmegabosses@gmail.com"
+  smtp_auth_password: "zggzlmcstcxfgxiw"
+
+route:
+  group_by: ["alertname"]
+  receiver: "email-notifications"
+
+receivers:
+  - name: "email-notifications"
+    email_configs:
+      - to: "osbrabosmegabosses@gmail.com"
