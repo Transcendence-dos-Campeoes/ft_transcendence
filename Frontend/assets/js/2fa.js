@@ -44,6 +44,36 @@ function attach2FAEnableFormListener(responseStruct) {
 	});
 }
 
+function attach2FaRecoverFormListener(responseStruct) {
+	console.log("cao");
+	const form = document.getElementById("twoFaRecoverForm");
+	const cancelBtn = document.getElementById("cancel");
+	const requestBtn = document.getElementById("request");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpInputRecover").value;
+		await checkRecoverOTP(responseStruct, code);
+	});
+	
+	requestBtn.addEventListener("click", async function (event) {
+		event.preventDefault();
+		const email = document.getElementById("emailInputRecover").value;
+		await requestOtp(responseStruct, email);
+	});
+
+	cancelBtn.addEventListener("click", async function (event) {
+		event.preventDefault();
+		await cancelRegistration(responseStruct);
+	});
+
+}
+
 
 async function cancelRegistration(responseStruct) {
 	const messageModal = new MessageModal(MessageType.INVITE);

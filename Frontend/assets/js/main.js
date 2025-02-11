@@ -123,6 +123,8 @@ async function renderAuthPage(page, responseStruct) {
 			attach2FAEnableFormListener(responseStruct);
 		} else if (page === "two_fa_verify") {
 			attach2FAVerifyFormListener(responseStruct);
+		} else if (page === "two_fa_recover") {
+			attach2FaRecoverFormListener(responseStruct);
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		routerAuth.currentPage = page;
