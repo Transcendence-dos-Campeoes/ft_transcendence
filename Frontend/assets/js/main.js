@@ -16,7 +16,6 @@ const routerAuth = {
 		two_fa_enable: "/two_fa_enable.html",
 		two_fa_verify: "/two_fa_verify.html",
 		two_fa_recover: "/two_fa_recover.html",
-		two_fa_re_enable: "/two_fa_re_enable.html"
 	},
 };
 
@@ -125,8 +124,6 @@ async function renderAuthPage(page, responseStruct) {
 			attach2FAVerifyFormListener(responseStruct);
 		} else if (page === "two_fa_recover") {
 			attach2FaRecoverFormListener(responseStruct);
-		} else if (page === "two_fa_re_enable") {
-			attach2FaReEnableFormListener(responseStruct);
 		}
 		routerAuth.currentPage = page;
 	} catch (error) {

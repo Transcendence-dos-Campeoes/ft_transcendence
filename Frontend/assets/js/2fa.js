@@ -35,7 +35,7 @@ function attach2FAEnableFormListener(responseStruct) {
 	form.addEventListener("submit", async function (event) {
 		event.preventDefault();
 		const code = document.getElementById("otpCode").value;
-		await verifyOtpCode(responseStruct, code);
+		await verifyEnableOtpCode(responseStruct, code);
 	});
 
 	cancelBtn.addEventListener("click", async function () {
@@ -71,28 +71,6 @@ function attach2FaRecoverFormListener(responseStruct) {
 	});
 }
 
-function attach2FaReEnableFormListener(responseStruct) {
-	const form = document.getElementById("twoFaReEnableForm");
-	const cancelBtn = document.getElementById("cancel");
-
-	if (!form) {
-		console.error("Form not found");
-		return;
-	}
-
-	form.addEventListener("submit", async function (event) {
-		event.preventDefault();
-		const code = document.getElementById("otpCode").value;
-		await verifyOtpCode(responseStruct, code);
-	});
-
-	cancelBtn.addEventListener("click", async function () {
-		await cancelRegistration(responseStruct);
-	});
-}
-
-
-
 async function cancelRegistration(responseStruct) {
 	const messageModal = new MessageModal(MessageType.INVITE);
 	const result = await messageModal.show(
@@ -100,7 +78,7 @@ async function cancelRegistration(responseStruct) {
 		"Cancel Account Registration"
 	);
 
-	if (!result) return;
+	renderAuthPage("two_fa_enable", responseStruct);
 
 	try {
 		const response = await fetchWithDiffAuth('/api/users/delete/', {
@@ -172,10 +150,39 @@ async function verifyOtpCode(responseStruct, otpCode) {
 			renderPage("home");
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);
+			renderAuthPage("two_fa_verify", responseStruct);
 		}
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_verify", responseStruct);
+	}
+}
+
+async function verifyEnableOtpCode(responseStruct, otpCode) {
+	try {
+		const response = await fetchWithDiffAuth('/api/users/twofa/verify/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ otpCode })
+		}, responseStruct);
+
+		if (response.ok) {
+			localStorage.setItem('access', responseStruct.access);
+			localStorage.setItem('refresh', responseStruct.refresh);
+			localStorage.setItem('username', responseStruct.username);
+			localStorage.setItem('email', responseStruct.email);
+			renderPage("home");
+		} else {
+			displayMessage("Invalid OTP code", MessageType.ERROR);
+			renderAuthPage("two_fa_enable", responseStruct);
+		}
+	} catch (error) {
+		console.error("Error:", error);
+		displayMessage("Failed to verify OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_enable", responseStruct);
 	}
 }
 
@@ -190,14 +197,16 @@ async function requestOtp(responseStruct, email) {
 		}, responseStruct);
 
 		if (!response.ok) {
-			const errorData = await response.json();
-			throw new Error(errorData.message || 'Failed to request OTP');
+			displayMessage("Failed to request OTP'", MessageType.ERROR);
+			renderAuthPage("two_fa_recover", responseStruct);
+			return;
 		}
 
 		displayMessage("Recovery OTP sent to email", MessageType.SUCCESS);
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to send recovery OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_recover", responseStruct);
 	}
 }
 
@@ -213,12 +222,14 @@ async function checkRecoverOTP(responseStruct, otp_code) {
 
 		if (!response.ok) {
 			displayMessage("Invalid recovery code", MessageType.ERROR);
+			renderAuthPage("two_fa_recover", responseStruct);
 			return;
 		}
 
-		renderAuthPage("two_fa_re_enable", responseStruct)
+		renderAuthPage("two_fa_enable", responseStruct);
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify recovery code", MessageType.ERROR);
+		renderAuthPage("two_fa_recover", responseStruct);
 	}
 }
