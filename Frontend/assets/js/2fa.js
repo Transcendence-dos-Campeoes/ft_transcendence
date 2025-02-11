@@ -19,7 +19,7 @@ function attach2FAVerifyFormListener(responseStruct) {
 	});
 
 	disableBtn.addEventListener("click", () => {
-		renderPage("two_fa_recover");
+		renderAuthPage("two_fa_recover");
 	});
 }
 
@@ -60,7 +60,7 @@ function attach2FaRecoverFormListener(responseStruct) {
 		const code = document.getElementById("otpInputRecover").value;
 		await checkRecoverOTP(responseStruct, code);
 	});
-	
+
 	requestBtn.addEventListener("click", async function (event) {
 		event.preventDefault();
 		const email = document.getElementById("emailInputRecover").value;
