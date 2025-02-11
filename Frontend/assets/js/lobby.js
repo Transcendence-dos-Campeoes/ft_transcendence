@@ -23,7 +23,6 @@ function lobbyLoad() {
 
     if (data.type === "online.players.update") {
       let friends = []
-      // Fetch the list of friends
       fetch(`${window.location.origin}/api/users/get_user_friends/`, {
         method: 'GET',
         headers: {
@@ -33,13 +32,14 @@ function lobbyLoad() {
       })
       .then(response => response.json())
       .then(friendsData => {
+        const playersList = document.getElementById("online-players-list");
+        if (playersList) {
+            playersList.innerHTML = ""; // Clear the list before updating
+        }
         friendsData.friends.forEach(friend => {
           friends.push(friend.username);
           
-          const playersList = document.getElementById("online-players-list");
-          if (playersList) {
-            playersList.innerHTML = ""; // Clear the list before updating
-          }
+          console.log(friends);
           data.players_data.forEach((player) => {
             if (player.username !== currentUser && friends.includes(player.username) ) {
               const a = document.createElement("a");
@@ -106,7 +106,8 @@ function lobbyLoad() {
             }
           });
         });
-      });
+      }); 
+      // FriendSystem.loadFriends()
     } else if (data.type === "invite") {
       messageModal.show(`${data.from} has invited you to play a game. Do you accept?`, "Invite").then((accept) => {
         if (accept) {

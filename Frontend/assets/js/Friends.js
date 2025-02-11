@@ -6,6 +6,7 @@ class FriendSystem {
     this.setupEventListeners();
     this.loadPendingInvites();
     this.loadFriends();
+    socket.send(JSON.stringify({type: "update_lobby"}));
   }
 
   setupEventListeners() {
@@ -29,7 +30,7 @@ class FriendSystem {
     } finally {
       loadingOverlay.hide();
     }
-  }
+  } 
 
   async loadPendingInvites() {
     const loadingOverlay = new LoadingOverlay();
@@ -96,6 +97,7 @@ class FriendSystem {
       this.loadPendingInvites();
       if (action === "accept") {
         this.loadFriends();
+        socket.send(JSON.stringify({type: "update_lobby"}));
       }
     } catch (error) {
       console.error("Error responding to invite:", error);
@@ -120,6 +122,7 @@ class FriendSystem {
       );
       if (response.ok) {
         this.loadFriends();
+        socket.send(JSON.stringify({type: "update_lobby"}));
       }
     } catch (error) {
       console.error("Error removing friend:", error);
