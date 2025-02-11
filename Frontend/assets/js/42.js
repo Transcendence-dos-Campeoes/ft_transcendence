@@ -9,8 +9,7 @@ function startOAuth() {
 	window.location.href = oauthUrl;
 }
 
-// Handle the OAuth callback
-window.onload = async function () {
+async function handle42Callback() {
 	const urlParams = new URLSearchParams(window.location.search);
 	const code = urlParams.get('code');
 	const redirectURI = `${window.location.origin}/42`;

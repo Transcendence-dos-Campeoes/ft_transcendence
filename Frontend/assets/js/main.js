@@ -81,6 +81,8 @@ async function renderPage(page) {
 		}
 		else if (page === "two_fa_enable") {
 			two_fa_enable();
+		} else if (page === "42") {
+			handle42Callback();
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
