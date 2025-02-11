@@ -64,6 +64,8 @@ services:
     image: prom/alertmanager
     ports:
       - "9093:9093"
+    env_file:
+      - ./.env
     volumes:
       - ./Alertmanager/config:/etc/alertmanager
     command:

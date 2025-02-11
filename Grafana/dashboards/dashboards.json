@@ -11,7 +11,7 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[30s])) * 100)",
           "legendFormat": "CPU %"
         }
       ],
@@ -63,11 +63,11 @@
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[1m])",
+          "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[30s])",
           "legendFormat": "Received"
         },
         {
-          "expr": "rate(node_network_transmit_bytes_total{device!=\"lo\"}[1m])",
+          "expr": "rate(node_network_transmit_bytes_total{device!=\"lo\"}[30s])",
           "legendFormat": "Transmitted"
         }
       ],
@@ -86,11 +86,11 @@
       ]
     }
   ],
-  "refresh": "5s",
+  "refresh": "1s",
   "schemaVersion": 16,
   "style": "dark",
   "time": {
-    "from": "now-15m",
+    "from": "now-1m",
     "to": "now"
   }
 }

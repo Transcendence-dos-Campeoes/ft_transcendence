@@ -1,8 +1,8 @@
 global:
-  smtp_smarthost: "smtp.gmail.com:587"
-  smtp_from: "osbrabosmegabosses@gmail.com"
-  smtp_auth_username: "osbrabosmegabosses@gmail.com"
-  smtp_auth_password: "zggzlmcstcxfgxiw"
+  smtp_smarthost: "${EMAIL_HOST}:${EMAIL_PORT}"
+  smtp_from: "${EMAIL_HOST_USER}"
+  smtp_auth_username: "${EMAIL_HOST_USER}"
+  smtp_auth_password: "${EMAIL_HOST_PASSWORD}"
 
 route:
   group_by: ["alertname"]
@@ -11,4 +11,4 @@ route:
 receivers:
   - name: "email-notifications"
     email_configs:
-      - to: "osbrabosmegabosses@gmail.com"
+      - to: "${EMAIL_HOST_USER}"
