@@ -10,7 +10,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from rest_framework.parsers import JSONParser
 from django.core.mail import send_mail
 from django.conf import settings
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, GameMapSerializer, UserGameMapSerializer
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, GameMapSerializer, UserGameMapSerializer, FriendsSerializer
 from .models import SiteUser, Friend, GameMap
 from matches.models import Match
 from tournaments.models import TournamentPlayer, TournamentMatch
@@ -33,6 +33,8 @@ from io import BytesIO
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.parsers import JSONParser
+
+
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
@@ -761,3 +763,11 @@ def checkRecoverOTP(request):
             return Response({'error': 'Incorrect OTP'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_friends(request):
+    user = request.user
+    serializer = FriendsSerializer(user)
+    print(f"User: {user.username}, Friends: {serializer.data}")
+    return Response(serializer.data)

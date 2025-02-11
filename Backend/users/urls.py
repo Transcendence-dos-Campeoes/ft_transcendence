@@ -26,4 +26,5 @@ urlpatterns = [
 	path('check_status/', views.check_user_status, name='check_user_status'),
 	path('setRecoverOTP/', views.setRecoverOTP, name='set_recover_OTP'),
 	path('checkRecoverOTP/', views.checkRecoverOTP, name='checkRecoverOTP'),
+	path('get_user_friends/', views.get_user_friends, name='get_user_friends'),
 ]
