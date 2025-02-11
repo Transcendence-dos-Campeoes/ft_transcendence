@@ -6,6 +6,10 @@ from .models import SiteUser
 
 from matches.models import Match
 from matches.serializers import MatchSerializer
+from tournaments.models import TournamentMatch
+from tournaments.models import Tournament
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 
 import uuid
@@ -21,6 +25,14 @@ def get_channel_name(username):
         if user.username == username:
             return channel_name
     return None
+
+
+def get_match_by_id(match_id):
+    try:
+        return Match.objects.get(id=match_id)
+    except ObjectDoesNotExist:
+        print(f"Match with ID {match_id} does not exist.")
+        return None
 
 
 class OnlinePlayersConsumer(WebsocketConsumer):
@@ -68,6 +80,15 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_waitlist(data)
         elif data['type'] == 'random_ready':
             self.handle_ready(data)
+
+        #tournaments
+        elif data['type'] == 'invite_tournament_game':
+            print("ESTOU AQUI")
+            self.handle_invite_tournament_game(data)
+        elif data['type'] == 'accept_invite_tournament_game':
+            self.handle_accept_invite_tournament_game(data)
+
+        
         # elif data['type'] == 'random_game':
         #     self.handle_random(data)
         # elif data['type'] == 'close_await':
@@ -192,8 +213,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def start_game(self, event):
         print(event)
         print(self.scope['user'].username)
-        # if (event['from'] == self.scope['user'].username):
-        self.send(text_data=json.dumps(event))
+        if (event['from'] == self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
     
     def starting_game(self, event):
         self.send(text_data=json.dumps(event))
@@ -268,6 +289,13 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 match.winner = SiteUser.objects.get(username=user2)
             match.status = 'finished'
             match.save()
+
+            try:
+                print("ESTOU AQUI")
+                tournament_match = TournamentMatch.objects.get(match=match.id)
+                self.fill_tournament(tournament_match, match)
+            except:
+                print(f"Match {match.id} is not related to any tournament")
 
 
     def game_update(self, event):
@@ -360,3 +388,110 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'player': event['player']
             })
     
+
+    #TOURNAMENT
+
+    def handle_invite_tournament_game(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+            "online_players",
+            {
+                "type": "invite_tournament_game",
+                "from": data['from'],
+                "to": data['to'],
+                'game': data['game'],
+                'player1': data['player1'], 
+                'player2': data['player2'], 
+            }
+        )
+
+    def invite_tournament_game(self, event):
+        if event['to'] == self.scope['user'].username:
+            text_data=json.dumps({
+                'type': 'invite_tournament_game',
+                'from': event['from'],
+                'game': event['game'],
+                'player1': event['player1'], 
+                'player2': event['player2'], 
+            })
+            self.send(text_data)
+
+    def handle_accept_invite_tournament_game(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+            "online_players",
+            {
+                "type": "accept_invite_tournament_game",
+                "from": data['from'],
+                "to": data['to'],
+                'game': data['game']
+            }
+        )
+    
+    def accept_invite_tournament_game(self, event):
+        if 'to' in event and event['to'] == self.scope['user'].username:
+
+            # Add both players to the game group
+            game_group_name = f"game_{uuid.uuid4()}"
+            async_to_sync(self.channel_layer.group_add)(game_group_name, self.channel_name)
+            async_to_sync(self.channel_layer.group_add)(game_group_name, self.get_channel_name(event['from']))
+
+            if game_group_name not in group_channel_map:
+                group_channel_map[game_group_name] = []
+            group_channel_map[game_group_name].append(self.channel_name)
+            group_channel_map[game_group_name].append(self.get_channel_name(event['from']))
+
+            match = get_match_by_id(event['game'])
+            if match:
+                group_match_map[game_group_name] = match.id
+                match.status = 'active'
+                match.save()
+            
+                if (self.scope['user'].username == event['player1']):
+                    self.send(text_data=json.dumps({
+                        'type': 'start_game',
+                        'from': event['from'],
+                        'game_group': game_group_name,
+                        'player': 'player1'
+                    }))
+                    async_to_sync(self.channel_layer.group_send)(game_group_name, {
+                        'type': 'start_game',
+                        'from': event['from'],
+                        'game_group': game_group_name,
+                        'player': 'player2'
+                    })
+                else:
+                    self.send(text_data=json.dumps({
+                        'type': 'start_game',
+                        'from': event['from'],
+                        'game_group': game_group_name,
+                        'player': 'player2'
+                    }))
+                    async_to_sync(self.channel_layer.group_send)(game_group_name, {
+                        'type': 'start_game',
+                        'from': event['from'],
+                        'game_group': game_group_name,
+                        'player': 'player1'
+                    })
+            else:
+                print("Match not found.")
+        else:
+            self.send(text_data=json.dumps(event))
+
+    def fill_tournament(self, tournament_match, match):
+        try:
+            if tournament_match.next_match:
+                next_match = TournamentMatch.objects.get(id=tournament_match.next_match.id).match
+                if next_match.player1 is not None:
+                    next_match.player2 = match.winner
+                else:
+                    next_match.player1 = match.winner
+                next_match.save()
+            else:
+                # If there is no next match, finalize the tournament
+                finalized_tournament = Tournament.objects.get(id=tournament_match.tournament.id)
+                finalized_tournament.finished_at = timezone.now()
+                finalized_tournament.status = 'finished'
+                finalized_tournament.winner = match.winner
+                finalized_tournament.save()
+        except TournamentMatch.DoesNotExist:
+            print(f"Next tournament match for tournament match does not exist.")
+

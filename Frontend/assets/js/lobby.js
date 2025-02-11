@@ -125,7 +125,36 @@ function lobbyLoad() {
         waitingModal.hide();
       console.log("Game started with:", data.from);
       renderPage("pong");
-    } else if (data.type === "close_connection") socket.close();
+    } else if (data.type === "close_connection") {
+      socket.close();
+
+    //TOURNAMENTS
+    } else if (data.type === "invite_tournament_game") {
+      messageModal.show(`${data.from} has invited you to play a game. Do you accept?`, "Invite").then((accept) => {
+        if (accept) {
+          // User accepted the invitation
+          socket.send(
+            JSON.stringify({
+              type: "accept_invite_tournament_game",
+              from: currentUser,
+              to: data.from,
+              game: data.game,
+            })
+          );
+          console.log("Game started with:", data.from);
+        } else {
+          // User declined the invitation
+          socket.send(
+            JSON.stringify({
+              type: "decline_invite",
+              from: currentUser,
+              to: data.from,
+              game: match.match__id,
+            })
+          );
+        }
+      });
+    }
   };
 
   socket.onclose = function (event) {
