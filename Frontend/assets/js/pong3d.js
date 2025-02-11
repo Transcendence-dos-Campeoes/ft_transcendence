@@ -656,7 +656,7 @@ class PongGame {
 }
 
 /////    function called on main js ///////////////
-function startGame(data, socket, gameMap) {
+function startGame3d(data, socket, gameMap) {
     console.log("Game starting...");
     new PongGame(data, socket, gameMap);
 }
