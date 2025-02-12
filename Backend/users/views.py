@@ -10,8 +10,8 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from rest_framework.parsers import JSONParser
 from django.core.mail import send_mail
 from django.conf import settings
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, GameMapSerializer, UserGameMapSerializer, FriendsSerializer
-from .models import SiteUser, Friend, GameMap
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, FriendsSerializer
+from .models import SiteUser, Friend
 from matches.models import Match
 from tournaments.models import TournamentPlayer, TournamentMatch
 from django.shortcuts import get_object_or_404
@@ -394,41 +394,31 @@ def getUserSettings(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getMaps(request):
-    try:
-        maps = GameMap.objects.all()
-        maps_serializer = GameMapSerializer(maps, many=True)
-        
-        user_map_serializer = UserGameMapSerializer(request.user)
-        
-        return Response({
-            'maps': maps_serializer.data,
-            'selected_map': user_map_serializer.data
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    maps_data = []
+    selected_map = request.user.selected_map
+    
+    for map_number in range(1, 5): 
+        map_path = f'media/game_images/{map_number}.png'
+        with open(map_path, 'rb') as image_file:
+            map_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+            maps_data.append({
+                'map_number': map_number,
+                'image_data': f'data:image/jpeg;base64,{map_base64}',
+                'selected': map_number == selected_map
+            })
+    return Response(maps_data, status=status.HTTP_200_OK)
     
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 @parser_classes([JSONParser])
 def updateMap(request):
-    try:
-        user = request.user
-        serializer = UserGameMapSerializer(user, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return Response(
-            {'error': str(e)}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    map_number = request.data.get('map_number')
+    if not map_number or not isinstance(map_number, int) or map_number not in range(1, 5):
+        return Response({'error': 'Invalid map number'}, status=400)
+    
+    request.user.selected_map = map_number
+    request.user.save()
+    return Response({'success': True})
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
