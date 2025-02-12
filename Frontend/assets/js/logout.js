@@ -1,6 +1,5 @@
 // Logout function
 async function logout() {
-	socket.close();
 	const refresh = localStorage.getItem("refresh");
 	try {
 		const response = await fetchWithAuth("/api/users/logout/", {
@@ -11,6 +10,9 @@ async function logout() {
 			body: JSON.stringify({ refresh }),
 			credentials: "include",
 		});
+		if (typeof socket !== "undefined" && socket.readyState !== WebSocket.CLOSED) {
+			socket.close();
+		}
 		if (response.ok) {
 			localStorage.clear();
 			renderPage("login");

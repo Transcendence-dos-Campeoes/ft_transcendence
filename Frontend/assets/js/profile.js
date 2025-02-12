@@ -173,7 +173,7 @@ async function viewFriendProfile(username) {
 
 	try {
 		loadingOverlay.show();
-		const response = await fetch(`/api/users/profile/${username}/`);
+		const response = await fetchWithAuth(`/api/users/profile/${username}/`);
 		if (!response.ok) {
 			throw new Error("Failed to fetch profile data");
 		}

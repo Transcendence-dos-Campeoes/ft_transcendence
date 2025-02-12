@@ -19,6 +19,8 @@ const routerAuth = {
 	},
 };
 
+let socket;
+
 function displayMessage(message, type) {
 	const modal = new MessageModal(type);
 	modal.show(message);
@@ -158,19 +160,20 @@ async function fetchWithAuth(url, options = {}) {
 				clearLocalStorage();
 				return;
 			}
-			// if (socket.readyState !== WebSocket.CLOSED) {
-			// 	socket.close();
-			// 	socket = new WebSocket(
-			// 		`wss://${window.location.host}/ws/users/online-players/?token=${localStorage.getItem('access')}`
-			// 	);
-			// 	console.log("creating new socket");
-			// }
+			if (typeof socket !== "undefined" && socket.readyState !== WebSocket.CLOSED) {
+				socket.close();
+				socker = null;
+			}
+			socket = new WebSocket(
+				`wss://${window.location.host}/ws/users/online-players/?token=${refreshed.access}`
+			);
+			console.log("creating new socket");
 
 			response = await fetch(`${window.location.origin}${url}`, {
 				...options,
 				headers: {
 					...options.headers,
-					'Authorization': `Bearer ${localStorage.getItem('access')}`
+					'Authorization': `Bearer ${refreshed.access}`
 				}
 			});
 		}
@@ -237,7 +240,7 @@ async function refreshToken() {
 		const data = await response.json();
 		localStorage.setItem('access', data.access);
 		localStorage.setItem('refresh', data.refresh);
-		return true;
+		return data;
 	} catch {
 		return false;
 	}
@@ -260,7 +263,7 @@ async function refreshTokenDiff(tokens) {
 		const data = await response.json();
 		localStorage.setItem('access', data.access);
 		localStorage.setItem('refresh', data.refresh);
-		return true;
+		return data;
 	} catch {
 		return false;
 	}
