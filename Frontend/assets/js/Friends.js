@@ -20,7 +20,7 @@ class FriendSystem {
       const response = await fetchWithAuth('/api/users/friends/');
       if (!response.ok) throw new Error('Failed to fetch friends');
 
-      this.renderFriends(response.json());
+      this.renderFriends(await response.json());
     } catch (error) {
       console.error("Error loading friends:", error);
     } finally {
@@ -35,7 +35,7 @@ class FriendSystem {
       const response = await fetchWithAuth("/api/users/invites/");
       if (!response.ok) throw new Error('Failed to fetch pending invites');
 
-      this.renderPendingInvites(response.json());
+      this.renderPendingInvites(await response.json());
     } catch (error) {
       console.error("Error loading invites:", error);
     } finally {

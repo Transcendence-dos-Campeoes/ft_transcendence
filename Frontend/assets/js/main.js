@@ -94,7 +94,10 @@ async function renderPage(page) {
 			updateUserProfile();
 			load_profile_pic();
 			renderElement("overview");
-			lobbyLoad();
+			console.log("Before Load");
+			if (!socket)
+				socket = new Socket(localStorage.getItem('access'));
+			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
       //startGame(data.game_group, socket);
 			startGame3d(null, null, 2);
@@ -163,12 +166,12 @@ async function fetchWithAuth(url, options = {}) {
 				clearLocalStorage();
 				return;
 			}
-			if (typeof socket !== "undefined" && socket.readyState !== WebSocket.CLOSED) {
-				socket.close();
+
+			if (socket != null || socket != undefined) {
+				socket.destroy();
+				socket = null;
 			}
-			socket = new WebSocket(
-				`wss://${window.location.host}/ws/users/online-players/?token=${refreshed.access}`
-			);
+			socket = new Socket(refreshed.access);
 			console.log("creating new socket");
 
 			response = await fetch(`${window.location.origin}${url}`, {
