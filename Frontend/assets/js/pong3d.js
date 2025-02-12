@@ -570,8 +570,7 @@ class PongGame {
         this.scoreboard.style.top = "5px"; // Keep inside board
         this.scoreboard.style.left = "50%";
         this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "16px";
-        this.scoreboard.style.fontFamily = "Arial, sans-serif";
+        this.scoreboard.style.fontSize = "24px";
         this.scoreboard.style.fontWeight = "bold";
         this.scoreboard.style.color = "green";
         // this.scoreboard.style.background = "rgba(0, 0, 0, 0.5)";
