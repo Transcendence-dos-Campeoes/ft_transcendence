@@ -1,16 +1,15 @@
 FROM node:18
 WORKDIR /usr/src/contracts
 
+# Copy only package files first
 COPY package*.json ./
-RUN npm install
+RUN npm ci --quiet
 
-COPY ./contracts ./contracts
-COPY ./scripts ./scripts 
+# Copy project files
+COPY contracts ./contracts
+COPY scripts ./scripts
 COPY hardhat.config.js .
-COPY deploy.sh .
 
-# Fix permissions
-RUN chmod +x deploy.sh
 USER node
 
-ENTRYPOINT ["sh", "./deploy.sh"]
+ENTRYPOINT ["npx", "hardhat", "run", "scripts/deploy.js", "--network", "sepolia"]

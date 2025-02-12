@@ -393,6 +393,13 @@ def getUserSettings(request):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def getSelectedMap(request):
+    selected_map = request.user.selected_map
+    print(f"Slc {selected_map}")
+    return Response({'map_number': selected_map}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getMaps(request):
     maps_data = []
     selected_map = request.user.selected_map

@@ -548,7 +548,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                     # Create transaction
                     tx = {
                         'nonce': w3.eth.get_transaction_count(account.address),
-                        'gas': 2000000,
+                        'gas': 150000,
                         'gasPrice': w3.eth.gas_price,
                         'to': contract_address,
                         'data': w3.eth.contract(abi=contract_abi).encodeABI(
