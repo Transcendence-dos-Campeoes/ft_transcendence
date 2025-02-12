@@ -15,8 +15,7 @@ services:
       - ./.env
     volumes:
       - ./Backend:/usr/src/app/
-      - ./Contracts/artifacts:/usr/src/contracts/artifacts
-      - ./Contracts/deployed-address.json:/usr/src/contracts/deployed-address.json
+      - ./Contracts:/usr/src/contracts/
     ports:
       - 8000:8000
     expose:
