@@ -21,8 +21,10 @@ class MessageModal {
 
   createModal() {
     const modal = document.createElement("div");
-    modal.className = "modal fade";
+    modal.className = "modal";
     modal.setAttribute("tabindex", "-1");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
 
     const isSuccess = this.type === "success";
     const isError = this.type === "error";
@@ -36,8 +38,8 @@ class MessageModal {
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
                       ${isError || isAwait || isSuccess ?
-                      `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
-                      : ''}
+        `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
+        : ''}
                       </div>
                   <div class="modal-body"></div>
                   ${!isError && !isAwait && !isSuccess ? `
@@ -52,7 +54,10 @@ class MessageModal {
 
     document.body.appendChild(modal);
     this.modal = modal;
-    this.bsModal = new bootstrap.Modal(modal);
+    this.bsModal = new bootstrap.Modal(modal, {
+      backdrop: 'static',
+      keyboard: false
+    });
 
     if (!isError && !isAwait && !isSuccess) {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
@@ -97,6 +102,7 @@ class MessageModal {
         footerElement.querySelector('.btn-primary').style.display = 'inline-block';
       }
     }
+    this.modal.removeAttribute('aria-hidden');
     this.bsModal.show();
 
     if ((this.type === MessageType.INVITE)) {
