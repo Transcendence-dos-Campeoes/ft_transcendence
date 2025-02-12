@@ -38,6 +38,7 @@ class FriendSystem {
 
       const invites = await response.json();  // Add await here
       this.renderPendingInvites(invites);
+      
     } catch (error) {
       console.error("Error loading invites:", error);
     } finally {

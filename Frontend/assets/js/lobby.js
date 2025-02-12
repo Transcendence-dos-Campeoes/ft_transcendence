@@ -1,6 +1,6 @@
-let data;
 
-function lobbyLoad() {
+
+async function lobbyLoad() {
   console.log("pathname:", window.location.pathname);
   const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
   console.log("WebSocket user:", currentUser);
@@ -10,7 +10,9 @@ function lobbyLoad() {
     socket = new WebSocket(
       `wss://${window.location.host}/ws/users/online-players/?token=${token}`
     );
-  else socket.send(JSON.stringify({ type: "lobby" }));
+  else 
+    //socket.send(JSON.stringify({ type: "lobby" }));
+    socket.send(JSON.stringify({ type: "update_lobby" }));
 
   waitingModal = new MessageModal(MessageType.INVITE);
   messageModal = new MessageModal(MessageType.INVITE);

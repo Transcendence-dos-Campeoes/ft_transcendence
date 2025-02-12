@@ -147,9 +147,7 @@ async function verifyOtpCode(responseStruct, otpCode) {
 			localStorage.setItem('refresh', responseStruct.refresh);
 			localStorage.setItem('username', responseStruct.username);
 			localStorage.setItem('email', responseStruct.email);
-			// socket = new WebSocket(
-			// 	`wss://${window.location.host}/ws/users/online-players/?token=${responseStruct.access}`
-			// );
+			socket = new Socket(responseStruct.access);
 			renderPage("home");
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);
@@ -177,9 +175,8 @@ async function verifyEnableOtpCode(responseStruct, otpCode) {
 			localStorage.setItem('refresh', responseStruct.refresh);
 			localStorage.setItem('username', responseStruct.username);
 			localStorage.setItem('email', responseStruct.email);
-			// socket = new WebSocket(
-			// 	`wss://${window.location.host}/ws/users/online-players/?token=${responseStruct.access}`
-			// );
+			socket = new Socket(responseStruct.access);
+			
 			renderPage("home");
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);

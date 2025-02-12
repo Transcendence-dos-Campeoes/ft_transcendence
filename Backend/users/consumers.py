@@ -44,8 +44,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_add)("online_players", self.channel_name)
             print("CONNECTED: ", self.scope['user'])
             channel_user_map[self.channel_name] = self.scope['user']
-            self.send_online_players()
-            #self.broadcast_online_players()
+            #self.send_online_players()
+            self.broadcast_online_players()
         else:
             self.close()
 
@@ -83,7 +83,6 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
         #tournaments
         elif data['type'] == 'invite_tournament_game':
-            print("ESTOU AQUI")
             self.handle_invite_tournament_game(data)
         elif data['type'] == 'accept_invite_tournament_game':
             self.handle_accept_invite_tournament_game(data)
