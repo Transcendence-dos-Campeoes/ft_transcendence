@@ -40,6 +40,14 @@ class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated]) 
+def verify(request):
+    """
+    Verify if user is authenticated and token is valid.
+    """
+    return Response({'authenticated': True}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def getUsersData(request):
     """
@@ -633,10 +641,7 @@ def oauth_callback(request):
 @permission_classes([IsAuthenticated])
 def enable_two_fa(request):
     try:
-        username = request.data.get('username')
         user = request.user
-        if not username:
-            return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
         if not user.two_fa_secret:
             user.two_fa_secret = pyotp.random_base32()
             user.save()
@@ -659,7 +664,7 @@ def enable_two_fa(request):
 
         return Response({
             'message': '2FA enabled successfully',
-            'username': username,
+            'username': user.username,
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -676,12 +681,8 @@ def enable_two_fa(request):
 @permission_classes([IsAuthenticated])
 def verify_two_fa(request):
     try:
-        username = request.data.get('username')
         otp_code = request.data.get('otpCode')
         user = request.user
-
-        if not username or not otp_code:
-            return Response({'error': 'Username and OTP code are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         totp = pyotp.TOTP(user.two_fa_secret)
         if totp.verify(otp_code, for_time=None, valid_window=1):

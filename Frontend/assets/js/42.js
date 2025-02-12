@@ -9,8 +9,7 @@ function startOAuth() {
 	window.location.href = oauthUrl;
 }
 
-// Handle the OAuth callback
-window.onload = async function () {
+async function handle42Callback() {
 	const urlParams = new URLSearchParams(window.location.search);
 	const code = urlParams.get('code');
 	const redirectURI = `${window.location.origin}/42`;
@@ -34,21 +33,17 @@ window.onload = async function () {
 			const data = await response.json();
 			console.log('OAuth login successful:', data);
 
-			// Store the access token and other data
-			localStorage.setItem('access', data.access);
-			localStorage.setItem('refresh', data.refresh);
-			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
-			localStorage.setItem('access_token_expiry', accessTokenExpiry);
-			localStorage.setItem('username', data.username);
-			localStorage.setItem('email', data.email);
+			const responseStruct = {
+				access: data.access,
+				refresh: data.refresh,
+				username: data.username,
+				email: data.email
+			};
 
-			// Redirect to the appropriate page based on 2FA status
 			if (data.two_fa_enabled == false) {
-				history.pushState({}, '', '/two_fa_enable');
-				checkAndRunTwoFA();
+				renderAuthPage("two_fa_enable", responseStruct);
 			} else {
-				history.pushState({}, '', '/two_fa_verify');
-				checkAndRunTwoFA();
+				renderAuthPage("two_fa_verify", responseStruct);
 			}
 		} catch (error) {
 			console.error('Error:', error);

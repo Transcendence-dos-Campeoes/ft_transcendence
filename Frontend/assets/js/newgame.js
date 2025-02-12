@@ -2,14 +2,14 @@ function waitgame() {
 
     const loadingOverlay = new LoadingOverlay();
 
-    try{
+    try {
         loadingOverlay.show();
         const currentUser = localStorage.getItem("username");
 
         socket.send(
             JSON.stringify({
-              type: "waiting_game",
-              from: currentUser,
+                type: "waiting_game",
+                from: currentUser,
             })
         );
 
@@ -17,7 +17,7 @@ function waitgame() {
         readyModal = new MessageModal(MessageType.READY);
 
         awaitModal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
-            
+
             if (!accept) {
                 socket.send(
                     JSON.stringify({
@@ -28,7 +28,7 @@ function waitgame() {
                 renderElement('overview');
             }
             else if (accept) {
-                readyModal.show(`Playing against ${data.opponent}`, "Ready?" ).then((accept) => {
+                readyModal.show(`Playing against ${data.opponent}`, "Ready?").then((accept) => {
                     if (!accept) {
                         socket.send(
                             JSON.stringify({
@@ -38,8 +38,7 @@ function waitgame() {
                         );
                         renderElement('overview');
                     }
-                    else
-                    {
+                    else {
                         socket.send(
                             JSON.stringify({
                                 type: 'random_ready',
@@ -52,7 +51,7 @@ function waitgame() {
                 });
             }
         });
-        socket.addEventListener('message', function(event) {
+        socket.addEventListener('message', function (event) {
             const data = JSON.parse(event.data);
             if (data.type === 'random_game') {
                 awaitModal.hide();
