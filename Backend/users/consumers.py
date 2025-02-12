@@ -407,12 +407,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             print(match)
             print(data)
             if data['from'] == match.player1.username:
-                print("AQUIII")
                 match.player1_score = 0
                 match.player2_score = 3
                 match.winner = match.player2
             elif data['from'] == match.player2.username:
-                print("AQUIII")
                 match.player1_score = 3
                 match.player2_score = 0
                 match.winner = match.player1
