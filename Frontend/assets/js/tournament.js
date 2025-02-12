@@ -15,20 +15,16 @@ async function attachTournamentFormListener() {
 
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        `${window.location.origin}/api/tournaments/create/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: JSON.stringify({
-            tournamentName: tournamentName,
-            maxPlayers: maxPlayers,
-          }),
-        }
-      );
+      const response = await fetchWithAuth("/api/tournaments/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tournamentName: tournamentName,
+          maxPlayers: maxPlayers,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create tournament");
@@ -51,15 +47,9 @@ async function joinTournament(tournamentId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(
-      `${window.location.origin}/api/tournaments/${tournamentId}/join/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      }
-    );
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/join/`, {
+      method: "POST"
+    });
 
     if (!response.ok) {
       throw new Error("Failed to join tournament");
@@ -78,15 +68,9 @@ async function startTournament(tournamentId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(
-      `${window.location.origin}/api/tournaments/${tournamentId}/start/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      }
-    );
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/start/`, {
+      method: "POST"
+    });
 
     if (!response.ok) throw new Error("Failed to start tournament");
 
@@ -103,11 +87,7 @@ async function loadTournamentBracket(tournamentId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/tournaments/${tournamentId}/bracket/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/bracket/`);
 
     if (!response.ok) {
       throw new Error("Failed to load tournament bracket");
@@ -163,11 +143,7 @@ async function loadAvailableTournaments() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/tournaments/get/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/tournaments/get/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch tournaments");

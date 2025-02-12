@@ -156,11 +156,7 @@ async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/users/matches/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/users/matches/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch matches");

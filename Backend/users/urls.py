@@ -7,6 +7,7 @@ urlpatterns = [
     path('logout/', views.logoutUser, name='logout-user'),
     path('delete/', views.deleteUser, name='delete-user'),
     path('users/', views.getUsersData, name='get_users_data'),
+    path('verify/', views.verify, name='verify_user'),
 	path('oauth_callback/', views.oauth_callback),
     path('settings/', views.getUserSettings, name='get_user_settings'),
     path('settings/maps/', views.getMaps, name='get_maps'),

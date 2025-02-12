@@ -2,12 +2,7 @@ async function loadChart() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(`${window.location.origin}/api/matches/get/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
-
+    const response = await fetchWithAuth("/api/matches/get/");
     if (!response.ok) {
       throw new Error("Failed to fetch matches data");
     }

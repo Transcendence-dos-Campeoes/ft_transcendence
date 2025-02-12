@@ -1,103 +1,130 @@
-// window.onload = checkAndRunTwoFA;
+function attach2FAVerifyFormListener(responseStruct) {
+	const form = document.getElementById("otpForm");
+	const cancelBtn = document.getElementById("cancel");
+	const disableBtn = document.getElementById("disable");
 
-function checkAndRunTwoFA() {
-	const currentUrl = window.location.href;
-	console.log("Current URL:", currentUrl);
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
 
-	if (currentUrl.match(`${window.location.origin}/two_fa_enable`) != null) {
-		renderPage("two_fa_enable")
-		console.log("Matched two_fa_enable URL");
-		two_fa_enable();
-	}
-	else if (currentUrl.match(`${window.location.origin}/two_fa_re_enable`) != null) {
-		renderPage("two_fa_re_enable")
-		console.log("Matched two_fa_re_enable URL");
-		two_fa_enable();
-	}
-	else if (currentUrl.match(`${window.location.origin}/two_fa_verify`) != null) {
-		renderPage("two_fa_verify")
-	}
-	else {
-		console.log("Didn't match any URL");
-		console.log(currentUrl);
-	}
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpCode").value;
+		await verifyOtpCode(responseStruct, code);
+	});
+
+	cancelBtn.addEventListener("click", () => {
+		cancelVerification();
+	});
+
+	disableBtn.addEventListener("click", () => {
+		renderAuthPage("two_fa_recover", responseStruct);
+	});
 }
 
-function cancelRegistration() {
-	// Redirect to the home page or another appropriate page
+function attach2FAEnableFormListener(responseStruct) {
+	const form = document.getElementById("twoFaEnableForm");
+	const cancelBtn = document.getElementById("cancel");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpCode").value;
+		await verifyEnableOtpCode(responseStruct, code);
+	});
+
+	cancelBtn.addEventListener("click", async function () {
+		await cancelRegistration(responseStruct);
+	});
+}
+
+function attach2FaRecoverFormListener(responseStruct) {
+	const form = document.getElementById("twoFaRecoverForm");
+	const cancelBtn = document.getElementById("cancel");
+	const requestBtn = document.getElementById("request");
+
+	if (!form) {
+		console.error("Form not found");
+		return;
+	}
+
+	form.addEventListener("submit", async function (event) {
+		event.preventDefault();
+		const code = document.getElementById("otpInputRecover").value;
+		await checkRecoverOTP(responseStruct, code);
+	});
+
+	requestBtn.addEventListener("click", async function (event) {
+		event.preventDefault();
+		const email = document.getElementById("emailInputRecover").value;
+		await requestOtp(responseStruct, email);
+	});
+
+	cancelBtn.addEventListener("click", async function (event) {
+		event.preventDefault();
+		cancelVerification();
+	});
+}
+
+async function cancelRegistration(responseStruct) {
 	const messageModal = new MessageModal(MessageType.INVITE);
-	messageModal.show(
+	const result = await messageModal.show(
 		"Are you sure you want to cancel your account registration? All your progress will be lost.",
 		"Cancel Account Registration"
-	).then(async (accept) => {
-		if (accept) {
-			console.log("Account registration cancelled.");
-			try {
-				const response = await fetch(`${window.location.origin}/api/users/delete/`, {
-					method: "DELETE",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${localStorage.getItem("access")}`,
-					},
-					credentials: "include"
-				});
+	);
 
-				const responseText = await response.text();
+	renderAuthPage("two_fa_enable", responseStruct);
 
-				if (response.ok) {
-					console.log("Account registration canceled.");
-					localStorage.clear();
-					window.location.href = `${window.location.origin}/register`;
-				}
-			} catch (error) {
-				console.error("Error:", error);
-				displayMessage("An error occurred while deleting user", MessageType.ERROR);
-			}
-		} else {
-			console.log("Account registration continued.");
+	try {
+		const response = await fetchWithDiffAuth('/api/users/delete/', {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			credentials: 'include'
+		}, responseStruct);
+
+		if (!response.ok) {
+			throw new Error('Failed to delete account');
 		}
-	});
+
+		localStorage.clear();
+		window.location.href = '/register';
+	} catch (error) {
+		console.error('Error:', error);
+		displayMessage('An error occurred while deleting user', MessageType.ERROR);
+	}
 }
 
 function cancelVerification() {
 	console.log("2FA verification canceled.");
-	// Redirect to the home page or another appropriate page
 	localStorage.clear();
 	window.location.href = `${window.location.origin}/login`;
 }
 
 
-async function two_fa_enable() {
+async function get_two_fa_qr(responseStruct) {
 	try {
-		const username = localStorage.getItem("username");
-		console.log("Username from localStorage:", username);
-
-		const response = await fetch(
-			`${window.location.origin}/api/users/twofa/enable/`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${localStorage.getItem("access")}`,
-				},
-				body: JSON.stringify({ username }), // Correctly stringify the username as an object
+		const response = await fetchWithDiffAuth('/api/users/twofa/enable/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
 			}
-		);
+		}, responseStruct);
 
-		if (response.ok) {
-			console.log("2FA API working.");
-			const responseData = await response.json();
-			console.log("Response Data:", responseData);
+		if (!response.ok) {
+			throw new Error('Failed to enable 2FA');
+		}
 
-			// Display the QR code on the page
-			const qrCodeImage = document.getElementById("qrCodeImage");
-			if (qrCodeImage) {
-				qrCodeImage.src = responseData.qr_code;
-			}
-		} else {
-			console.log("2FA API ERROR.");
-			const errorData = await response.json();
-			console.log("Error Data:", errorData);
+		const responseData = await response.json();
+		const qrCodeImage = document.getElementById("qrCodeImage");
+		if (qrCodeImage) {
+			qrCodeImage.src = responseData.qr_code;
 		}
 	} catch (error) {
 		console.error("Error:", error);
@@ -105,95 +132,110 @@ async function two_fa_enable() {
 	}
 }
 
-async function verifyOtpCode() {
+async function verifyOtpCode(responseStruct, otpCode) {
 	try {
-		const otpCode = document.getElementById("otpCode").value;
-		const username = localStorage.getItem("username");
-		console.log("OTP Code:", otpCode);
-
-		const response = await fetch(
-			`${window.location.origin}/api/users/twofa/verify/`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${localStorage.getItem("access")}`,
-				},
-				body: JSON.stringify({ username, otpCode }), // Send the OTP code and username
-			}
-		);
+		const response = await fetchWithDiffAuth('/api/users/twofa/verify/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ otpCode })
+		}, responseStruct);
 
 		if (response.ok) {
-			console.log("OTP verification successful.");
-			const responseData = await response.json();
-			console.log("Response Data:", responseData);
-			renderPage("home")
+			localStorage.setItem('access', responseStruct.access);
+			localStorage.setItem('refresh', responseStruct.refresh);
+			localStorage.setItem('username', responseStruct.username);
+			localStorage.setItem('email', responseStruct.email);
+			// socket = new WebSocket(
+			// 	`wss://${window.location.host}/ws/users/online-players/?token=${responseStruct.access}`
+			// );
+			renderPage("home");
 		} else {
-			console.log("OTP verification failed.");
-			const errorData = await response.json();
-			console.log("Error Data:", errorData);
+			displayMessage("Invalid OTP code", MessageType.ERROR);
+			renderAuthPage("two_fa_verify", responseStruct);
 		}
 	} catch (error) {
 		console.error("Error:", error);
+		displayMessage("Failed to verify OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_verify", responseStruct);
 	}
 }
 
-async function requestOtp() {
-	const email = document.getElementById("emailInputRecover").value;
+async function verifyEnableOtpCode(responseStruct, otpCode) {
 	try {
-		// Request a new 2FA QR code
-		const enableResponse = await fetch(
-			`${window.location.origin}/api/users/setRecoverOTP/`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${localStorage.getItem("access")}`,
-				},
-				body: JSON.stringify({ email }), // Send the username
-			}
-		);
+		const response = await fetchWithDiffAuth('/api/users/twofa/verify/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ otpCode })
+		}, responseStruct);
 
-		if (!enableResponse.ok) {
-			const errorData = await enableResponse.json();
-			console.log("Error Data:", errorData);
-			return;
+		if (response.ok) {
+			localStorage.setItem('access', responseStruct.access);
+			localStorage.setItem('refresh', responseStruct.refresh);
+			localStorage.setItem('username', responseStruct.username);
+			localStorage.setItem('email', responseStruct.email);
+			// socket = new WebSocket(
+			// 	`wss://${window.location.host}/ws/users/online-players/?token=${responseStruct.access}`
+			// );
+			renderPage("home");
+		} else {
+			displayMessage("Invalid OTP code", MessageType.ERROR);
+			renderAuthPage("two_fa_enable", responseStruct);
 		}
-
-		const enableData = await enableResponse.json();
-		console.log("Email with recover OTP sent succesfully:", enableData);
 	} catch (error) {
-		console.error("Error during 2FA recovery:", error);
+		console.error("Error:", error);
+		displayMessage("Failed to verify OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_enable", responseStruct);
 	}
 }
 
-async function checkRecoverOTP() {
-	const otp_code = document.getElementById("otpInputRecover").value;
-	console.log(otp_code);
+async function requestOtp(responseStruct, email) {
 	try {
-		const enableResponse = await fetch(
-			`${window.location.origin}/api/users/checkRecoverOTP/`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${localStorage.getItem("access")}`,
-				},
-				body: JSON.stringify({ otp_code }),
-			}
-		);
+		const response = await fetchWithDiffAuth('/api/users/setRecoverOTP/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ email })
+		}, responseStruct);
 
-		if (!enableResponse.ok) {
-			const errorData = await enableResponse.json();
-			console.log("Error Data:", errorData);
+		if (!response.ok) {
+			displayMessage("Failed to request OTP'", MessageType.ERROR);
+			renderAuthPage("two_fa_recover", responseStruct);
 			return;
 		}
 
-		const enableData = await enableResponse.json();
-		console.log("2FA reset successfully:", enableData);
-		history.pushState({}, '', '/two_fa_re_enable');
-		checkAndRunTwoFA()
+		displayMessage("Recovery OTP sent to email", MessageType.SUCCESS);
 	} catch (error) {
-		console.error("Error during 2FA recovery:", error);
+		console.error("Error:", error);
+		displayMessage("Failed to send recovery OTP", MessageType.ERROR);
+		renderAuthPage("two_fa_recover", responseStruct);
+	}
+}
+
+async function checkRecoverOTP(responseStruct, otp_code) {
+	try {
+		const response = await fetchWithDiffAuth('/api/users/checkRecoverOTP/', {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ otp_code })
+		}, responseStruct);
+
+		if (!response.ok) {
+			displayMessage("Invalid recovery code", MessageType.ERROR);
+			renderAuthPage("two_fa_recover", responseStruct);
+			return;
+		}
+
+		renderAuthPage("two_fa_enable", responseStruct);
+	} catch (error) {
+		console.error("Error:", error);
+		displayMessage("Failed to verify recovery code", MessageType.ERROR);
+		renderAuthPage("two_fa_recover", responseStruct);
 	}
 }
