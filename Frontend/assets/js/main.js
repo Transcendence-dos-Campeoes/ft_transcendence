@@ -52,19 +52,20 @@ async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 
-	const authenticated = await isAuthenticated();
 	if (page === "home" || page === "pong") {
+		const authenticated = await isAuthenticated();
 		if (!authenticated) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
 	}
-	else {
-		if (authenticated) {
-			console.log("User authenticated, redirecting to home page.");
-			page = "home";
-		}
-	}
+	// else {
+	// 	const authenticated = await isAuthenticated();
+	// 	if (authenticated) {
+	// 		console.log("User authenticated, redirecting to home page.");
+	// 		page = "home";
+	// 	}
+	// }
 
 	try {
 		loadingOverlay.show();
