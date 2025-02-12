@@ -53,18 +53,19 @@ async function renderPage(page) {
 	const loadingOverlay = new LoadingOverlay();
 	if (router.currentPage === page) return;
 
-	const authenticated = await isAuthenticated();
 	if (page === "home" || page === "pong") {
+		const authenticated = await isAuthenticated();
 		if (!authenticated) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
-	} else {
-		if (authenticated) {
-			console.log("User authenticated, redirecting to home page.");
-			page = "home";
-		}
-	}
+	} 
+	// else {
+	// 	if (authenticated) {
+	// 		console.log("User authenticated, redirecting to home page.");
+	// 		page = "home";
+	// 	}
+	// }
 
 	try {
 		loadingOverlay.show();
