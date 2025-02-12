@@ -38,7 +38,7 @@ class FriendSystem {
 
       const invites = await response.json();  // Add await here
       this.renderPendingInvites(invites);
-      
+
     } catch (error) {
       console.error("Error loading invites:", error);
     } finally {
@@ -61,9 +61,13 @@ class FriendSystem {
       });
       if (response.ok) {
         this.inviteForm.reset();
+        displayMessage("Friend invitation sent successfully", MessageType.SUCCESS);
+      } else {
+        displayMessage("Failed to send invitation", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error sending invite:", error);
+      displayMessage("Error sending invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }
@@ -73,7 +77,7 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      await fetchWithAuth("/api/users/invite/update/", {
+      const response = await fetchWithAuth("/api/users/invite/update/", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -83,13 +87,21 @@ class FriendSystem {
           action: action,
         }),
       });
-      this.loadPendingInvites();
-      if (action === "accept") {
-        this.loadFriends();
-        socket.send(JSON.stringify({ type: "update_lobby" }));
+      if (response.ok) {
+        this.loadPendingInvites();
+        if (action === "accept") {
+          this.loadFriends();
+          socket.send(JSON.stringify({ type: "update_lobby" }));
+          displayMessage("Friend request accepted", MessageType.SUCCESS);
+        } else {
+          displayMessage("Friend request declined", MessageType.INFO);
+        }
+      } else {
+        displayMessage("Failed to process invitation", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error responding to invite:", error);
+      displayMessage("Error processing invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }
@@ -108,9 +120,13 @@ class FriendSystem {
       if (response.ok) {
         this.loadFriends();
         socket.send(JSON.stringify({ type: "update_lobby" }));
+        displayMessage("Friend removed successfully", MessageType.SUCCESS);
+      } else {
+        displayMessage("Failed to remove friend", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error removing friend:", error);
+      displayMessage("Error removing friend", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }
