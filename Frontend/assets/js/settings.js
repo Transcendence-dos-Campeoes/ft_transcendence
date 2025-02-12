@@ -158,32 +158,45 @@ async function loadMaps() {
       throw new Error("Failed to fetch maps");
     }
 
-    const data = await response.json();
+    const maps = await response.json();
     const mapContainer = document.getElementById("map-container");
-
     mapContainer.innerHTML = '';
 
-    data.maps.forEach(map => {
-      const isSelected = data.selected_map.selected_map.id === map.id;
-      mapContainer.innerHTML += `
-        <div class="col-md-3 mb-4">
-          <div class="card bg-dark ${isSelected ? 'border-success' : 'border-light'}" 
-               onclick="selectMap(${map.id})"
-               style="cursor: pointer">
-            <div class="card-body">
-              <h5 class="card-title text-center">${map.name}</h5>
-              <div class="map-preview mb-3" style="height: 200px; background-color: ${map.background_color};">
-                <div class="paddle left" style="background-color: ${map.paddle_color}"></div>
-                <div class="paddle right" style="background-color: ${map.paddle_color}"></div>
-                <div class="ball" style="background-color: ${map.ball_color}"></div>
-                <div class="wall top" style="background-color: ${map.wall_color}"></div>
-                <div class="wall bottom" style="background-color: ${map.wall_color}"></div>
+    // Create row wrapper for every 2 maps
+    for (let i = 0; i < maps.length; i += 2) {
+      const row = document.createElement('div');
+      row.className = 'row mb-4';
+
+      // First map in row
+      row.innerHTML += `
+        <div class="col-md-6">
+          <div class="card bg-dark ${maps[i].selected ? 'border border-primary border-3' : ''}" 
+              onclick="selectMap(${maps[i].map_number})" 
+              style="cursor: pointer">
+              <img src="${maps[i].image_data}" class="card-img-top" alt="Map ${maps[i].map_number}">
+              <div class="card-body text-center">
+                  <h5 class="card-title">Map ${maps[i].map_number}</h5>
               </div>
-            </div>
           </div>
-        </div>
-      `;
-    });
+        </div>`;
+
+      // Second map in row (if exists)
+      if (maps[i + 1]) {
+        row.innerHTML += `
+          <div class="col-md-6">
+            <div class="card bg-dark ${maps[i + 1].selected ? 'border border-primary border-3' : ''}" 
+                onclick="selectMap(${maps[i + 1].map_number})" 
+                style="cursor: pointer">
+                <img src="${maps[i + 1].image_data}" class="card-img-top" alt="Map ${maps[i + 1].map_number}">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Map ${maps[i + 1].map_number}</h5>
+                </div>
+            </div>
+          </div>`;
+      }
+
+      mapContainer.appendChild(row);
+    }
 
   } catch (error) {
     displayMessage("Failed to load maps", MessageType.ERROR);
@@ -201,7 +214,7 @@ async function selectMap(mapId) {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ selected_map_id: mapId })
+      body: JSON.stringify({ map_number: mapId })
     });
 
     if (!response.ok) throw new Error("Failed to update map");
