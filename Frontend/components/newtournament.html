@@ -19,12 +19,12 @@
         <div class="card-body">
           <form id="new-tournament-form">
             <div class="mb-3">
-              <label class="form-label">Tournament Name</label>
+              <label for="tournament-name" class="form-label">Tournament Name</label>
               <input type="text" class="form-control" id="tournament-name" required />
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Maximum Players</label>
+              <label for="max-players" class="form-label">Maximum Players</label>
               <select class="form-select" id="max-players" required>
                 <option value="4">4 Players</option>
                 <option value="8">8 Players</option>
@@ -34,9 +34,9 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Invite Players</label>
+              <h5 id="players-label">Invite Players</h5>
               <div class="table-responsive">
-                <table class="table table-hover text-white">
+                <table class="table table-hover text-white" aria-labelledby="players-label">
                   <thead>
                     <tr>
                       <th>Player</th>

@@ -99,8 +99,8 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-      //startGame(data.game_group, socket);
-			startGame3d(null, null, 2);
+      		// startGame(data.game_group, socket);
+			startGame3d(null, null, 1);
 		} else if (page === "42") {
 			handle42Callback();
 		}
