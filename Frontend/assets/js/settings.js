@@ -18,7 +18,6 @@ async function attachSettingsFormListener() {
 
     const username = document.getElementById("username-input").value;
     const email = document.getElementById("email-input").value;
-    const twoFactorEnabled = document.getElementById("2fa-toggle").checked;
     const profilePictureInput = document.getElementById(
       "profile-picture-input"
     );
@@ -26,7 +25,6 @@ async function attachSettingsFormListener() {
     const formData = new FormData();
     formData.append("username", username);
     formData.append("email", email);
-    formData.append("two_factor_enabled", twoFactorEnabled);
 
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
@@ -60,7 +58,7 @@ async function attachSettingsFormListener() {
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
-      renderElement("overview");
+      renderPage("home");
     } catch (error) {
       console.error("❌ Error updating profile:", error);
       displayMessage("Failed to update profile", MessageType.ERROR);
