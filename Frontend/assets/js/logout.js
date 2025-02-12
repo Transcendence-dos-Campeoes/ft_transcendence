@@ -10,9 +10,9 @@ async function logout() {
 			body: JSON.stringify({ refresh }),
 			credentials: "include",
 		});
-		if (typeof socket !== "undefined" && socket.readyState !== WebSocket.CLOSED) {
-			socket.close();
-		}
+		if (socket != null || socket != undefined) 
+			socket.destroy();
+		
 		if (response.ok) {
 			localStorage.clear();
 			renderPage("login");

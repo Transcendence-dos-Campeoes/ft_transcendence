@@ -95,7 +95,7 @@ async function renderPage(page) {
 			load_profile_pic();
 			renderElement("overview");
 			console.log("Before Load");
-			if (!socket)
+			if (!socket || socket == undefined)
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
