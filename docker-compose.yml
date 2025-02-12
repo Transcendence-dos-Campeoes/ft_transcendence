@@ -101,3 +101,10 @@ services:
       - ./Grafana/dashboards:/var/lib/grafana/dashboards
       - ./Grafana/provisioning:/etc/grafana/provisioning:ro
     restart: always
+
+  blockchain:
+    build: ./Contracts
+    volumes:
+      - ./Contracts:/usr/src/contracts
+    env_file:
+      - ./.env
