@@ -63,10 +63,11 @@ class MessageModal {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
-
+    if(isAwait)
+      this.modal.querySelector('.btn-close-white').addEventListener('click', () => this.handleCancel());
     // if (isAwait)
     //   socket.addEventListener('message', function(event) {
-    //     const data = JSON.parse(event.data);
+    //     const data = JSON.parse(event.data); 
     //     if (data.type === 'random_game') {
     //         awaitModal.hide();
     //   }

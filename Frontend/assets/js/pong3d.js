@@ -22,8 +22,8 @@ class PongGame {
         this.playerPos = this.fieldLength / 2 + this.overallHight / 2;
         this.camPos = 6.5;
         this.topCamera;
-        this.player1Name = "";
-        this.player2Name = "";
+        this.player1Name = this.data.player1;
+        this.player2Name = this.data.player2;
 
         //player stuff
         this.player1;
@@ -40,6 +40,7 @@ class PongGame {
         this.isRunning = true;
         console.log("PongGame Initialized!");
         this.init();
+        this.setupSocketListeners();
     }
 
     setupRenderer() {
@@ -88,6 +89,39 @@ class PongGame {
         this.setupScoreboard();
 
         this.animate();
+    }
+
+    setupSocketListeners() {
+        this.socket.onmessage = async (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'game_update') {
+                this.player1.position.y = data.player1.y;
+                this.player2.position.y = data.player2.y;
+                this.ball.position.x = data.ball.x;
+                this.ball.position.y = data.ball.y;
+                this.player1Score = data.player1Score;
+                this.player2Score = data.player2Score;
+                this.updateScoreboard();
+            }
+            if (data.type === 'player_move') {
+                if (data.player === 'player1') {
+                    this.player1.velocityY = data.velocityY;
+                } else {
+                    this.player2.velocityY = data.velocityY;
+                }
+            }
+            if (data.type === 'end_game') {
+                await this.wait(1200);
+                this.cleanup();
+                renderPage("home");
+                return;
+            }
+        };
+    }
+
+    wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     setupCamera() {
@@ -377,32 +411,39 @@ class PongGame {
     }
 
     updateBall() {
-        // this.ball.position.x += this.ballVelocity.x;
-        // this.ball.position.y += this.ballVelocity.y;
-        // this.goalPosition = (this.fieldLength + 0.4) / 2;
-        // const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        // const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        // const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        // const fieldRight = (this.fieldLength + 0.5) / 2;
-        // if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-        //     this.ballVelocity.y *= -1;
-        // }
-        // if (this.ball.position.x >= fieldRight) {
-        //     this.player1Score++;
-        //     console.log("Player 1 Scored! Score:", this.player1Score);
-        //     //  score update for scorboard needed here
-        //     this.updateScoreboard();
-        //     this.resetBall();
-        // } else if (this.ball.position.x <= fieldLeft) {
-        //     this.player2Score++;
-        //     //  score update for scorboard needed here 
-        //     console.log("Player 2 Scored! Score:", this.player2Score);
-        //     this.resetBall();
-        //     this.updateScoreboard();
-        // }
-        // // Paddle collisions
-        // this.checkPaddleCollision(this.leftPaddle);
-        // this.checkPaddleCollision(this.rightPaddle);
+        this.ball.position.x += this.ballVelocity.x;
+        this.ball.position.y += this.ballVelocity.y;
+        this.goalPosition = (this.fieldLength + 0.4) / 2;
+        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
+        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
+        const fieldLeft = -(this.fieldLength + 0.5) / 2;
+        const fieldRight = (this.fieldLength + 0.5) / 2;
+        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
+            this.ballVelocity.y *= -1;
+        }
+        if (this.ball.position.x >= fieldRight) {
+            this.player1Score++;
+            console.log("Player 1 Scored! Score:", this.player1Score);
+            //  score update for scorboard needed here
+            this.updateScoreboard();
+            this.resetBall();
+        } else if (this.ball.position.x <= fieldLeft) {
+            this.player2Score++;
+            //  score update for scorboard needed here 
+            console.log("Player 2 Scored! Score:", this.player2Score);
+            this.resetBall();
+            this.updateScoreboard();
+            if (this.player1Score >= 5 || this.player2Score >= 5) {
+                console.log("Game Over!");
+                if (this.player1Score >= 5)
+                    this.stopGame(this.player1Name);
+                else
+                    this.stopGame(this.player2Name);
+            }
+        }
+        // Paddle collisions
+        this.checkPaddleCollision(this.leftPaddle);
+        this.checkPaddleCollision(this.rightPaddle);
     }
 
 
@@ -636,6 +677,8 @@ class PongGame {
     }
 
     animate() {
+        if (!this.isRunning) return;
+
         requestAnimationFrame(() => this.animate());
         this.updateBall();
         this.updatePaddles();
@@ -652,12 +695,29 @@ class PongGame {
             this.starfield.rotation.x += 0.0003;
         }
     }
+
+    cleanup() {
+        // Perform any necessary cleanup here
+        this.isRunning = false;
+        window.removeEventListener("keydown", this.handleKeyDown);
+        window.removeEventListener("keyup", this.handleKeyUp);
+        // Remove other event listeners, stop animations, etc.
+    }
+
+    stopGame(winner) {
+        console.log(`${winner} wins the game!`);
+        this.socket.send(JSON.stringify({
+            type: 'end_game',
+            winner: winner
+        }));
+        this.cleanup();
+    }
 }
 
 /////    function called on main js ///////////////
 function startGame3d(data, socket, gameMap) {
     console.log("Game starting...");
-    new PongGame(data, socket, gameMap);
+    const pongGame = new PongGame(data, socket, gameMap);
 }
 
 //window.addEventListener("load", () => startGame(null, null, null));

@@ -68,6 +68,7 @@ function joinMatch(encodedMatch, currentUser) {
   console.log(`Player1: ${match.match__player1__username}`);
   console.log(`Player2: ${match.match__player2__username}`);
 
+  socket.send(JSON.stringify({ type: "update_lobby" }));
   const players = data.players_data.map(player => player.username);
 
   if (players.includes(match.match__player1__username) && players.includes(match.match__player2__username)) {
@@ -75,6 +76,7 @@ function joinMatch(encodedMatch, currentUser) {
     const opponent = match.match__player1__username === currentUser ? match.match__player2__username : match.match__player1__username;
     waitingModal = new MessageModal(MessageType.INVITE);
     declineModal = new DeclineModal(MessageType.INFO);
+    errorModal = new MessageModal();
   
     socket.send(
       JSON.stringify({
@@ -99,15 +101,18 @@ function joinMatch(encodedMatch, currentUser) {
         );
       }
     });
-  
+    socket.addEventListener('message', function (event) {
+      const data = JSON.parse(event.data);
+      if (data.type === 'start_game') {
+          waitingModal.hide();
+          waitingModal.resolve(true);
+      }
+    });
   
   } else {
     console.log("One or both players are not in the players_data list.");
+    displayMessage("The other player is missing", "error")
   }
-  // messageModal = new MessageModal(MessageType.INVITE);
-
-
-  
   // You can add an API call here to join the match
 }
 
@@ -156,6 +161,11 @@ async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
+      console.log("User not authenticated, redirecting to login page.");
+      renderPage('login');
+    }
     const response = await fetchWithAuth("/api/users/matches/");
 
     if (!response.ok) {
