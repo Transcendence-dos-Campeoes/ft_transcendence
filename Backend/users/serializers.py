@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from .models import SiteUser, Friend, GameMap
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 
 
 class SiteUserSerializer(serializers.ModelSerializer):
@@ -116,3 +117,18 @@ class UserGameMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
         fields = ['id', 'username', 'selected_map', 'selected_map_id']
+
+
+class FriendsSerializer(serializers.ModelSerializer):
+    friends = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SiteUser
+        fields = ['id', 'username', 'friends']
+
+    def get_friends(self, obj):
+        friends = Friend.objects.filter(
+            (Q(requester=obj) & Q(status='accepted')) | 
+            (Q(receiver=obj) & Q(status='accepted'))
+        )
+        return [{'id': friend.id, 'username': friend.receiver.username if friend.requester == obj else friend.requester.username} for friend in friends]

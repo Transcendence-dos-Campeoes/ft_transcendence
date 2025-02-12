@@ -96,7 +96,8 @@ async function renderPage(page) {
 			renderElement("overview");
 			lobbyLoad();
 		} else if (page === "pong") {
-			startGame(data.game_group, socket);
+      //startGame(data.game_group, socket);
+			startGame3d(null, null, 2);
 		} else if (page === "42") {
 			handle42Callback();
 		}
