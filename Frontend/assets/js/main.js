@@ -51,7 +51,6 @@ async function isAuthenticated() {
 async function renderPage(page) {
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
-	if (router.currentPage === page) return;
 
 	if (page === "home" || page === "pong") {
 		const authenticated = await isAuthenticated();
@@ -115,8 +114,7 @@ async function renderPage(page) {
 async function renderAuthPage(page, responseStruct) {
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
-	if (routerAuth.currentPage === page) return;
-
+	
 	try {
 		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
