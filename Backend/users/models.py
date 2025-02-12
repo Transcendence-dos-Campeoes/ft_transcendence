@@ -1,28 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-
-class GameMap(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    ball_color = models.CharField(
-        max_length=7,
-        validators=[RegexValidator(r'^#([A-Fa-f0-9]{6})$', 'Enter valid hex color')]
-    )
-    background_color = models.CharField(
-        max_length=7,
-        validators=[RegexValidator(r'^#([A-Fa-f0-9]{6})$', 'Enter valid hex color')]
-    )
-    paddle_color = models.CharField(
-        max_length=7,
-        validators=[RegexValidator(r'^#([A-Fa-f0-9]{6})$', 'Enter valid hex color')]
-    )
-    wall_color = models.CharField(
-        max_length=7,
-        validators=[RegexValidator(r'^#([A-Fa-f0-9]{6})$', 'Enter valid hex color')]
-    )
-
-    def __str__(self):
-        return self.name
+import base64
 
 class SiteUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -51,11 +30,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     is_otp_verified = models.BooleanField(default=False)
     created_time = models.DateTimeField(auto_now_add=True)
     profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/default.jpg')
-    selected_map = models.ForeignKey(
-        GameMap,
-        on_delete=models.SET_NULL,
-        null=True,
-    )
+    selected_map = models.IntegerField(default=1)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
@@ -63,6 +38,15 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
 
     objects = SiteUserManager()
+
+    def get_map_data(self):
+        map_path = f'media/game_images/{self.selected_map}.png'
+        with open(map_path, 'rb') as image_file:
+            map_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+        return {
+            'map_number': self.selected_map,
+            'image_data': f'data:image/jpeg;base64,{map_base64}'
+        }
 
     def __str__(self):
         return self.username

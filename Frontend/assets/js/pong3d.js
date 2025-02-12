@@ -22,8 +22,8 @@ class PongGame {
         this.playerPos = this.fieldLength / 2 + this.overallHight / 2;
         this.camPos = 6.5;
         this.topCamera;
-        this.player1Name = "Name";
-        this.player2Name = "Name";
+        this.player1Name = "";
+        this.player2Name = "";
 
         //player stuff
         this.player1;
@@ -377,32 +377,32 @@ class PongGame {
     }
 
     updateBall() {
-        this.ball.position.x += this.ballVelocity.x;
-        this.ball.position.y += this.ballVelocity.y;
-        this.goalPosition = (this.fieldLength + 0.4) / 2;
-        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        const fieldRight = (this.fieldLength + 0.5) / 2;
-        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-            this.ballVelocity.y *= -1;
-        }
-        if (this.ball.position.x >= fieldRight) {
-            this.player1Score++;
-            console.log("Player 1 Scored! Score:", this.player1Score);
-            //  score update for scorboard needed here
-            this.updateScoreboard();
-            this.resetBall();
-        } else if (this.ball.position.x <= fieldLeft) {
-            this.player2Score++;
-            //  score update for scorboard needed here 
-            console.log("Player 2 Scored! Score:", this.player2Score);
-            this.resetBall();
-            this.updateScoreboard();
-        }
-        // Paddle collisions
-        this.checkPaddleCollision(this.leftPaddle);
-        this.checkPaddleCollision(this.rightPaddle);
+        // this.ball.position.x += this.ballVelocity.x;
+        // this.ball.position.y += this.ballVelocity.y;
+        // this.goalPosition = (this.fieldLength + 0.4) / 2;
+        // const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
+        // const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
+        // const fieldLeft = -(this.fieldLength + 0.5) / 2;
+        // const fieldRight = (this.fieldLength + 0.5) / 2;
+        // if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
+        //     this.ballVelocity.y *= -1;
+        // }
+        // if (this.ball.position.x >= fieldRight) {
+        //     this.player1Score++;
+        //     console.log("Player 1 Scored! Score:", this.player1Score);
+        //     //  score update for scorboard needed here
+        //     this.updateScoreboard();
+        //     this.resetBall();
+        // } else if (this.ball.position.x <= fieldLeft) {
+        //     this.player2Score++;
+        //     //  score update for scorboard needed here 
+        //     console.log("Player 2 Scored! Score:", this.player2Score);
+        //     this.resetBall();
+        //     this.updateScoreboard();
+        // }
+        // // Paddle collisions
+        // this.checkPaddleCollision(this.leftPaddle);
+        // this.checkPaddleCollision(this.rightPaddle);
     }
 
 
@@ -570,8 +570,7 @@ class PongGame {
         this.scoreboard.style.top = "5px"; // Keep inside board
         this.scoreboard.style.left = "50%";
         this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "16px";
-        this.scoreboard.style.fontFamily = "Arial, sans-serif";
+        this.scoreboard.style.fontSize = "24px";
         this.scoreboard.style.fontWeight = "bold";
         this.scoreboard.style.color = "green";
         // this.scoreboard.style.background = "rgba(0, 0, 0, 0.5)";
