@@ -45,7 +45,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             print("CONNECTED: ", self.scope['user'])
             channel_user_map[self.channel_name] = self.scope['user']
             self.send_online_players()
-            self.broadcast_online_players()
+            #self.broadcast_online_players()
         else:
             self.close()
 
@@ -88,11 +88,13 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         elif data['type'] == 'accept_invite_tournament_game':
             self.handle_accept_invite_tournament_game(data)
 
-        
+        #friends
+        elif data['type'] == 'update_lobby':
+            self.broadcast_online_players()
         # elif data['type'] == 'random_game':
         #     self.handle_random(data)
-        # elif data['type'] == 'close_await':
-        #     self.handle_close_await(data)
+        elif data['type'] == 'close_await':
+            self.handle_close_await(data)
 
     def handle_invite(self, data):
         async_to_sync(self.channel_layer.group_send)(
@@ -287,11 +289,13 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 match.winner = SiteUser.objects.get(username=user1)
             else:
                 match.winner = SiteUser.objects.get(username=user2)
-            match.status = 'finished'
+            if match.player1_score == 5 or match.player2_score == 5:
+                match.status = 'finished'
+            else:
+                match.status = 'cancelled'
             match.save()
 
             try:
-                print("ESTOU AQUI")
                 tournament_match = TournamentMatch.objects.get(match=match.id)
                 self.fill_tournament(tournament_match, match)
             except:
@@ -389,6 +393,40 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             })
     
 
+    def handle_close_await(self, data):
+        open_game = OnlinePlayersConsumer.check_open_games()
+        if open_game:
+            player_channel = group_channel_map[open_game][0]
+            if data['from'] == channel_user_map[player_channel].username:
+                async_to_sync(self.channel_layer.group_discard)(open_game, player_channel)
+                return
+        
+        if 'game_group' in data:
+            game_id = group_match_map[data["game_group"]]
+            match = Match.objects.get(id = game_id)
+            print(match)
+            print(data)
+            if data['from'] == match.player1.username:
+                match.player1_score = 0
+                match.player2_score = 3
+                match.winner = match.player2
+            elif data['from'] == match.player2.username:
+                match.player1_score = 3
+                match.player2_score = 0
+                match.winner = match.player1
+
+            match.status = 'cancelled'
+            match.save()
+            print (match.player1_score, match.player2_score)
+            text_data = {
+                "type": 'end_game',
+                "user": data['from'],
+                "game_group":  data['game_group'],
+                "player1Score": match.player1_score,
+                "player2Score": match.player2_score
+                }
+            self.handle_end_game(text_data)
+            
     #TOURNAMENT
 
     def handle_invite_tournament_game(self, data):
