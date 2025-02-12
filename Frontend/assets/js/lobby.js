@@ -1,4 +1,3 @@
-let socket;
 let data;
 
 function lobbyLoad() {
@@ -114,15 +113,15 @@ function lobbyLoad() {
           );
         }
       });
-    } else if (data.type === "decline_invite"){
-        waitingModal.hide();
-        messageModal.hide();
-        if (data.to === currentUser)
-          declineModal.show(`Game invite rejected.`, "Invite Rejected");
+    } else if (data.type === "decline_invite") {
+      waitingModal.hide();
+      messageModal.hide();
+      if (data.to === currentUser)
+        declineModal.show(`Game invite rejected.`, "Invite Rejected");
 
       console.log("Invite declined by:", data.from);
     } else if (data.type === "start_game") {
-        waitingModal.hide();
+      waitingModal.hide();
       console.log("Game started with:", data.from);
       renderPage("pong");
     } else if (data.type === "close_connection") socket.close();
