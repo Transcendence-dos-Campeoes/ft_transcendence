@@ -15,6 +15,7 @@ services:
       - ./.env
     volumes:
       - ./Backend:/usr/src/app/
+      - ./Contracts:/usr/src/contracts/
     ports:
       - 8000:8000
     expose:
@@ -101,3 +102,10 @@ services:
       - ./Grafana/dashboards:/var/lib/grafana/dashboards
       - ./Grafana/provisioning:/etc/grafana/provisioning:ro
     restart: always
+
+  blockchain:
+    build: ./Contracts
+    volumes:
+      - ./Contracts:/usr/src/contracts
+    env_file:
+      - ./.env

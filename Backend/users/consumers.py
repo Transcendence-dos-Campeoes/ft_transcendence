@@ -10,6 +10,8 @@ from tournaments.models import TournamentMatch
 from tournaments.models import Tournament
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from web3 import Web3
+from django.conf import settings
 
 
 import uuid
@@ -529,6 +531,43 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 finalized_tournament.status = 'finished'
                 finalized_tournament.winner = match.winner
                 finalized_tournament.save()
+
+                try:
+                    url = settings.INFURA_URL
+                    private_key = settings.PRIVATE_KEY
+                    w3 = Web3(Web3.HTTPProvider(url))
+                    account = w3.eth.account.from_key(private_key)
+                    with open('/usr/src/contracts/artifacts/contracts/tournament.sol/tournamentResults.json') as f:
+                        contract_json = json.load(f)
+                        contract_abi = contract_json['abi']
+                
+                    with open('/usr/src/contracts/deployed-address.json') as f:
+                        contract_data = json.load(f)
+                        contract_address = contract_data['address']
+                    
+                    # Create transaction
+                    tx = {
+                        'nonce': w3.eth.get_transaction_count(account.address),
+                        'gas': 2000000,
+                        'gasPrice': w3.eth.gas_price,
+                        'to': contract_address,
+                        'data': w3.eth.contract(abi=contract_abi).encodeABI(
+                            fn_name='storeTournamentDetails',
+                            args=[
+                                tournament_match.tournament.id,
+                                str(match.winner),
+                            ]
+                        )
+                    }
+                    
+                    # Sign and send
+                    signed = w3.eth.account.sign_transaction(tx, private_key)
+                    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
+                    print(f"Tournament saved to blockchain: {tx_hash.hex()}")
+                    
+                except Exception as e:
+                    print(f"Blockchain save failed: {e}")
+
         except TournamentMatch.DoesNotExist:
             print(f"Next tournament match for tournament match does not exist.")
 
