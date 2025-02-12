@@ -59,7 +59,7 @@ async function renderPage(page) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
-	} 
+	}
 	// else {
 	// 	if (authenticated) {
 	// 		console.log("User authenticated, redirecting to home page.");
@@ -99,8 +99,7 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-      		// startGame(data.game_group, socket);
-			startGame3d(null, null, 1);
+			startGame3d(null, null);
 		} else if (page === "42") {
 			handle42Callback();
 		}
