@@ -15,6 +15,7 @@ function waitgame() {
 
         awaitModal = new MessageModal(MessageType.AWAIT);
         readyModal = new MessageModal(MessageType.READY);
+        giveUpModal = new MessageModal( );
 
         awaitModal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
             
@@ -34,20 +35,23 @@ function waitgame() {
                             JSON.stringify({
                                 type: "close_await",
                                 from: currentUser,
+                                game_group: data.game_group,
                             })
                         );
+                        giveUpModal.show(`You gave up`, "Loss by forfeit")
                         renderElement('overview');
                     }
                     else
                     {
-                        socket.send(
-                            JSON.stringify({
-                                type: 'random_ready',
-                                from: data.from,
-                                game_group: data.game_group,
-                                player: data.player,
-                            })
-                        )
+                        if (data.type != 'end_game')
+                            socket.send(
+                                JSON.stringify({
+                                    type: 'random_ready',
+                                    from: data.from,
+                                    game_group: data.game_group,
+                                    player: data.player,
+                                })
+                            );
                     }
                 });
             }
@@ -58,6 +62,13 @@ function waitgame() {
                 awaitModal.hide();
                 awaitModal.resolve(true);
             }
+            if (data.type === 'end_game')
+            {
+                readyModal.hide();
+                readyModal.resolve(true);
+                renderElement('overview');
+            }
+
         });
     }
     catch (error) {
