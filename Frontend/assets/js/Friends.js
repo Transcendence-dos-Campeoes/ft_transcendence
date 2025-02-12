@@ -6,7 +6,7 @@ class FriendSystem {
     this.setupEventListeners();
     this.loadPendingInvites();
     this.loadFriends();
-    socket.send(JSON.stringify({type: "update_lobby"}));
+    socket.send(JSON.stringify({ type: "update_lobby" }));
   }
 
   setupEventListeners() {
@@ -20,13 +20,14 @@ class FriendSystem {
       const response = await fetchWithAuth('/api/users/friends/');
       if (!response.ok) throw new Error('Failed to fetch friends');
 
-      this.renderFriends(response.json());
+      const friends = await response.json();  // Add await here
+      this.renderFriends(friends);
     } catch (error) {
       console.error("Error loading friends:", error);
     } finally {
       loadingOverlay.hide();
     }
-  } 
+  }
 
   async loadPendingInvites() {
     const loadingOverlay = new LoadingOverlay();
@@ -35,7 +36,8 @@ class FriendSystem {
       const response = await fetchWithAuth("/api/users/invites/");
       if (!response.ok) throw new Error('Failed to fetch pending invites');
 
-      this.renderPendingInvites(response.json());
+      const invites = await response.json();  // Add await here
+      this.renderPendingInvites(invites);
     } catch (error) {
       console.error("Error loading invites:", error);
     } finally {
@@ -83,7 +85,7 @@ class FriendSystem {
       this.loadPendingInvites();
       if (action === "accept") {
         this.loadFriends();
-        socket.send(JSON.stringify({type: "update_lobby"}));
+        socket.send(JSON.stringify({ type: "update_lobby" }));
       }
     } catch (error) {
       console.error("Error responding to invite:", error);
@@ -104,7 +106,7 @@ class FriendSystem {
       });
       if (response.ok) {
         this.loadFriends();
-        socket.send(JSON.stringify({type: "update_lobby"}));
+        socket.send(JSON.stringify({ type: "update_lobby" }));
       }
     } catch (error) {
       console.error("Error removing friend:", error);
