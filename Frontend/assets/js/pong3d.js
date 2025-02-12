@@ -377,32 +377,32 @@ class PongGame {
     }
 
     updateBall() {
-        // this.ball.position.x += this.ballVelocity.x;
-        // this.ball.position.y += this.ballVelocity.y;
-        // this.goalPosition = (this.fieldLength + 0.4) / 2;
-        // const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        // const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        // const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        // const fieldRight = (this.fieldLength + 0.5) / 2;
-        // if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-        //     this.ballVelocity.y *= -1;
-        // }
-        // if (this.ball.position.x >= fieldRight) {
-        //     this.player1Score++;
-        //     console.log("Player 1 Scored! Score:", this.player1Score);
-        //     //  score update for scorboard needed here
-        //     this.updateScoreboard();
-        //     this.resetBall();
-        // } else if (this.ball.position.x <= fieldLeft) {
-        //     this.player2Score++;
-        //     //  score update for scorboard needed here 
-        //     console.log("Player 2 Scored! Score:", this.player2Score);
-        //     this.resetBall();
-        //     this.updateScoreboard();
-        // }
-        // // Paddle collisions
-        // this.checkPaddleCollision(this.leftPaddle);
-        // this.checkPaddleCollision(this.rightPaddle);
+        this.ball.position.x += this.ballVelocity.x;
+        this.ball.position.y += this.ballVelocity.y;
+        this.goalPosition = (this.fieldLength + 0.4) / 2;
+        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
+        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
+        const fieldLeft = -(this.fieldLength + 0.5) / 2;
+        const fieldRight = (this.fieldLength + 0.5) / 2;
+        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
+            this.ballVelocity.y *= -1;
+        }
+        if (this.ball.position.x >= fieldRight) {
+            this.player1Score++;
+            console.log("Player 1 Scored! Score:", this.player1Score);
+            //  score update for scorboard needed here
+            this.updateScoreboard();
+            this.resetBall();
+        } else if (this.ball.position.x <= fieldLeft) {
+            this.player2Score++;
+            //  score update for scorboard needed here 
+            console.log("Player 2 Scored! Score:", this.player2Score);
+            this.resetBall();
+            this.updateScoreboard();
+        }
+        // Paddle collisions
+        this.checkPaddleCollision(this.leftPaddle);
+        this.checkPaddleCollision(this.rightPaddle);
     }
 
 

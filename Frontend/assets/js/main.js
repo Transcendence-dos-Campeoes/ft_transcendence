@@ -115,8 +115,7 @@ async function renderPage(page) {
 async function renderAuthPage(page, responseStruct) {
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
-	if (routerAuth.currentPage === page) return;
-
+	
 	try {
 		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
