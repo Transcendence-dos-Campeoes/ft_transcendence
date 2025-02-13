@@ -28,10 +28,10 @@ class PongGame {
 
 
         // DEFINE PLAYER AND CAMERA
-        this.user = localStorage.getItem("username") 
+        this.user = localStorage.getItem("username")
         this.player = this.user === this.player1Name ? "player1" : "player2";
         this.currentCamera = this.player === "player1" ? "player1Camera" : "player2Camera";
-        
+
         //player stuff
         this.player1 = { position: { y: 0 } };
         this.player2 = { position: { y: 0 } };
@@ -108,9 +108,9 @@ class PongGame {
     }
 
     setupSocketListeners() {
-        this.socket.addEventListener('message',  (event) => {
+        this.socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
-    
+
             if (data.type === 'game_update') {
                 this.targetBallPosition.x = data.ball.x;
                 this.targetBallPosition.y = data.ball.y;
@@ -697,7 +697,7 @@ class PongGame {
 
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - this.paddleLenght / 2; // Limit paddles within field bounds
-    
+
         if (this.currentCamera === "topCamera") {
             // Controls for top view
             if (this.player === "player1") {
@@ -733,11 +733,11 @@ class PongGame {
                 }
             }
         }
-    
+
         // Interpolate paddle positions
         this.leftPaddle.position.y += (this.targetPlayer1Position - this.leftPaddle.position.y) * 0.3;
         this.rightPaddle.position.y += (this.targetPlayer2Position - this.rightPaddle.position.y) * 0.3;
-    
+
         // Send paddle position only if it has changed
         const paddlePosition = this.player === "player1" ? this.leftPaddle.position.y : this.rightPaddle.position.y;
         if (this.lastPlayerPosition[this.player] !== paddlePosition) {
@@ -750,18 +750,18 @@ class PongGame {
         // Update ball position based on its velocity
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
-    
+
         this.goalPosition = (this.fieldLength + 0.4) / 2;
         const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
         const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
         const fieldLeft = -(this.fieldLength + 0.5) / 2;
         const fieldRight = (this.fieldLength + 0.5) / 2;
-    
+
         // Check for collisions with the top and bottom walls
         if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
             this.ballVelocity.y *= -1;
         }
-    
+
         // Check for goals
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
@@ -774,7 +774,7 @@ class PongGame {
             this.updateScoreboard();
             this.resetBall();
         }
-    
+
         // Check for game over
         if (this.player1Score >= 5 || this.player2Score >= 5) {
             console.log("Game Over!");
@@ -783,11 +783,11 @@ class PongGame {
             else
                 this.stopGame(this.player2Name);
         }
-    
+
         // Check for paddle collisions
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
-    
+
         // Throttle sending ball position
         const now = Date.now();
         if (now - this.lastSentTime > 300) {
@@ -844,6 +844,9 @@ class PongGame {
         this.isRunning = false;
         window.removeEventListener("keydown", this.handleKeyDown);
         window.removeEventListener("keyup", this.handleKeyUp);
+        window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
+        window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        window.removeEventListener('popstate', this.handlePopState.bind(this));
         // Remove other event listeners, stop animations, etc.
     }
 
