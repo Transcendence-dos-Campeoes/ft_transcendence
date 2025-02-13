@@ -51,6 +51,9 @@ class PongGame {
         this.targetPlayer2Position = 0;
         this.lastPlayerPosition = { player1: 0, player2: 0 };
         this.isRunning = true;
+
+        this.ingame_modal = null;
+
         console.log("PongGame Initialized!");
         this.init();
     }
@@ -125,6 +128,12 @@ class PongGame {
             }
             if (data.type === 'end_game') {
                 this.handleEndGame();
+            }
+            if (data.type === 'player_warning') {
+                this.handlePlayerWarning(data);
+            }
+            if (data.type === 'resume_game') {
+                this.handleResumeGame(data);
             }
         });
     }
@@ -639,6 +648,51 @@ class PongGame {
             }
         });
         window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+        window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        window.addEventListener('popstate', this.handlePopState.bind(this));
+
+    }
+
+    async handleBeforeUnload(event) {
+        this.sendWarningToOpponent();
+        this.forfeitGame();
+        renderPage("home");
+    }
+
+    async handlePopState(event) {
+        this.sendWarningToOpponent();
+        this.forfeitGame();
+        renderPage("home");
+    }
+
+    sendWarningToOpponent() {
+        this.socket.send(JSON.stringify({
+            type: 'player_warning',
+            user: this.user,
+            game_group: this.game_group,
+            message: `${this.user} might be giving up.`
+        }));
+        this.isRunning = false; // Pause the game
+    }
+
+    sendResumeToOpponent() {
+        this.socket.send(JSON.stringify({
+            type: 'resume_game',
+            user: this.user,
+            game_group: this.game_group,
+            message: `${this.user} has resumed the game.`
+        }));
+        this.isRunning = true; // Resume the game
+    }
+
+    handlePlayerWarning(data) {
+        this.ingame_modal = new MessageModal(MessageType.ERROR);
+        this.ingame_modal.show(`${data.user} gave up` , "Warning");
+        this.isRunning = false; // Pause the game
+    }
+
+    handleResumeGame(data) {
+        this.isRunning = true; // Resume the game
     }
 
     updatePaddles() {
@@ -736,9 +790,10 @@ class PongGame {
     
         // Throttle sending ball position
         const now = Date.now();
-        if (now - this.lastSentTime > 100) { // Send every 100ms
-            this.sendBallPosition();
-            this.lastSentTime = now;
+        if (now - this.lastSentTime > 300) {
+            //if (this.player == "player1")
+                this.sendBallPosition();
+                this.lastSentTime = now;
         }
     }
 
@@ -803,6 +858,22 @@ class PongGame {
             player1Score: this.player1Score,
             player2Score: this.player2Score,
             winner: winner
+        }));
+        this.cleanup();
+    }
+
+    
+    forfeitGame() {
+        const forfeitingPlayer = this.user === this.player1Name ? "player1" : "player2";
+    
+        this.socket.send(JSON.stringify({
+            type: 'end_game',
+            user: localStorage.getItem("username"),
+            game_group: this.game_group,
+            player1: this.player1,
+            player2: this.player2,
+            player1Score: forfeitingPlayer === "player1" ? 0 : 3,
+            player2Score: forfeitingPlayer === "player2" ? 0 : 3,
         }));
         this.cleanup();
     }

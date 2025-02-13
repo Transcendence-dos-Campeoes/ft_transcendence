@@ -75,10 +75,18 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             self.handle_player_move(data)
         elif data['type'] == 'ready':
             self.starting_game(data)
+
+        #game updates
         elif data['type'] == 'game_update':
             self.handle_game_update(data)
         elif data['type'] == 'end_game':
             self.handle_end_game(data)
+        elif data['type'] == 'player_warning':
+            self.handle_player_warning(data)
+        elif data['type'] == 'resume_game':
+            self.handle_resume_game(data)
+
+        #random game
         elif data['type'] == 'waiting_game':
             self.handle_waitlist(data)
         elif data['type'] == 'random_ready':
@@ -228,6 +236,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(event))
          # Create a new match instance
 
+    ################ GAME UPDATE ###########################
+
     def handle_player_move(self, data):
         async_to_sync(self.channel_layer.group_send)(
             data['game_group'], 
@@ -253,6 +263,24 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         }
         )
     
+    def handle_player_warning(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+        data['game_group'], 
+        {
+            "type": 'player_warning',
+            "user": data['user'],
+            "game_group":  data['game_group'],
+        })
+
+    def handle_resume_game(self, data):
+        async_to_sync(self.channel_layer.group_send)(
+        data['game_group'], 
+        {
+            "type": 'resume_game',
+            "user": data['user'],
+            "game_group":  data['game_group'],
+        })
+    
 
     def game_update(self, event):
         # if (event['user'] != self.scope['user'].username):
@@ -261,6 +289,17 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def player_move(self, event):
         if (event['user'] != self.scope['user'].username):
             self.send(text_data=json.dumps(event))
+
+    def player_warning(self, event):
+        if (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+    
+    def resume_game(self, event):
+        if (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+
+
+    ###########################################################
 
     def handle_end_game(self, data):
 

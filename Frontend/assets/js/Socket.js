@@ -21,16 +21,18 @@ class Socket {
     };
 
     this.socket.onclose = async (event) => {
-        this.isConnected = false;
-        console.log("WebSocket closed:", event);
-        if (event.code === 1006) { // Abnormal closure
-          const newToken = await refreshToken();
-          if (newToken) {
-            this.connectWebSocket(newToken); // Reconnect with the new token
-          } else {
-            renderPage('login');
-          }
-        }
+        // this.isConnected = false;
+        // const newToken = await refreshToken();
+        // this.socket.onopen = NULL;
+        // this.socket.onclose = NULL;
+        // this.socket.onerror = NULL;
+        // this.socket.onmessage = NULL;
+        // if (newToken) {
+        //   this.connectWebSocket(newToken);
+        // } else {
+        //   renderPage('login');
+        // }
+        logout();
     };
 
     this.socket.onerror = (error) => {
