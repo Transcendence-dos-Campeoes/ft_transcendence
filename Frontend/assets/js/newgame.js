@@ -54,6 +54,8 @@ async function waitgame() {
                                     from: data.from,
                                     game_group: data.game_group,
                                     player: data.player,
+                                    player1: data.player1,
+                                    player2: data.player2
                                 })
                             );
                     }

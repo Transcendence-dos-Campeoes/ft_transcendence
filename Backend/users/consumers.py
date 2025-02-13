@@ -60,7 +60,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
-        print(data)
+        # print(data)
         if data['type'] == 'lobby':
             self.send_online_players()
         if data['type'] == 'invite':
@@ -172,14 +172,18 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'type': 'start_game',
                 'from': event['from'],
                 'game_group': game_group_name,
-                'player': 'player2'
+                'player': 'player2',
+                'player1': event['to'],
+                'player2': event['from'],
             }))
 
             async_to_sync(self.channel_layer.group_send)(game_group_name, {
                 'type': 'start_game',
                 'from': event['from'],
                 'game_group': game_group_name,
-                'player': 'player1'
+                'player': 'player1',
+                'player1': event['to'],
+                'player2': event['from'],
             })
             match_serializer = MatchSerializer(data={
             'player2': SiteUser.objects.get(username=event['from']).id,
@@ -227,9 +231,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             data['game_group'], 
             {
                 "type": "player_move",
+                "user": data['user'],
                 "player": data['player'],
-                "velocityY": data['velocityY'],
-                "user": data['user']
+                "game_group": data['game_group'],
+                "position": data['position'],
             })
     
     def handle_game_update(self, data):
@@ -237,16 +242,24 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         data['game_group'], 
         {
             "type": "game_update",
-            "player1": data['player1'],
-            "player2": data['player2'],
-            "ball": data['ball'],
-            "game_group": data['game_group'],
             "user": data['user'],
+            "ball": data['ball'],
+            "ballVelocity": data['ballVelocity'],
+            "game_group": data['game_group'],
             "player1Score": data['player1Score'],
             "player2Score": data['player2Score']
         }
         )
     
+
+    def game_update(self, event):
+        # if (event['user'] != self.scope['user'].username):
+        self.send(text_data=json.dumps(event))
+        
+    def player_move(self, event):
+        if (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
+
     def handle_end_game(self, data):
 
         async_to_sync(self.channel_layer.group_send)(
@@ -301,14 +314,6 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             except:
                 print(f"Match {match.id} is not related to any tournament")
 
-
-    def game_update(self, event):
-        if (event['user'] != self.scope['user'].username):
-            self.send(text_data=json.dumps(event))
-        
-    def player_move(self, event):
-        self.send(text_data=json.dumps(event))
-
     def end_game(self, event):
         self.send(text_data=json.dumps(event))
 
@@ -346,14 +351,18 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'from': user_in_group,
                 'game_group': group,
                 'player': 'player2',
-                'opponent': user_in_group
+                'opponent': user_in_group,
+                'player1': user_in_group,
+                'player2' : self.scope['user'].username
             }))
             async_to_sync(self.channel_layer.group_send)(group, {
                 'type': 'random_game',
                 'from':user_in_group,
                 'game_group': group,
                 'player': 'player1',
-                'opponent':  self.scope['user'].username
+                'opponent':  self.scope['user'].username,
+                'player1': user_in_group,
+                'player2' : self.scope['user'].username
             })
             match_serializer = MatchSerializer(data={
             'player2': SiteUser.objects.get(username=self.scope['user'].username).id,
@@ -383,13 +392,17 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'type': 'start_game',
                 'from': event['from'],
                 'game_group': event['game_group'],
-                'player': event['player']
+                'player': event['player'],
+                'player1': event['player1'],
+                'player2': event['player2'],
             }))
             async_to_sync(self.channel_layer.group_send)(event['game_group'], {
                 'type': 'start_game',
                 'from': event['from'],
                 'game_group': event['game_group'],
-                'player': event['player']
+                'player': event['player'],
+                'player1': event['player1'],
+                'player2': event['player2'],
             })
     
 
@@ -494,28 +507,34 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
-                        'player': 'player1'
+                        'player': 'player1',
                         'player1': event['from'],
-                        'player2': ,
+                        'player2': event['to'],
                     }))
                     async_to_sync(self.channel_layer.group_send)(game_group_name, {
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
-                        'player': 'player2'
+                        'player': 'player2',
+                        'player1': event['from'],
+                        'player2': event['to'],
                     })
                 else:
                     self.send(text_data=json.dumps({
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
-                        'player': 'player2'
+                        'player': 'player2',
+                        'player1': event['to'],
+                        'player2': event['from'],
                     }))
                     async_to_sync(self.channel_layer.group_send)(game_group_name, {
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
-                        'player': 'player1'
+                        'player': 'player1',
+                        'player1': event['to'],
+                        'player2': event['from'],
                     })
             else:
                 print("Match not found.")
