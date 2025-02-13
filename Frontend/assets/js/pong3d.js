@@ -141,7 +141,6 @@ class PongGame {
     async handleEndGame() {
         await this.wait(1200);
         this.cleanup();
-        renderPage("home");
     }
 
     wait(ms) {
@@ -656,13 +655,11 @@ class PongGame {
     async handleBeforeUnload(event) {
         this.sendWarningToOpponent();
         this.forfeitGame();
-        renderPage("home");
     }
 
     async handlePopState(event) {
         this.sendWarningToOpponent();
         this.forfeitGame();
-        renderPage("home");
     }
 
     sendWarningToOpponent() {
@@ -687,7 +684,7 @@ class PongGame {
 
     handlePlayerWarning(data) {
         this.ingame_modal = new MessageModal(MessageType.ERROR);
-        this.ingame_modal.show(`${data.user} gave up` , "Warning");
+        this.ingame_modal.show(`${data.user} gave up`, "Warning");
         this.isRunning = false; // Pause the game
     }
 
@@ -792,8 +789,8 @@ class PongGame {
         const now = Date.now();
         if (now - this.lastSentTime > 300) {
             //if (this.player == "player1")
-                this.sendBallPosition();
-                this.lastSentTime = now;
+            this.sendBallPosition();
+            this.lastSentTime = now;
         }
     }
 
@@ -848,6 +845,7 @@ class PongGame {
         window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
         window.removeEventListener('popstate', this.handlePopState.bind(this));
         // Remove other event listeners, stop animations, etc.
+        renderPage("home");
     }
 
     stopGame(winner) {
@@ -865,10 +863,10 @@ class PongGame {
         this.cleanup();
     }
 
-    
+
     forfeitGame() {
         const forfeitingPlayer = this.user === this.player1Name ? "player1" : "player2";
-    
+
         this.socket.send(JSON.stringify({
             type: 'end_game',
             user: localStorage.getItem("username"),
