@@ -82,7 +82,12 @@ async function lobbyLoad() {
           });
           const inviteButtons = document.querySelectorAll(".invite-button");
           inviteButtons.forEach((button) => {
-            button.addEventListener("click", function (event) {
+            button.addEventListener("click", async function (event) {
+              const authenticated = await isAuthenticated();
+              if (!authenticated) {
+                console.log("User not authenticated, redirecting to login page.");
+                renderPage('login');
+              }
               event.preventDefault();
               const username = button.getAttribute("data-username");
               socket.send(

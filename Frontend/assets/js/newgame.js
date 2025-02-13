@@ -1,6 +1,11 @@
-function waitgame() {
+async function waitgame() {
 
     const loadingOverlay = new LoadingOverlay();
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
+      console.log("User not authenticated, redirecting to login page.");
+      renderPage('login');
+    }
 
     try {
         loadingOverlay.show();
@@ -18,7 +23,6 @@ function waitgame() {
         giveUpModal = new MessageModal( );
 
         awaitModal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
-
             if (!accept) {
                 socket.send(
                     JSON.stringify({
@@ -26,7 +30,7 @@ function waitgame() {
                         from: currentUser,
                     })
                 );
-                renderElement('overview');
+                renderPage('home');
             }
             else if (accept) {
                 readyModal.show(`Playing against ${data.opponent}`, "Ready?").then((accept) => {
@@ -50,6 +54,8 @@ function waitgame() {
                                     from: data.from,
                                     game_group: data.game_group,
                                     player: data.player,
+                                    player1: data.player1,
+                                    player2: data.player2
                                 })
                             );
                     }

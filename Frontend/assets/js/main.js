@@ -99,7 +99,9 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-			startGame3d(null, null);
+      		// startGame(data.game_group, socket);
+			console.log(data);
+			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
 		}
@@ -182,6 +184,7 @@ async function fetchWithAuth(url, options = {}) {
 		}
 		return response;
 	} catch (error) {
+		console.error("Error in fetchWithAuth:", error);
 		logout();
 		throw error;
 	} finally {
