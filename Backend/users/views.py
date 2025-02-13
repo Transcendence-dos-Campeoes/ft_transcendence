@@ -264,10 +264,16 @@ def getFriendProfile(request, username):
         losses = total_matches - wins
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
+        # Encode profile image in base64
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -391,6 +397,13 @@ def getUserSettings(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSelectedMap(request):
+    selected_map = request.user.selected_map
+    print(f"Slc {selected_map}")
+    return Response({'map_number': selected_map}, status=status.HTTP_200_OK)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getMaps(request):

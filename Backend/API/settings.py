@@ -23,6 +23,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", "KEY")
+INFURA_URL = os.environ.get('INFURA_URL')
+PRIVATE_KEY = os.environ.get('PRIVATE_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!

@@ -11,3 +11,4 @@ requests==2.32.2
 Pillow==11.1
 pyotp==2.9.0
 qrcode==8.0
+web3==6.15.1

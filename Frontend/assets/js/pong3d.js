@@ -809,7 +809,28 @@ class PongGame {
 }
 
 /////    function called on main js ///////////////
-function startGame3d(data, socket, gameMap) {
+async function startGame3d(data, socket) {
+    const loadingOverlay = new LoadingOverlay();
+
+    let selectedMap;
+    try {
+        loadingOverlay.show();
+        const response = await fetchWithAuth("/api/users/selectedmap/");
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch selected map");
+        }
+
+        const mapData = await response.json();
+        console.log(mapData);
+
+        selectedMap = mapData.map_number || 1;
+        console.log("Selected map:", selectedMap);
+    } catch {
+        displayMessage("Failed to load profile data", MessageType.ERROR);
+    } finally {
+        loadingOverlay.hide();
+    }
     console.log("Game starting...");
     const pongGame = new PongGame(data, socket, gameMap);
 }
