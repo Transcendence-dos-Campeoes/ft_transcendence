@@ -36,7 +36,7 @@ services:
 
   server:
     ports:
-      - 443:443
+      - 4000:443
     expose:
       - 443
     build: ./Server
@@ -50,8 +50,6 @@ services:
   redis:
     image: redis:5
     restart: always
-    ports:
-      - 6379:6379
 
   prometheus:
     image: prom/prometheus
@@ -65,8 +63,6 @@ services:
 
   alertmanager:
     image: prom/alertmanager
-    ports:
-      - "9093:9093"
     env_file:
       - ./.env
     volumes:
@@ -78,8 +74,6 @@ services:
   node-exporter:
     image: prom/node-exporter
     container_name: node-exporter
-    ports:
-      - "9100:9100"
     restart: always
     volumes:
       - /proc:/host/proc:ro
