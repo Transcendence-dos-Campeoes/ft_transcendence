@@ -101,7 +101,7 @@ async function renderPage(page) {
 		} else if (page === "pong") {
       		// startGame(data.game_group, socket);
 			console.log(data);
-			startGame3d(data, socket, 1);
+			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
 		}
