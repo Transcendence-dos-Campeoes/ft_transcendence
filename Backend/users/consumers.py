@@ -250,18 +250,71 @@ class OnlinePlayersConsumer(WebsocketConsumer):
             })
     
     def handle_game_update(self, data):
+        ball_position = data['ball']
+        ball_velocity = data['ballVelocity']
+        field_length = 8.5
+        field_width = 5
+        ball_size = 0.2  # Assuming ball size is 0.2, adjust as needed
+    
+        # Update ball position
+        ball_position['x'] += ball_velocity['x']
+        ball_position['y'] += ball_velocity['y']
+    
+        # Check for collisions with the top and bottom walls
+        field_top = field_width / 2 - ball_size / 2
+        field_bottom = -field_width / 2 + ball_size / 2
+        if ball_position['y'] >= field_top or ball_position['y'] <= field_bottom:
+            ball_velocity['y'] *= -1
+    
+        # Check for goals
+        field_left = -(field_length + 0.5) / 2
+        field_right = (field_length + 0.5) / 2
+        player1_score = data['player1Score']
+        player2_score = data['player2Score']
+        if ball_position['x'] >= field_right:
+            player1_score += 1
+            ball_position = {'x': 0, 'y': 0}
+            ball_velocity = {'x': -0.05, 'y': 0.02}
+        elif ball_position['x'] <= field_left:
+            player2_score += 1
+            ball_position = {'x': 0, 'y': 0}
+            ball_velocity = {'x': 0.05, 'y': 0.02}
+    
+        # Check for game over
+        if player1_score >= 5 or player2_score >= 5:
+            self.handle_end_game({
+                'user': data['user'],
+                'game_group': data['game_group'],
+                'player1Score': player1_score,
+                'player2Score': player2_score
+            })
+            return
+    
+        # Broadcast updated ball position and velocity to all clients
         async_to_sync(self.channel_layer.group_send)(
-        data['game_group'], 
-        {
-            "type": "game_update",
-            "user": data['user'],
-            "ball": data['ball'],
-            "ballVelocity": data['ballVelocity'],
-            "game_group": data['game_group'],
-            "player1Score": data['player1Score'],
-            "player2Score": data['player2Score']
-        }
+            data['game_group'],
+            {
+                "type": "game_update",
+                "user": data['user'],
+                "ball": ball_position,
+                "ballVelocity": ball_velocity,
+                "game_group": data['game_group'],
+                "player1Score": player1_score,
+                "player2Score": player2_score
+            }
         )
+            # async_to_sync(self.channel_layer.group_send)(
+        # data['game_group'], 
+        # {
+        #     "type": "game_update",
+        #     "user": data['user'],
+        #     "ball": data['ball'],
+        #     "ballVelocity": data['ballVelocity'],
+        #     "game_group": data['game_group'],
+        #     "player1Score": data['player1Score'],
+        #     "player2Score": data['player2Score']
+        # }
+        # )
     
     def handle_player_warning(self, data):
         async_to_sync(self.channel_layer.group_send)(

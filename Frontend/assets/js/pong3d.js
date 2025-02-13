@@ -108,7 +108,7 @@ class PongGame {
     }
 
     setupSocketListeners() {
-        this.socket.addEventListener('message',  (event) => {
+        this.socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
     
             if (data.type === 'game_update') {
@@ -119,6 +119,7 @@ class PongGame {
                 this.player2Score = data.player2Score;
                 this.updateScoreboard();
             }
+    
             if (data.type === 'player_move') {
                 if (data.player === 'player1') {
                     this.targetPlayer1Position = data.position;
@@ -126,12 +127,15 @@ class PongGame {
                     this.targetPlayer2Position = data.position;
                 }
             }
+    
             if (data.type === 'end_game') {
                 this.handleEndGame();
             }
+    
             if (data.type === 'player_warning') {
                 this.handlePlayerWarning(data);
             }
+    
             if (data.type === 'resume_game') {
                 this.handleResumeGame(data);
             }
@@ -747,19 +751,15 @@ class PongGame {
     }
 
     updateBall() {
-        // Update ball position based on its velocity
-        this.ball.position.x += this.ballVelocity.x;
-        this.ball.position.y += this.ballVelocity.y;
-    
-        this.goalPosition = (this.fieldLength + 0.4) / 2;
-        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        const fieldRight = (this.fieldLength + 0.5) / 2;
-    
-        // Check for collisions with the top and bottom walls
-        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-            this.ballVelocity.y *= -1;
+        // Interpolate ball position for smooth movement
+        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.1;
+        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.1;
+
+        // Throttle sending ball position
+        const now = Date.now();
+        if (now - this.lastSentTime > 300) {
+            this.sendBallPosition();
+            this.lastSentTime = now;
         }
     
         // Check for goals
@@ -767,12 +767,10 @@ class PongGame {
             this.player1Score++;
             console.log("Player 1 Scored! Score:", this.player1Score);
             this.updateScoreboard();
-            this.resetBall();
         } else if (this.ball.position.x <= fieldLeft) {
             this.player2Score++;
             console.log("Player 2 Scored! Score:", this.player2Score);
             this.updateScoreboard();
-            this.resetBall();
         }
     
         // Check for game over
@@ -788,13 +786,6 @@ class PongGame {
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
     
-        // Throttle sending ball position
-        const now = Date.now();
-        if (now - this.lastSentTime > 300) {
-            //if (this.player == "player1")
-                this.sendBallPosition();
-                this.lastSentTime = now;
-        }
     }
 
     sendBallPosition() {
