@@ -835,6 +835,9 @@ class PongGame {
         this.isRunning = false;
         window.removeEventListener("keydown", this.handleKeyDown);
         window.removeEventListener("keyup", this.handleKeyUp);
+        window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
+        window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        window.removeEventListener('popstate', this.handlePopState.bind(this));
         // Remove other event listeners, stop animations, etc.
     }
 
