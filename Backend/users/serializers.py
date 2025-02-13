@@ -2,9 +2,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import SiteUser
-from .models import Friend
+from .models import SiteUser, Friend
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 
 
 class SiteUserSerializer(serializers.ModelSerializer):
@@ -99,3 +99,17 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         validated_data['requester'] = self.context['request'].user
         validated_data['status'] = 'pending'
         return super().create(validated_data)
+
+class FriendsSerializer(serializers.ModelSerializer):
+    friends = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SiteUser
+        fields = ['id', 'username', 'friends']
+
+    def get_friends(self, obj):
+        friends = Friend.objects.filter(
+            (Q(requester=obj) & Q(status='accepted')) | 
+            (Q(receiver=obj) & Q(status='accepted'))
+        )
+        return [{'id': friend.id, 'username': friend.receiver.username if friend.requester == obj else friend.requester.username} for friend in friends]

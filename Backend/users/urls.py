@@ -7,9 +7,13 @@ urlpatterns = [
     path('logout/', views.logoutUser, name='logout-user'),
     path('delete/', views.deleteUser, name='delete-user'),
     path('users/', views.getUsersData, name='get_users_data'),
+    path('verify/', views.verify, name='verify_user'),
+    path('selectedmap/', views.getSelectedMap, name='selectedmap'),
 	path('oauth_callback/', views.oauth_callback),
     path('settings/', views.getUserSettings, name='get_user_settings'),
+    path('settings/maps/', views.getMaps, name='get_maps'),
     path('settings/update/', views.updateUserProfile, name='update_user_profile'),
+    path('settings/map/update/', views.updateMap, name='update_map'),
     path('settings/update/password/', views.updateUserPassword, name='update_user_password'),
     path('profile/', views.getUserProfile, name='get_user_profile'),
     path('profile/<str:username>/', views.getFriendProfile, name='get_friend_profile'),
@@ -21,5 +25,8 @@ urlpatterns = [
     path('invite/update/', views.changeStatusInvite, name='change_status_invite'),
 	path('twofa/enable/', views.enable_two_fa, name='two_fa_enable'),
 	path('twofa/verify/', views.verify_two_fa, name='two_fa_enable'),
-	path('check_status/', views.check_user_status, name='check_user_status')
+	path('check_status/', views.check_user_status, name='check_user_status'),
+	path('setRecoverOTP/', views.setRecoverOTP, name='set_recover_OTP'),
+	path('checkRecoverOTP/', views.checkRecoverOTP, name='checkRecoverOTP'),
+	path('get_user_friends/', views.get_user_friends, name='get_user_friends'),
 ]

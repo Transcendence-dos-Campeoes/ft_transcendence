@@ -1,0 +1,27 @@
+<div class="screen">
+	<div class="container-fluid overflow-auto d-flex flex-column h-100">
+		<div class="row mt-4 mb-2 justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
+				<h1>Recover 2FA</h1>
+
+				<form id="twoFaRecoverForm">
+					<div class="mb-3">
+						<label for="emailInputRecover" class="form-label">Enter your email:</label>
+						<input type="email" class="form-control" id="emailInputRecover" required>
+					</div>
+					<button type="button" id="request" class="btn btn-success">Request OTP</button>
+					
+					<div class="mb-3">
+						<label for="otpInputRecover" class="form-label">Enter recovery code:</label>
+						<input type="text" class="form-control" id="otpInputRecover" required>
+					</div>
+
+					<div class="d-grid gap-2 d-md-flex">
+						<button type="submit" class="btn btn-success">Verify OTP</button>
+						<button type="button" id="cancel" class="btn btn-danger">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,24 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+<div class="screen">
+	<div class="container-fluid overflow-auto d-flex flex-column h-100">
+		<div class="row mt-4 mb-2 justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
+				<h1>Enable 2FA</h1>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Enable Two-Factor Authentication</title>
-</head>
+				<form id="twoFaEnableForm">
+					<div class="mb-3">
+						<h5>Scan the QR code with your authenticator
+							app:</h5>
+						<div class="w-50 mx-auto">
+							<img id="qrCodeImage" class="img-fluid" alt="QR Code" style="max-width: 200px;">
+						</div>
+					</div>
 
-<body>
-	<h1>Enable Two-Factor Authentication</h1>
-	<div>
-		<p>Scan the QR code below with your authenticator app:</p>
-		<img id="qrCodeImage" alt="QR Code for 2FA" style="width: 200px; height: 200px;">
+					<div class="mb-3">
+						<label for="otpCode" class="form-label">Enter the OTP code:</label>
+						<input type="text" class="form-control" id="otpCode" required>
+					</div>
+
+					<div class="d-grid gap-2 d-md-flex">
+						<button type="submit" class="btn btn-success">Enable 2FA</button>
+						<button type="button" id="cancel" class="btn btn-danger">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
-	<div>
-		<p>Enter the OTP code from your authenticator app:</p>
-		<input type="text" id="otpCode" placeholder="Enter OTP code">
-		<button onclick="verifyOtpCode()">Verify OTP</button>
-	</div>
-	<script src="assets/js/2fa.js"></script>
-</body>
-
-</html>
+</div>

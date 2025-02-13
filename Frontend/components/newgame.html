@@ -1,22 +1,7 @@
-<div class="container-fluid p-4">
-  <div class="row">
-    <div class="col-12">
-      <div class="card bg-transparent border-light">
-        <div class="card-header">
-          <h4>Create New Match</h4>
-        </div>
-        <div class="card-body">
-          <form id="new-match-form">
-            <div class="mb-3">
-              <label class="form-label">Player 2</label>
-              <select class="form-select" id="player2-select" required>
-                <option value="" disabled selected>Select opponent</option> 
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Create Match</button>
-          </form>
-        </div>
-      </div>
+<div id="loading-screen" class="d-none">
+  <div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="spinner-border text-primary" role="status">
+      <span >Loading...</span>
     </div>
   </div>
 </div>

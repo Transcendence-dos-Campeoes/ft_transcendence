@@ -85,6 +85,7 @@ function resetValues() {
 
 function startGame(gameGroup, socket) {
         resetValues();
+        
         if (data['player'] === "player1")
         {
             isHost = true;
@@ -100,7 +101,6 @@ function startGame(gameGroup, socket) {
         initializeGame(socket, gameGroup, actualPlayer);
         socket.onmessage = async function(event) {
             const data = JSON.parse(event.data);
-            console.log("Game message received:", data); // Debugging line
             
             if (data.type === 'game_update') {
                 player1 = data.player1;
@@ -114,15 +114,25 @@ function startGame(gameGroup, socket) {
                     if (data.player == 'player1')
                         player1.velocityY = data.velocityY;
                     else
-                    player2.velocityY = data.velocityY;
+                        player2.velocityY = data.velocityY;
             }
             if (data.type === 'end_game')
             {
-                //cancelAnimationFrame(animationFrameId);
                 await wait(1200);
                 renderPage("home");
                 return;
             }
+        }
+        if (!document.keyListenersAdded) {
+            document.addEventListener("keydown", function(event) {
+                movePlayer(event, actualPlayer, socket, gameGroup);
+            });
+    
+            document.addEventListener("keyup", function(event) {
+                stopPlayer(event, actualPlayer, socket, gameGroup);
+            });
+    
+            document.keyListenersAdded = true; // Prevents multiple event bindings
         }
 }
 
@@ -137,23 +147,12 @@ function initializeGame(socket, gameGroup, actualPlayer) {
     context = board.getContext("2d");
 
     if (!gameRunning) return;
-
+    
     animationFrameId = requestAnimationFrame(() => update(context, socket, gameGroup));
     draw(context);
 
     // Handle player movement
-            
-    if (!document.keyListenersAdded) {
-        document.addEventListener("keydown", function(event) {
-            movePlayer(event, actualPlayer, socket, gameGroup);
-        });
-
-        document.addEventListener("keyup", function(event) {
-            stopPlayer(event, actualPlayer, socket, gameGroup);
-        });
-
-        document.keyListenersAdded = true; // Prevents multiple event bindings
-    }
+        
 }
 
 function wait(ms) {
@@ -197,7 +196,7 @@ async function update(context, socket, gameGroup) {
         }
 
     // Draw the updated state
-    
+        console.log(socket);
     // Send game state updates if the current client is the host
         const currentUser = localStorage.getItem("username");
         socket.send(JSON.stringify({
@@ -348,171 +347,3 @@ function stopPlayer(event, player, socket, gameGroup) {
         }
     }
 }
-
-// function movePlayer(event, player, socket, gameGroup){
-    
-//     const currentUser = localStorage.getItem("username");
-    
-//     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-//         if (player === 'player1') {
-//             player1.velocityY = (event.key === 'ArrowUp') ? -5 : 5;
-//             socket.send(JSON.stringify({
-//                 type: 'player_move',
-//                 player: 'player1',
-//                 velocityY: player1.velocityY,
-//                 game_group: gameGroup,
-//                 user: currentUser
-//             }));
-//         } else if (player === 'player2'){
-//             player2.velocityY = (event.key === 'ArrowUp') ? -5 : 5;
-//             socket.send(JSON.stringify({
-//                 type: 'player_move',
-//                 player: 'player2',
-//                 velocityY: player2.velocityY,
-//                 game_group: gameGroup,
-//                 user: currentUser
-//             }));
-//         }
-//     }
-// }
-
-// function stopPlayer(event, player, socket, gameGroup){
-//     const currentUser = localStorage.getItem("username");
-//     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-//         if (player === 'player1') {
-//             player1.velocityY = 0;
-//         } else if (player === 'player2') {
-//             player2.velocityY = 0;
-//         }
-//         socket.send(JSON.stringify({
-//             type: 'player_move',
-//             player: player,
-//             velocityY: 0,
-//             game_group: gameGroup,
-//             user: currentUser
-//         }));
-//     }
-// }
-
-// function initializeGame(socket, gameGroup, data, player)
-// {
-//     board = document.getElementById("board");
-//     board.height = boardHeight;
-//     board.width = boardWidth;
-//     context = board.getContext("2d");
-//     //initial players position
-//     context.fillStyle = "skyblue";
-//     context.fillRect(player1.x, player1.y, player1.width, player1.height);
-    
-//     context.fillRect(player2.x, player2.y, player2.width, player2.height);
-
-    
-//     //initial ball position
-//     context.fillStyle = "white";
-//     context.fillRect(ball.x, ball.y, ball.width, ball.height);
-    
-//     requestAnimationFrame(() => update(context, socket, gameGroup, player));
-//     document.addEventListener("keydown", function(event) {
-//         movePlayer(event, data['player'], socket, gameGroup);
-//     });
-//     document.addEventListener("keyup", function(event) {
-//         stopPlayer(event, data['player'], socket, gameGroup);
-//     });
-// }
-
-// function update(context, socket, gameGroup, player) {
-//     requestAnimationFrame(() => update(context, socket, gameGroup, player));
-//     context.clearRect(0, 0, board.width, board.height);
-
-//     context.fillStyle = "skyblue";
-
-//     //redraw players
-//     let nextPlayer1Y = player1.y + player1.velocityY;
-//     if (!outOfBounds(nextPlayer1Y))
-//         player1.y = nextPlayer1Y;
-//     context.fillRect(player1.x, player1.y, player1.width, player1.height);
-
-//     let nextPlayer2Y = player2.y + player2.velocityY;
-//     if (!outOfBounds(nextPlayer2Y))
-//         player2.y = nextPlayer2Y;
-//     context.fillRect(player2.x, player2.y, player2.width, player2.height);
-
-//     //redraw ball
-//     context.fillStyle = "white";
-//     ball.x += ball.velocityX;
-//     ball.y += ball.velocityY;
-//     context.fillRect(ball.x, ball.y, ball.width, ball.height);
-
-//     //ball touches wall
-//     if (ball.y <= 0 || ball.y + ballHeight >= boardHeight)
-//         ball.velocityY *= -1;
-
-//     //ball hits player
-//     if(detectCollision(ball, player1))
-//     {
-//         if (ball.x <= player1.x + player1.width)
-//             ball.velocityX *= -1;
-//     }
-//     else if(detectCollision(ball, player2))
-//     {
-//         if (ball.x + ball.width >= player2.x)
-//             ball.velocityX *= -1;
-//     }
-
-//     //gameover
-//     if (ball.x < 0 || ball.x + ball.width > board.width)
-//     {
-//         if (ball.x < 0 )
-//         {
-//             player2Score++;
-//             reset(1); 
-//         }
-//         else
-//         {
-//             player1Score++;
-//             reset(-1);
-//         }
-//     }
-
-//     //scores
-//     context.fillStyle = "blue";
-//     context.font = "45px sans-serif";
-//     context.fillText(player1Score, board.width / 4, board.height / 4)
-//     context.fillText(player2Score, board.width * 3 / 4 - 45, board.height / 4)
-
-//     if (player == "player1") {
-//         socket.send(JSON.stringify({
-//             type: 'game_update',
-//             player1: player1,
-//             player2: player2,
-//             ball: ball,
-//             game_group: gameGroup
-//         }));
-//     }
-    
-// }
-// function outOfBounds(yPos)
-// {
-//     return(yPos < 0 || yPos + playerHeight > board.height)
-// }
-
-// function detectCollision(a, b)
-// {
-//     return a.x < b.x + b.width &&
-//             a.x + a.width > b.x && 
-//             a.y < b.y + b.height && 
-//             a.y + a.height > b.y;  
-// }
-
-// function reset(direction)
-// {
-//     ball = 
-//     {  
-//         x : boardWidth / 2,
-//         y : boardHeight / 2,
-//         width : ballWidth,
-//         height : ballHeight,
-//         velocityX : direction,
-//         velocityY : ballVelocityY
-//     }
-// }

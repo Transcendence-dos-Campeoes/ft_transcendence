@@ -1,0 +1,46 @@
+<div class="container-fluid p-4 overflow-auto vh-100">
+
+    <div class="row mb-4 mt-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h2>Tournaments</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class=" col-12">
+            <div class="card bg-transparent border-light">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Available Tournaments</h4>
+                    <button class="btn btn-outline-light btn-sm" onclick="loadAvailableTournaments()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-white">
+                            <thead>
+                                <tr>
+                                    <th>Tournament Name</th>
+                                    <th>Creator</th>
+                                    <th>Players</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="available-tournaments">
+                                <!-- Tournaments will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-tournaments" class="text-center p-4 d-none">
+                        <p>No tournaments available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

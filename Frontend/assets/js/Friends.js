@@ -6,6 +6,7 @@ class FriendSystem {
     this.setupEventListeners();
     this.loadPendingInvites();
     this.loadFriends();
+    socket.send(JSON.stringify({ type: "update_lobby" }));
   }
 
   setupEventListeners() {
@@ -16,13 +17,10 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch("http://localhost:8000/api/users/friends/", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      });
-      const friends = await response.json();
+      const response = await fetchWithAuth('/api/users/friends/');
+      if (!response.ok) throw new Error('Failed to fetch friends');
+
+      const friends = await response.json();  // Add await here
       this.renderFriends(friends);
     } catch (error) {
       console.error("Error loading friends:", error);
@@ -35,14 +33,12 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch("http://localhost:8000/api/users/invites/", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      });
-      const invites = await response.json();
+      const response = await fetchWithAuth("/api/users/invites/");
+      if (!response.ok) throw new Error('Failed to fetch pending invites');
+
+      const invites = await response.json();  // Add await here
       this.renderPendingInvites(invites);
+
     } catch (error) {
       console.error("Error loading invites:", error);
     } finally {
@@ -56,23 +52,22 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        "http://localhost:8000/api/users/invite/create/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: JSON.stringify({ receiver: username }),
-        }
-      );
+      const response = await fetchWithAuth("/api/users/invite/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ receiver: username }),
+      });
       if (response.ok) {
         this.inviteForm.reset();
-        // Show success message
+        displayMessage("Friend invitation sent successfully", MessageType.SUCCESS);
+      } else {
+        displayMessage("Failed to send invitation", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error sending invite:", error);
+      displayMessage("Error sending invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }
@@ -82,23 +77,31 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      await fetch("http://localhost:8000/api/users/invite/update/", {
+      const response = await fetchWithAuth("/api/users/invite/update/", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           friend_request_id: id,
           action: action,
         }),
       });
-      this.loadPendingInvites();
-      if (action === "accept") {
-        this.loadFriends();
+      if (response.ok) {
+        this.loadPendingInvites();
+        if (action === "accept") {
+          this.loadFriends();
+          socket.send(JSON.stringify({ type: "update_lobby" }));
+          displayMessage("Friend request accepted", MessageType.SUCCESS);
+        } else {
+          displayMessage("Friend request declined", MessageType.INFO);
+        }
+      } else {
+        displayMessage("Failed to process invitation", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error responding to invite:", error);
+      displayMessage("Error processing invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }
@@ -108,21 +111,22 @@ class FriendSystem {
     const loadingOverlay = new LoadingOverlay();
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        `http://localhost:8000/api/users/friend/delete/${friendId}/`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-        }
-      );
+      const response = await fetchWithAuth(`/api/users/friend/delete/${friendId}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+      });
       if (response.ok) {
         this.loadFriends();
+        socket.send(JSON.stringify({ type: "update_lobby" }));
+        displayMessage("Friend removed successfully", MessageType.SUCCESS);
+      } else {
+        displayMessage("Failed to remove friend", MessageType.ERROR);
       }
     } catch (error) {
       console.error("Error removing friend:", error);
+      displayMessage("Error removing friend", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
     }

@@ -7,7 +7,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
-from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer
+from rest_framework.parsers import JSONParser
+from django.core.mail import send_mail
+from django.conf import settings
+from .serializers import SiteUserSerializer, MyTokenObtainPairSerializer, FriendRequestSerializer, FriendsSerializer
 from .models import SiteUser, Friend
 from matches.models import Match
 from tournaments.models import TournamentPlayer, TournamentMatch
@@ -27,10 +30,22 @@ import base64
 import qrcode
 import pyotp
 from io import BytesIO
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.parsers import JSONParser
+
 
 
 class RegisterUserThrottle(AnonRateThrottle):
     rate = '200000/hour'  # Custom throttle rate for user registration
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated]) 
+def verify(request):
+    """
+    Verify if user is authenticated and token is valid.
+    """
+    return Response({'authenticated': True}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
@@ -65,6 +80,7 @@ def create_user(request):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'user': serializer.data['username'],
+            'email': serializer.data['email']
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,6 +99,7 @@ def loginUser(request):
         user.save()
         return Response({
             'two_fa_enabled': user.two_fa_enabled,
+            'email': user.email,
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         })
@@ -137,7 +154,7 @@ def deleteUser(request):
     except Exception as e:
         return Response(
             {"error": str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -166,10 +183,16 @@ def getUserProfile(request):
         losses = total_matches - wins
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
+        # Encode profile image in base64
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -209,7 +232,7 @@ def getUserProfile(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -241,10 +264,16 @@ def getFriendProfile(request, username):
         losses = total_matches - wins
         win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
 
+        # Encode profile image in base64
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         profile_data = {
             'username': user.username,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
             'stats': {
                 'total_matches': total_matches,
                 'wins': wins,
@@ -284,7 +313,7 @@ def getFriendProfile(request, username):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['GET'])
@@ -340,7 +369,7 @@ def getUserMatches(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -349,19 +378,60 @@ def getUserSettings(request):
     try:
         user = request.user
 
+        profile_image_base64 = None
+        if user.profile_image:
+            with user.profile_image.open('rb') as image_file:
+                profile_image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
         settings_data = {
             'username': user.username,
             'email': user.email,
             'two_fa_enabled': user.two_fa_enabled,
             'created_time': user.created_time,
-            'profile_image': request.build_absolute_uri(user.profile_image.url) if user.profile_image else None,
+            'profile_image': profile_image_base64,
         }
         return Response(settings_data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSelectedMap(request):
+    selected_map = request.user.selected_map
+    print(f"Slc {selected_map}")
+    return Response({'map_number': selected_map}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getMaps(request):
+    maps_data = []
+    selected_map = request.user.selected_map
+    
+    for map_number in range(1, 5): 
+        map_path = f'media/game_images/{map_number}.png'
+        with open(map_path, 'rb') as image_file:
+            map_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+            maps_data.append({
+                'map_number': map_number,
+                'image_data': f'data:image/jpeg;base64,{map_base64}',
+                'selected': map_number == selected_map
+            })
+    return Response(maps_data, status=status.HTTP_200_OK)
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
+def updateMap(request):
+    map_number = request.data.get('map_number')
+    if not map_number or not isinstance(map_number, int) or map_number not in range(1, 5):
+        return Response({'error': 'Invalid map number'}, status=400)
+    
+    request.user.selected_map = map_number
+    request.user.save()
+    return Response({'success': True})
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -379,7 +449,7 @@ def updateUserProfile(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
     
 @api_view(['PUT'])
@@ -415,7 +485,7 @@ def updateUserPassword(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 @api_view(['GET'])
@@ -503,8 +573,11 @@ def deleteFriend(request, friend_id):
 def oauth_callback(request):
     try:
         code = request.data.get('code')
+        redirectURI = request.data.get('redirectURI')
         if not code:
             return Response({'error': 'Authorization code is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        if not redirectURI:
+            return Response({'error': 'RedirectURI is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Exchange authorization code for access token
         token_url = 'https://api.intra.42.fr/oauth/token'
@@ -513,9 +586,10 @@ def oauth_callback(request):
             'client_id': 'u-s4t2ud-a6f40a3d8815d6e54ce1c1ade89e13948ac4e875a56a593543068f6a77e7ddc4',
             'client_secret': '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',
             'code': code,
-            'redirect_uri': 'https://localhost/42'
+            'redirect_uri': redirectURI
         }
         response = requests.post(token_url, data=data)
+        print(response)
         if response.status_code != 200:
             return Response({'error': 'Failed to obtain access token'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -526,7 +600,7 @@ def oauth_callback(request):
         user_info_url = 'https://api.intra.42.fr/v2/me'
         headers = {'Authorization': f'Bearer {access_token}'}
         user_info_response = requests.get(user_info_url, headers=headers)
-        if user_info_response.status_code != 200:
+        if (user_info_response.status_code != 200):
             return Response({'error': 'Failed to obtain user info'}, status=status.HTTP_400_BAD_REQUEST)
 
         user_info = user_info_response.json()
@@ -562,7 +636,7 @@ def oauth_callback(request):
             'all_info': user_info,
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -570,17 +644,14 @@ def oauth_callback(request):
 @permission_classes([IsAuthenticated])
 def enable_two_fa(request):
     try:
-        username = request.data.get('username')
         user = request.user
-        if not username:
-            return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
         if not user.two_fa_secret:
             user.two_fa_secret = pyotp.random_base32()
             user.save()
 
         otp_uri = pyotp.totp.TOTP(user.two_fa_secret).provisioning_uri(
             name=user.email,
-            issuer_name="WOW"
+            issuer_name="ft_transcendence"
         )
 
         qr = qrcode.make(otp_uri)
@@ -591,9 +662,12 @@ def enable_two_fa(request):
         qr_code = base64.b64encode(buffer.getvalue()).decode("utf-8")
         qr_code_data_uri = f"data:image/png;base64,{qr_code}"
 
+        # Store the QR code in the session
+        request.session['qr_code'] = qr_code_data_uri
+
         return Response({
             'message': '2FA enabled successfully',
-            'username': username,
+            'username': user.username,
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -604,21 +678,17 @@ def enable_two_fa(request):
             'qr_code': qr_code_data_uri
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_two_fa(request):
     try:
-        username = request.data.get('username')
         otp_code = request.data.get('otpCode')
         user = request.user
 
-        if not username or not otp_code:
-            return Response({'error': 'Username and OTP code are required'}, status=status.HTTP_400_BAD_REQUEST)
-
         totp = pyotp.TOTP(user.two_fa_secret)
-        if totp.verify(otp_code):
+        if totp.verify(otp_code, for_time=None, valid_window=1):
             user.two_fa_enabled = True
             user.is_otp_verified = True
             user.save()
@@ -626,13 +696,82 @@ def verify_two_fa(request):
         else:
             return Response({'error': 'Invalid OTP code'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_user_status(request):
+    username = request.data.get('username')
     user = request.user
     return Response({
+        'username': user.username,
         'is_otp_verified': user.is_otp_verified,
         'two_fa_enabled': user.two_fa_enabled
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def setRecoverOTP(request):
+    email = request.data.get('email')
+    try:
+        if email == request.user.email:
+            request.user.otp_recover_secret = pyotp.random_base32()
+            request.user.save()
+            totp = pyotp.TOTP(request.user.otp_recover_secret, interval=300)
+            otp_code = totp.now()
+
+            html_message = f"""
+            <html>
+                <body>
+                    <p>Hello {request.user.username},</p>
+                    <p>Please find your OTP below:</p>
+                    <p>{otp_code}</p>
+                    <p>Remember that you have 5 minutes before it expires.</p>
+                </body>
+            </html>
+            """
+
+            send_mail(
+                "Your OTP Recovery Code",
+                "",
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently=False,
+                html_message=html_message
+            )
+            return Response({'message': 'Email with OTP sent'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Incorrect email'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+      
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def checkRecoverOTP(request):
+    try:
+        otp_code = request.data.get('otp_code')
+        user = request.user
+
+        if not user.otp_recover_secret:
+            return Response({'error': 'OTP recovery secret is not set'}, status=status.HTTP_400_BAD_REQUEST)
+
+        totp = pyotp.TOTP(user.otp_recover_secret, interval=300)
+        if totp.verify(otp_code, for_time=None, valid_window=1):
+            user.two_fa_enabled = False
+            user.is_otp_verified = False
+            user.two_fa_secret = None
+            user.otp_recover_secret = None
+            user.save()
+            return Response({'message': '2FA disabled successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Incorrect OTP'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_friends(request):
+    user = request.user
+    serializer = FriendsSerializer(user)
+    print(f"User: {user.username}, Friends: {serializer.data}")
+    return Response(serializer.data)

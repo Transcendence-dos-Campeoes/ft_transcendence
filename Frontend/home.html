@@ -1,115 +1,113 @@
-<div class="container-fluid vh-100 vw-100">
-	<div class="container-fluid vh-100 vw-100">
-		<div class="row h-100">
-			<!-- Mobile Toggle Button -->
-			<div class="col-auto d-lg-none p-0">
-				<button class="btn h-100 m-0 border-0 bg-body-tertiary d-flex flex-column align-items-center"
-					type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" style="width: 50px;">
-					<i class="bi bi-list fs-4 mt-3"></i>
-				</button>
+<div class="container-fluid vh-100 vw-100 overflow-auto">
+	<div class="row h-100">
+		<!-- Mobile Toggle Button -->
+		<div class="col-auto d-lg-none p-0">
+			<button class="btn h-100 m-0 border-0 bg-body-tertiary d-flex flex-column align-items-center" type="button"
+				data-bs-toggle="offcanvas" data-bs-target="#sidebar" style="width: 50px;">
+				<i class="bi bi-list fs-4 mt-3"></i>
+			</button>
+		</div>
+		<!-- Sidebar -->
+		<div class="col-2 offcanvas-lg offcanvas-start bg-body-tertiary h-100 d-flex flex-column" tabindex="-1"
+			id="sidebar">
+			<!-- Header -->
+			<div class="border-bottom p-3 mt-4 text-center">
+				<h5 class="m-0 text-truncate fs-6">Transcendence</h5>
 			</div>
-			<!-- Sidebar -->
-			<div class="col-2 offcanvas-lg offcanvas-start bg-body-tertiary h-100 d-flex flex-column" tabindex="-1"
-				id="sidebar">
-				<!-- Header -->
-				<div class="border-bottom p-3 mt-4 text-center">
-					<h5 class="m-0 text-truncate fs-6">Transcendence</h5>
-				</div>
 
-				<div class="flex-grow-1 overflow-y-auto">
-					<nav class="nav nav-pills flex-column">
-						<ul class="nav nav-pills flex-column mb-auto">
-							<li class="nav-item">
-								<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
-									onclick="renderElement('overview')">
-									<i class="bi bi-house-door me-2"></i>
-									Home
-								</a>
-							</li>
-							<li class="nav-item">
-								<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
-									onclick="renderElement('matches')">
-									<i class="bi bi-dice-6 me-2"></i>
-									Matches
-								</a>
-							</li>
-							<li>
-								<a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse"
-									data-bs-target="#tournamentsSubmenu">
-									<i class="bi bi-joystick me-2"></i>
-									Tournaments
-									<i class="bi bi-chevron-down ms-2"></i>
-								</a>
-								<div class="collapse" id="tournamentsSubmenu">
-									<ul class="nav nav-pills flex-column ms-3 mt-2">
-										<li>
-											<a href="#" class="nav-link link-body-emphasis"
-												onclick="renderElement('newtournament')">
-												<i class="bi bi-plus-circle me-2"></i>
-												New tournament
-											</a>
-										</li>
-										<li>
-											<a href="#" class="nav-link link-body-emphasis"
-												onclick="renderElement('jointournament')">
-												<i class="bi bi-door-open me-2"></i>
-												Join tournament
-											</a>
-										</li>
-									</ul>
-								</div>
-							</li>
-							<li class="nav-item">
-								<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
-									onclick="renderElement('newgame')">
-									<i class="bi bi-controller me-2"></i>
-									Play game
-								</a>
-							</li>
-						</ul>
-					</nav>
-				</div>
+			<div class="flex-grow-1 overflow-y-auto">
+				<nav class="nav nav-pills flex-column">
+					<ul class="nav nav-pills flex-column mb-auto">
+						<li class="nav-item">
+							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+								onclick="renderElement('overview')">
+								<i class="bi bi-house-door me-2"></i>
+								Home
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+								onclick="renderElement('matches')">
+								<i class="bi bi-dice-6 me-2"></i>
+								Matches
+							</a>
+						</li>
+						<li>
+							<a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse"
+								data-bs-target="#tournamentsSubmenu">
+								<i class="bi bi-joystick me-2"></i>
+								Tournaments
+								<i class="bi bi-chevron-down ms-2"></i>
+							</a>
+							<div class="collapse" id="tournamentsSubmenu">
+								<ul class="nav nav-pills flex-column ms-3 mt-2">
+									<li>
+										<a href="#" class="nav-link link-body-emphasis"
+											onclick="renderElement('newtournament')">
+											<i class="bi bi-plus-circle me-2"></i>
+											New
+										</a>
+									</li>
+									<li>
+										<a href="#" class="nav-link link-body-emphasis"
+											onclick="renderElement('tournaments')">
+											<i class="bi bi-door-open me-2"></i>
+											Overview
+										</a>
+									</li>
+								</ul>
+							</div>
+						</li>
+						<li class="nav-item">
+							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+								onclick="renderElement('newgame')">
+								<i class="bi bi-controller me-2"></i>
+								Play game
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
 
-				<!-- User dropdown - at bottom -->
-				<div class="border-top p-3 mt-auto mb-4">
-					<div class="dropdown">
-						<a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
-							data-bs-toggle="dropdown">
-							<img id="profile-photo-home" src="" alt="" width="32" height="32"
-								class="rounded-circle me-2" />
-							<strong class="user-display"></strong>
-						</a>
-						<ul class="dropdown-menu dropdown-menu-end">
-							<li><a class="dropdown-item" href="#" onclick="renderElement('settings')">Settings</a></li>
-							<li>
-								<a class="dropdown-item" href="#" onclick="renderElement('profile')">Profile</a>
-							</li>
-							<li>
-								<a class="dropdown-item" href="#" onclick="renderElement('invites')">Invites</a>
-							</li>
-							<li>
-								<hr class="dropdown-divider" />
-							</li>
-							<li>
-								<a class="dropdown-item" href="#" onclick="logout()">Sign out</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-			<!-- Main Content-->
-			<div class="col-8 p-0">
-				<div class="center-content"></div>
-			</div>
-			<!-- Friends Div-->
-			<div class="col-2 flex-column p-3 bg-body-tertiary">
-				<a href="#"
-					class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
-					<span class="fs-5 fw-semibold">Friends</span>
-				</a>
-				<div class="list-group list-group-flush" id="online-players-list">
-					<!-- Online players will be dynamically inserted here -->
+			<!-- User dropdown - at bottom -->
+			<div class="border-top p-3 mt-auto mb-4">
+				<div class="dropdown">
+					<a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+						data-bs-toggle="dropdown">
+						<img id="profile-photo-home" src="" alt="" width="32" height="32" class="rounded-circle me-2" />
+						<strong class="user-display"></strong>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-end">
+						<li><a class="dropdown-item" href="#" onclick="renderElement('settings')">Settings</a></li>
+						<li>
+							<a class="dropdown-item" href="#" onclick="renderElement('profile')">Profile</a>
+						</li>
+						<li>
+							<a class="dropdown-item" href="#" onclick="renderElement('invites')">Invites</a>
+						</li>
+						<li>
+							<hr class="dropdown-divider" />
+						</li>
+						<li>
+							<a class="dropdown-item" href="#" onclick="logout()">Sign out</a>
+						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
+		<!-- Main Content-->
+		<div class="col-8 p-0">
+			<div class="center-content"></div>
+		</div>
+		<!-- Friends Div-->
+		<div class="col-2 flex-column p-3 bg-body-tertiary">
+			<a href="#"
+				class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+				<span class="fs-5 fw-semibold">Friends</span>
+			</a>
+			<div class="list-group list-group-flush" id="online-players-list">
+				<!-- Online players will be dynamically inserted here -->
+			</div>
+		</div>
 	</div>
+</div>

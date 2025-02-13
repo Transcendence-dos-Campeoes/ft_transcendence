@@ -1,6 +1,6 @@
 function startOAuth() {
 	const clientId = 'u-s4t2ud-a6f40a3d8815d6e54ce1c1ade89e13948ac4e875a56a593543068f6a77e7ddc4';
-	const redirectUri = encodeURIComponent('https://localhost/42');
+	const redirectUri = encodeURIComponent(`${window.location.origin}/42`);
 	const scope = 'public';
 	const responseType = 'code';
 
@@ -9,19 +9,19 @@ function startOAuth() {
 	window.location.href = oauthUrl;
 }
 
-// Handle the OAuth callback
-window.onload = async function () {
+async function handle42Callback() {
 	const urlParams = new URLSearchParams(window.location.search);
 	const code = urlParams.get('code');
+	const redirectURI = `${window.location.origin}/42`;
 
 	if (code) {
 		try {
-			const response = await fetch('http://localhost:8000/api/users/oauth_callback/', {
+			const response = await fetch(`${window.location.origin}/api/users/oauth_callback/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ code: code })
+				body: JSON.stringify({ code: code, redirectURI: redirectURI })
 			});
 
 			if (!response.ok) {
@@ -33,21 +33,17 @@ window.onload = async function () {
 			const data = await response.json();
 			console.log('OAuth login successful:', data);
 
-			// Store the access token and other data
-			localStorage.setItem('access', data.access);
-			localStorage.setItem('refresh', data.refresh);
-			const accessTokenExpiry = new Date().getTime() + 90 * 60 * 1000; // 10 minutes for testing
-			localStorage.setItem('access_token_expiry', accessTokenExpiry);
-			localStorage.setItem('username', data.username);
-			localStorage.setItem('email', data.email);
-			// Redirect to the home page or another page
+			const responseStruct = {
+				access: data.access,
+				refresh: data.refresh,
+				username: data.username,
+				email: data.email
+			};
+
 			if (data.two_fa_enabled == false) {
-				history.pushState({}, '', 'https://localhost/two_fa_enable');
-				checkAndRunTwoFA()
-			}
-			else {
-				history.pushState({}, '', 'https://localhost/two_fa_verify');
-				checkAndRunTwoFA();
+				renderAuthPage("two_fa_enable", responseStruct);
+			} else {
+				renderAuthPage("two_fa_verify", responseStruct);
 			}
 		} catch (error) {
 			console.error('Error:', error);

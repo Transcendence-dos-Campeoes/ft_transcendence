@@ -176,3 +176,7 @@ pyrightconfig.json
 
 Database/
 Backend/media/profile_images/
+Contracts/node_modules/
+Contracts/artifacts/
+Contracts/cache/
+Contracts/deployed-address.json

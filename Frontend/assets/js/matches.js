@@ -34,6 +34,7 @@ function renderRegularMatch(match, currentUser) {
 }
 
 function renderTournamentMatch(match, currentUser) {
+  const joinButton = match.match__status.toLowerCase() === 'pending' ? `<button class="btn btn-primary" onclick='joinMatch("${encodeURIComponent(JSON.stringify(match))}", "${currentUser}")'>Join</button>` : '';
   return `<tr>
             <td>${match.tournament__name}</td>
             <td>${new Date(match.match__created_at).toLocaleDateString()}</td>
@@ -56,7 +57,58 @@ function renderTournamentMatch(match, currentUser) {
       : "Undefined"
     }</td>
             <td>${getStatusBadge(match.match__status)}</td>
+            <td>${joinButton}</td>
           </tr>`;
+}
+
+// PLAY TOURNAMENT MATCHES
+function joinMatch(encodedMatch, currentUser) {
+  const match = JSON.parse(decodeURIComponent(encodedMatch));
+  console.log(`Joining match with ID: ${match.match__id}`);
+  console.log(`Player1: ${match.match__player1__username}`);
+  console.log(`Player2: ${match.match__player2__username}`);
+
+  const players = data.players_data.map(player => player.username);
+
+  if (players.includes(match.match__player1__username) && players.includes(match.match__player2__username)) {
+    console.log("Both players are in the players_data list.");
+    const opponent = match.match__player1__username === currentUser ? match.match__player2__username : match.match__player1__username;
+    waitingModal = new MessageModal(MessageType.INVITE);
+    declineModal = new DeclineModal(MessageType.INFO);
+  
+    socket.send(
+      JSON.stringify({
+        type: "invite_tournament_game",
+        from: currentUser,
+        to: opponent,
+        game: match.match__id,
+        player1: match.match__player1__username,
+        player2: match.match__player1__username,
+      })
+    );
+  
+    waitingModal.show(`Waiting for ${opponent} to accept your game invite...`, "Invite Sent").then((accept) => {
+      if (!accept) {
+        socket.send(
+          JSON.stringify({
+            type: "decline_invite",
+            from: currentUser,
+            to: opponent,
+            game: match.match__id,
+          })
+        );
+      }
+    });
+  
+  
+  } else {
+    console.log("One or both players are not in the players_data list.");
+  }
+  // messageModal = new MessageModal(MessageType.INVITE);
+
+
+  
+  // You can add an API call here to join the match
 }
 
 function filterRegularMatches(matches, filters, current_user) {
@@ -104,11 +156,7 @@ async function loadMatches() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/users/matches/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/users/matches/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch matches");
@@ -118,6 +166,9 @@ async function loadMatches() {
     regularMatchesData = data.regular_matches;
     tournamentMatchesData = data.tournament_matches;
 
+    const noTournamentsDiv = document.getElementById("no-tournaments-matches");
+    const noRegularDiv = document.getElementById("no-regular-matches");
+
     ['date', 'opponent', 'result', 'status'].forEach(filterType => {
       document.getElementById(`regular-matches-filter-${filterType}`).addEventListener('input', (e) => {
         const filters = {
@@ -126,7 +177,13 @@ async function loadMatches() {
           result: document.getElementById('regular-matches-filter-result').value,
           status: document.getElementById('regular-matches-filter-status').value
         };
-        filterRegularMatches(regularMatchesData, filters, data.current_user);
+        if (regularMatchesData.length !== 0) {
+          noRegularDiv.classList.add("d-none");
+          filterRegularMatches(regularMatchesData, filters, data.current_user);
+        }
+        else {
+          noRegularDiv.classList.remove("d-none");
+        }
       });
     });
 
@@ -138,11 +195,32 @@ async function loadMatches() {
           result: document.getElementById('tournament-matches-filter-result').value,
           status: document.getElementById('tournament-matches-filter-status').value
         };
-        filterTournamentMatches(regularMatchesData, filters, data.current_user);
+        if (tournamentMatchesData.length !== 0) {
+          noTournamentsDiv.classList.add("d-none");
+          filterTournamentMatches(tournamentMatchesData, filters, data.current_user);
+        }
+        else {
+          noTournamentsDiv.classList.remove("d-none");
+        }
       });
     });
-    filterRegularMatches(regularMatchesData, {}, data.current_user);
-    filterTournamentMatches(tournamentMatchesData, {}, data.current_user);
+
+    if (tournamentMatchesData.length !== 0) {
+      noTournamentsDiv.classList.add("d-none");
+      filterTournamentMatches(tournamentMatchesData, {}, data.current_user);
+    }
+    else {
+      noTournamentsDiv.classList.remove("d-none");
+    }
+
+    if (regularMatchesData.length !== 0) {
+      noRegularDiv.classList.add("d-none");
+      filterRegularMatches(regularMatchesData, {}, data.current_user);
+    }
+    else {
+      noRegularDiv.classList.remove("d-none");
+    }
+
   } catch (error) {
     displayMessage("Failed to load matches", MessageType.ERROR);
   } finally {

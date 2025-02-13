@@ -1,20 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
+<div class="screen">
+	<div class="container-fluid overflow-auto d-flex flex-column h-100">
+		<div class="row mt-4 mb-2 justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
+				<h1>Verify 2FA</h1>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Verify Two-Factor Authentication</title>
-</head>
+				<form id="otpForm">
+					<div class=" mb-3">
+						<label for="otpCode" class="form-label">Enter the OTP code from your authenticator app:</label>
+						<input type="text" class="form-control" id="otpCode" placeholder="Enter OTP code" required>
+					</div>
 
-<body>
-	<h1>Verify Two-Factor Authentication</h1>
-	<div>
-		<p>Enter the OTP code from your authenticator app:</p>
-		<input type="text" id="otpCode" placeholder="Enter OTP code">
-		<button onclick="verifyOtpCode()">Verify OTP</button>
+					<div class="d-grid gap-2 d-md-flex">
+						<button type="submit" class="btn btn-success">
+							Verify OTP
+						</button>
+						<button id="cancel" type="button" class="btn btn-danger">
+							Cancel
+						</button>
+						<button id="disable" type="button" class="btn btn-primary">
+							Recover 2FA
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
-	<script src="assets/js/2fa.js"></script>
-</body>
-
-</html>
+</div>

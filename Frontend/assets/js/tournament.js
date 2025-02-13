@@ -15,28 +15,24 @@ async function attachTournamentFormListener() {
 
     try {
       loadingOverlay.show();
-      const response = await fetch(
-        "http://localhost:8000/api/tournaments/create/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: JSON.stringify({
-            tournamentName: tournamentName,
-            maxPlayers: maxPlayers,
-          }),
-        }
-      );
+      const response = await fetchWithAuth("/api/tournaments/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tournamentName: tournamentName,
+          maxPlayers: maxPlayers,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create tournament");
       }
 
       // Show success message
-      displayMessage("Tournament created successfully", MessageType.SUCCESS);
       renderElement("overview");
+      displayMessage("Tournament created successfully", MessageType.SUCCESS);
     } catch (error) {
       console.error("❌ Error creating tournament:", error);
       displayMessage("Failed to create tournament", MessageType.ERROR);
@@ -51,15 +47,9 @@ async function joinTournament(tournamentId) {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch(
-      `http://localhost:8000/api/tournaments/${tournamentId}/join/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      }
-    );
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/join/`, {
+      method: "POST"
+    });
 
     if (!response.ok) {
       throw new Error("Failed to join tournament");
@@ -75,16 +65,12 @@ async function joinTournament(tournamentId) {
 }
 
 async function startTournament(tournamentId) {
+  const loadingOverlay = new LoadingOverlay();
   try {
-    const response = await fetch(
-      `http://localhost:8000/api/tournaments/${tournamentId}/start/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      }
-    );
+    loadingOverlay.show();
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/start/`, {
+      method: "POST"
+    });
 
     if (!response.ok) throw new Error("Failed to start tournament");
 
@@ -92,18 +78,72 @@ async function startTournament(tournamentId) {
     loadAvailableTournaments();
   } catch (error) {
     displayMessage("Failed to start tournament", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
   }
+}
+
+async function loadTournamentBracket(tournamentId) {
+  const loadingOverlay = new LoadingOverlay();
+  try {
+    loadingOverlay.show();
+    const response = await fetchWithAuth(`/api/tournaments/${tournamentId}/bracket/`);
+
+    if (!response.ok) {
+      throw new Error("Failed to load tournament bracket");
+    }
+
+    const data = await response.json();
+    renderBracket(data);
+  } catch (error) {
+    displayMessage("Failed to load tournament bracket", MessageType.ERROR);
+  } finally {
+    loadingOverlay.hide();
+  }
+}
+
+function renderBracket(data) {
+  const container = document.getElementById('tournament-bracket-container');
+  const rounds = Object.entries(data.rounds).sort((a, b) => a[0] - b[0]);
+
+  let bracketHtml = '<div class="tournament-bracket d-flex">';
+
+  rounds.forEach(([roundNum, matches]) => {
+    bracketHtml += `
+      <div class="round mx-3">
+          <h5 class="text-center mb-3">Round ${roundNum}</h5>
+          <div class="matches">
+              ${matches.map(match => `
+                  <div class="match-container mb-3">
+                      <div class="match-connector"></div>
+                      <div class="match card bg-dark">
+                          <div class="card-body p-2">
+                              <div class="player ${match.winner === match.player1 ? 'winner' : ''}">
+                                  <span>${match.player1 || 'TBD'}</span>
+                                  <span class="score">${match.player1_score || '0'}</span>
+                              </div>
+                              <div class="player ${match.winner === match.player2 ? 'winner' : ''}">
+                                  <span>${match.player2 || 'TBD'}</span>
+                                  <span class="score">${match.player2_score || '0'}</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              `).join('')}
+          </div>
+      </div>
+  `;
+  });
+
+  bracketHtml += '</div>';
+  container.innerHTML = bracketHtml;
 }
 
 async function loadAvailableTournaments() {
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
-    const response = await fetch("http://localhost:8000/api/tournaments/get/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
+    const response = await fetchWithAuth("/api/tournaments/get/");
 
     if (!response.ok) {
       throw new Error("Failed to fetch tournaments");
@@ -121,41 +161,30 @@ async function loadAvailableTournaments() {
     }
 
     noTournamentsDiv.classList.add("d-none");
-    tbody.innerHTML = tournaments
-      .map(
-        (tournament) => `
-        <tr>
-            <td>${tournament.tournamentName}</td>
-            <td>${tournament.creator}</td>
-            <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
-            <td>${tournament.status}</td>
-            <td>
-                ${
-                  tournament.creator === currentUser
-                    ? `<button 
-                        class="btn btn-success btn-sm" 
-                        onclick="startTournament(${tournament.id})"
-                        ${tournament.currentPlayers < 4 ? "disabled" : ""}
-                    >
-                        Start Tournament
-                    </button>`
-                    : `<button 
-                        class="btn btn-primary btn-sm" 
-                        onclick="joinTournament(${tournament.id})"
-                        ${
-                          tournament.currentPlayers >= tournament.maxPlayers
-                            ? "disabled"
-                            : ""
-                        }
-                    >
-                        Join
-                    </button>`
-                }
-            </td>
-        </tr>
-    `
-      )
-      .join("");
+    tbody.innerHTML = tournaments.map(tournament => `
+      <tr style="cursor: pointer">
+          <td onclick="renderElement('tournamentBracket'); loadTournamentBracket(${tournament.id})">${tournament.tournamentName}</td>
+          <td>${tournament.creator}</td>
+          <td>${tournament.currentPlayers}/${tournament.maxPlayers}</td>
+          <td>${tournament.status}</td>
+          <td>
+              ${tournament.creator === currentUser && tournament.status === 'pending' && tournament.currentPlayers >= 4
+        ? `<button 
+                      class="btn btn-success btn-sm" 
+                      onclick="startTournament(${tournament.id})"
+                      >Start Tournament</button>`
+        : ''
+      }
+              ${tournament.currentPlayers < tournament.maxPlayers
+        ? `<button 
+                      class="btn btn-primary btn-sm" 
+                      onclick="joinTournament(${tournament.id})"
+                      >Join</button>`
+        : ''
+      }
+          </td>
+      </tr>`
+    ).join('');
   } catch (error) {
     displayMessage("Failed to load tournaments", MessageType.ERROR);
   } finally {

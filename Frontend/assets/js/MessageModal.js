@@ -4,6 +4,8 @@ const MessageType = {
   WARNING: "warning",
   INFO: "info",
   INVITE: "invite",
+  AWAIT: "await",
+  READY: "ready"
 };
 
 class MessageModal {
@@ -19,11 +21,14 @@ class MessageModal {
 
   createModal() {
     const modal = document.createElement("div");
-    modal.className = "modal fade";
+    modal.className = "modal";
     modal.setAttribute("tabindex", "-1");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
 
     const isSuccess = this.type === "success";
     const isError = this.type === "error";
+    const isAwait = this.type === "await";
     const titleClass = isSuccess ? "text-success" : "text-danger";
     const title = isSuccess ? "Success" : "Error";
 
@@ -32,12 +37,12 @@ class MessageModal {
               <div class="modal-content bg-dark text-white border-secondary">
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
-                      ${isError ?
-                      `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
-                      : ''}
+                      ${isError || isAwait || isSuccess ?
+        `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
+        : ''}
                       </div>
                   <div class="modal-body"></div>
-                  ${!isError ? `
+                  ${!isError && !isAwait && !isSuccess ? `
                   <div class="modal-footer border-secondary">
                       <span class="timer"></span>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -49,12 +54,28 @@ class MessageModal {
 
     document.body.appendChild(modal);
     this.modal = modal;
-    this.bsModal = new bootstrap.Modal(modal);
+    this.bsModal = new bootstrap.Modal(modal, {
+      backdrop: 'static',
+      keyboard: false
+    });
 
-    if (!isError) { 
+    if (!isError && !isAwait && !isSuccess) {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
+
+    // if (isAwait)
+    //   socket.addEventListener('message', function(event) {
+    //     const data = JSON.parse(event.data);
+    //     if (data.type === 'random_game') {
+    //         awaitModal.hide();
+    //   }
+    // });
+    // this.modal.addEventListener('hide.bs.modal', () => {
+    //   if (this.type === MessageType.INVITE || this.type === MessageType.AWAIT) {
+    //     this.resolve(false);
+    //   }
+    // });
   }
 
   show(message, title = null) {
@@ -65,20 +86,23 @@ class MessageModal {
     if (title) {
       titleElement.innerHTML = title;
       titleElement.className = "modal-title"; // Reset class to default
-      if (title === "Invite Sent") {
-        footerElement.querySelector('.btn-primary').style.display = 'none';
-      } else {
-        footerElement.querySelector('.btn-primary').style.display = 'inline-block';
+      if (footerElement && footerElement.hasChildNodes()) {
+        if (title === "Invite Sent") {
+          footerElement.querySelector('.btn-primary').style.display = 'none';
+        } else {
+          footerElement.querySelector('.btn-primary').style.display = 'inline-block';
+        }
       }
     } else {
       const isSuccess = this.type === "success";
       const isError = this.type === "error";
       titleElement.className = isSuccess ? "modal-title text-success" : "modal-title text-danger";
       titleElement.innerHTML = isSuccess ? "Success" : "Error";
-      if (!isError) {
+      if (!isError && !isSuccess) {
         footerElement.querySelector('.btn-primary').style.display = 'inline-block';
       }
     }
+    this.modal.removeAttribute('aria-hidden');
     this.bsModal.show();
 
     if ((this.type === MessageType.INVITE)) {

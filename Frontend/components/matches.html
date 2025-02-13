@@ -41,14 +41,14 @@
                                 <select class="form-select bg-dark text-white" id="tournament-matches-filter-status">
                                     <option value="" selected>Status</option>
                                     <option value="pending">Pending</option>
-                                    <option value="accepted">Accepted</option>
+                                    <option value="active">Active</option>
                                     <option value="finished">Finished</option>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
-                        <table class="table table-hover text-white">
+                    <div class="table-responsive" style="overflow-y: auto;">
+                        <table class="table text-white">
                             <thead>
                                 <tr>
                                     <th>Tournament</th>
@@ -63,6 +63,9 @@
                                 <!-- Tournament matches will be loaded here -->
                             </tbody>
                         </table>
+                    </div>
+                    <div id="no-tournaments-matches" class="text-center p-4 d-none">
+                        <p>No tournaments matches available</p>
                     </div>
                 </div>
             </div>
@@ -101,14 +104,14 @@
                                 <select class="form-select bg-dark text-white" id="regular-matches-filter-status">
                                     <option value="" selected>Status</option>
                                     <option value="pending">Pending</option>
-                                    <option value="accepted">Accepted</option>
+                                    <option value="active">Active</option>
                                     <option value="finished">Finished</option>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <div class="table-responsive" style="max-height: 400px; height: 250px; overflow-y: auto;">
-                        <table class="table table-hover text-white">
+                    <div class="table-responsive" style="overflow-y: auto;">
+                        <table class="table text-white">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -122,6 +125,9 @@
                                 <!-- Regular matches will be loaded here -->
                             </tbody>
                         </table>
+                    </div>
+                    <div id="no-regular-matches" class="text-center p-4 d-none">
+                        <p>No regular matches available</p>
                     </div>
                 </div>
             </div>

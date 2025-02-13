@@ -1,6 +1,0 @@
-
-
-function socket_communication() 
-{
-    
-}

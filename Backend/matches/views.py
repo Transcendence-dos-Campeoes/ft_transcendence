@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, parser_classes
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from .models import Match
 from users.models import SiteUser
 from tournaments.models import Tournament
@@ -13,27 +13,36 @@ from .serializers import MatchSerializer
 def getRecentMatches(request):
     try:
         # Get 10 most recent matches
-        matches = Match.objects.all().order_by('-created_at')[:10]
+        matches = Match.objects.filter(
+            player1__isnull=False,
+            player2__isnull=False,
+            status__in=['finished', 'cancelled', 'active']
+        ).order_by('-created_at')[:10]
         
         # Get 10 most recent tournaments
         tournaments = Tournament.objects.all().order_by('-created_at')[:10]
 
         # Calculate global statistics
-        total_matches = Match.objects.count()
+        total_matches = Match.objects.filter(
+            player1__isnull=False,
+            player2__isnull=False,
+            status__in=['finished', 'cancelled', 'active']
+        ).count()
         total_tournaments = Tournament.objects.count()
         total_players = SiteUser.objects.count()
         
         # Calculate average scores
-        avg_score = Match.objects.aggregate(
+        avg_score = Match.objects.filter(status='finished').aggregate(
             avg_p1_score=Avg('player1_score'),
             avg_p2_score=Avg('player2_score')
         )
 
          # Get most active players
         player_stats = SiteUser.objects.annotate(
-            matches_played=Count('matches_as_player1') + Count('matches_as_player2'),
+            matches_played=Count('matches_as_player1', filter=Q(matches_as_player1__status='finished'), distinct=True) + 
+                        Count('matches_as_player2', filter=Q(matches_as_player2__status='finished'), distinct=True),
             tournaments_played=Count('tournament_entries')
-        ).order_by('-matches_played')[:10]
+        ).order_by('-matches_played')[:5]
         
         data = {
             'recent_matches': matches.values(
@@ -75,6 +84,6 @@ def getRecentMatches(request):
     except Exception as e:
         return Response(
             {'error': str(e)}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_400_BAD_REQUEST
         )
 
