@@ -9,6 +9,11 @@ up:
 	@if [ ! -d "${PWD}/Backend/media/profile_images/" ]; then \
 		mkdir -p ${PWD}/Backend/media/profile_images; \
 	fi
+	@if [ ! -d "${PWD}/Contracts/node_modules/" ]; then \
+		cd ${PWD}/Contracts/; \
+		npm install; \
+		cd ..; \
+	fi
 	wget --output-document=${PWD}/Backend/media/profile_images/default.jpg https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png
 	docker-compose up --build
 
