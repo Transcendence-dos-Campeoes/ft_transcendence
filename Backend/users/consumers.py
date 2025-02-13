@@ -3,7 +3,7 @@ from channels.generic.websocket import WebsocketConsumer
 import time
 from asgiref.sync import async_to_sync
 from .models import SiteUser
-
+from .serializers import FriendsSerializer
 from matches.models import Match
 from matches.serializers import MatchSerializer
 from tournaments.models import TournamentMatch
@@ -137,15 +137,19 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         )
 
     def send_online_players(self):
-        players_data = [{"username": user.username} for user in channel_user_map.values()]
+        user = self.scope['user']
+        serializer = FriendsSerializer(user)
+        players_data = serializer.data  # Serialize the data
         data = {
-                "type": "online.players.update",
-                "players_data": players_data,
-            }
+            "type": "online.players.update",
+            "players_data": players_data,
+        }
         self.send(text_data=json.dumps(data))
 
     def broadcast_online_players(self):
-        players_data = [{"username": user.username} for user in channel_user_map.values()]
+        user = self.scope['user']
+        serializer = FriendsSerializer(user)
+        players_data = serializer.data
         async_to_sync(self.channel_layer.group_send)(
             "online_players",
             {
