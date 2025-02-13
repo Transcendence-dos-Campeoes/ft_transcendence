@@ -832,7 +832,7 @@ async function startGame3d(data, socket) {
         loadingOverlay.hide();
     }
     console.log("Game starting...");
-    const pongGame = new PongGame(data, socket, gameMap);
+    const pongGame = new PongGame(data, socket, selectedMap);
 }
 
 //window.addEventListener("load", () => startGame(null, null, null));
