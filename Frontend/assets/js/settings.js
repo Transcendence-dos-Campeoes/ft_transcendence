@@ -123,7 +123,6 @@ async function loadSettingsData() {
     document.getElementById("username-input").value = data.username;
     document.getElementById("email-input").value = data.email;
     document.getElementById("profile-username").textContent = data.username;
-    document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
     const profileImg = document.getElementById("profile-picture-settings");
     if (profileImg && data.profile_image) {
       profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;
