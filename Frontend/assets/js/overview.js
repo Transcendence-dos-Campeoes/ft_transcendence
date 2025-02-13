@@ -1,5 +1,20 @@
+let topPlayersChartInstance = null;
+let avgChartInstance = null;
+
 async function loadChart() {
   let data;
+
+  const ctx1 = document.getElementById('topPlayersChart').getContext('2d');
+  const ctx2 = document.getElementById('avgScoresChart').getContext('2d');
+
+  if (topPlayersChartInstance) {
+    topPlayersChartInstance.destroy();
+  }
+
+  if (avgChartInstance) {
+    avgChartInstance.destroy();
+  }
+
   const loadingOverlay = new LoadingOverlay();
   try {
     loadingOverlay.show();
@@ -32,8 +47,7 @@ async function loadChart() {
   });
 
   // Top Players Chart
-  const topPlayersChart = new Chart(
-    document.getElementById("topPlayersChart"),
+  topPlayersChartInstance = new Chart(ctx1,
     {
       type: "bar",
       data: {
@@ -79,8 +93,7 @@ async function loadChart() {
   );
 
   // Average Scores Chart
-  const avgScoresChart = new Chart(
-    document.getElementById("avgScoresChart"),
+  avgChartInstance = new Chart(ctx2,
     {
       type: "doughnut",
       data: {

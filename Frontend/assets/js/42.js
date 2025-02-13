@@ -31,7 +31,6 @@ async function handle42Callback() {
 			}
 
 			const data = await response.json();
-			console.log('OAuth login successful:', data);
 
 			const responseStruct = {
 				access: data.access,
