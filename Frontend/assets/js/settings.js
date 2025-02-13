@@ -44,18 +44,6 @@ async function attachSettingsFormListener() {
       const data = await response.json();
       console.log("✅ Profile updated:", data);
 
-      // Update form with new data
-      document.getElementById("username-input").value = data.username;
-      localStorage.setItem("username", data.username);
-      document.getElementById("email-input").value = data.email;
-      document.getElementById("2fa-toggle").checked = data.two_factor_enabled;
-
-      // Update profile picture
-      if (data.profile_image) {
-        document.getElementById("profile-picture-settings").src =
-          data.profile_image;
-      }
-
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
       renderPage("home");
