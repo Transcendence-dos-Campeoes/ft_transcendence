@@ -51,6 +51,9 @@ class PongGame {
         this.targetPlayer2Position = 0;
         this.lastPlayerPosition = { player1: 0, player2: 0 };
         this.isRunning = true;
+
+        this.ingame_modal = null;
+
         console.log("PongGame Initialized!");
         this.init();
     }
@@ -651,30 +654,15 @@ class PongGame {
     }
 
     async handleBeforeUnload(event) {
-        //event.preventDefault();
+        this.sendWarningToOpponent();
         this.forfeitGame();
         renderPage("home");
     }
 
     async handlePopState(event) {
-
-        //event.preventDefault();
-        history.replaceState(null, null, `${window.location.host}/pong`);
-        
         this.sendWarningToOpponent();
-        const modal = new MessageModal(MessageType.WARNING);
-        modal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
-            if (!accept) {
-                history.pushState(null, null, location.href);
-                this.sendResumeToOpponent();
-            }
-            else
-            {
-                this.forfeitGame();
-                renderPage("home");
-            }
-        });
-        // Show modal asking if the user wants to give up
+        this.forfeitGame();
+        renderPage("home");
     }
 
     sendWarningToOpponent() {
@@ -698,8 +686,8 @@ class PongGame {
     }
 
     handlePlayerWarning(data) {
-        const modal = new MessageModal(MessageType.INGAME_WARNING);
-        modal.show(`${data.user} is thinking about giving up` , "Warning");
+        this.ingame_modal = new MessageModal(MessageType.ERROR);
+        this.ingame_modal.show(`${data.user} gave up` , "Warning");
         this.isRunning = false; // Pause the game
     }
 
