@@ -44,18 +44,6 @@ async function attachSettingsFormListener() {
       const data = await response.json();
       console.log("✅ Profile updated:", data);
 
-      // Update form with new data
-      document.getElementById("username-input").value = data.username;
-      localStorage.setItem("username", data.username);
-      document.getElementById("email-input").value = data.email;
-      document.getElementById("2fa-toggle").checked = data.two_factor_enabled;
-
-      // Update profile picture
-      if (data.profile_image) {
-        document.getElementById("profile-picture-settings").src =
-          data.profile_image;
-      }
-
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
       renderPage("home");
@@ -123,7 +111,6 @@ async function loadSettingsData() {
     document.getElementById("username-input").value = data.username;
     document.getElementById("email-input").value = data.email;
     document.getElementById("profile-username").textContent = data.username;
-    document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
     const profileImg = document.getElementById("profile-picture-settings");
     if (profileImg && data.profile_image) {
       profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;
