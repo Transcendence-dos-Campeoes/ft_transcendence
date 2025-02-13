@@ -31,7 +31,7 @@ async function attachTournamentFormListener() {
       }
 
       // Show success message
-      renderElement("overview");
+      renderPage("home");
       displayMessage("Tournament created successfully", MessageType.SUCCESS);
     } catch (error) {
       console.error("❌ Error creating tournament:", error);

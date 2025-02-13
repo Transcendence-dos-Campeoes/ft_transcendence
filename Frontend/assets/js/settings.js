@@ -84,7 +84,7 @@ async function attachSettingsFormListener() {
 
       // Show success message
       displayMessage("Password updated successfully", MessageType.SUCCESS);
-      renderElement("overview");
+      renderPage("home");
     } catch (error) {
       console.error("❌ Password updating:", error);
       displayMessage("Failed to update password", MessageType.ERROR);

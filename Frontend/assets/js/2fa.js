@@ -158,7 +158,7 @@ async function verifyOtpCode(responseStruct, otpCode) {
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify OTP", MessageType.ERROR);
-		renderAuthPage("two_fa_verify", responseStruct);
+		renderPage("login");
 	}
 }
 
@@ -187,7 +187,7 @@ async function verifyEnableOtpCode(responseStruct, otpCode) {
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify OTP", MessageType.ERROR);
-		renderAuthPage("two_fa_enable", responseStruct);
+		renderPage("login");
 	}
 }
 
@@ -211,7 +211,7 @@ async function requestOtp(responseStruct, email) {
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to send recovery OTP", MessageType.ERROR);
-		renderAuthPage("two_fa_recover", responseStruct);
+		renderPage("login");
 	}
 }
 
@@ -235,6 +235,6 @@ async function checkRecoverOTP(responseStruct, otp_code) {
 	} catch (error) {
 		console.error("Error:", error);
 		displayMessage("Failed to verify recovery code", MessageType.ERROR);
-		renderAuthPage("two_fa_recover", responseStruct);
+		renderPage("login");
 	}
 }
