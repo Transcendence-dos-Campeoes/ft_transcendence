@@ -63,7 +63,7 @@ class MessageModal {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
-    if(isAwait)
+    if (isAwait)
       this.modal.querySelector('.btn-close-white').addEventListener('click', () => this.handleCancel());
     // if (isAwait)
     //   socket.addEventListener('message', function(event) {
@@ -150,6 +150,8 @@ class DeclineModal extends MessageModal {
     const modal = document.createElement("div");
     modal.className = "modal fade";
     modal.setAttribute("tabindex", "-1");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
 
     modal.innerHTML = `
           <div class="modal-dialog modal-dialog-centered">
@@ -168,13 +170,17 @@ class DeclineModal extends MessageModal {
 
     document.body.appendChild(modal);
     this.modal = modal;
-    this.bsModal = new bootstrap.Modal(modal);
+    this.bsModal = new bootstrap.Modal(modal, {
+      backdrop: 'static',
+      keyboard: false
+    });
 
     this.modal.querySelector('.btn-primary').addEventListener('click', () => this.hide());
   }
 
   show(message, title = null) {
     this.modal.querySelector(".modal-body").innerHTML = message;
+    this.modal.removeAttribute('aria-hidden');
     this.bsModal.show();
   }
 }
