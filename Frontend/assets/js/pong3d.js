@@ -791,8 +791,9 @@ class PongGame {
         // Throttle sending ball position
         const now = Date.now();
         if (now - this.lastSentTime > 300) {
-            this.sendBallPosition();
-            this.lastSentTime = now;
+            //if (this.player == "player1")
+                this.sendBallPosition();
+                this.lastSentTime = now;
         }
     }
 
