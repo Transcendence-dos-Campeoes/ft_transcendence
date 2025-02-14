@@ -13,6 +13,7 @@ from django.utils import timezone
 from web3 import Web3
 from django.conf import settings
 import random
+import asyncio
 
 import uuid
 
@@ -166,13 +167,33 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def online_players_update(self, event):
         self.send_online_players()
 
+    def is_user_in_group(self, username):
+        channel_name = get_channel_name(username)
+        if not channel_name:
+            return False
+        for channels in group_channel_map.values():
+            if channel_name in channels:
+                return True
+        return False
+    
     def invite(self, event):
         if event['to'] == self.scope['user'].username:
-            text_data=json.dumps({
-                'type': 'invite',
-                'from': event['from']
-            })
-            self.send(text_data)
+
+            if self.is_user_in_group(event['to']):
+                async_to_sync(self.channel_layer.group_send)(
+                "online_players",
+                {
+                    "type": "decline_invite",
+                    "from": self.scope['user'].username,
+                    "to": event['from']
+                }
+                )
+            else:
+                text_data=json.dumps({
+                    'type': 'invite',
+                    'from': event['from']
+                })
+                self.send(text_data)
             
     def accept_invite(self, event):
         if 'to' in event and event['to'] == self.scope['user'].username:
@@ -244,6 +265,11 @@ class OnlinePlayersConsumer(WebsocketConsumer):
          # Create a new match instance
 
     ################ GAME UPDATE ###########################
+
+    async def send_periodic_updates(self, game_group):
+        while True:
+            await asyncio.sleep(0.03)  # 30 milliseconds
+            await self.send_game_update(game_group)
 
     def handle_player_move(self, data):
 
@@ -522,7 +548,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def handle_ready(self, event):
         if 'game_group' not in event:
             user = event['user']
-            if get_channel_name(user) in group_channel_map:
+            if self.is_user_in_group(user):
                 game_group = group_channel_map[user]
             else:
                 print("Error: 'game_group' key not found in event and user is not part of any game group")

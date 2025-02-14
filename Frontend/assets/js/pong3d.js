@@ -725,10 +725,10 @@ class PongGame {
                 }
             } else {
                 if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.targetPlayer2Position += 0.1;
+                    this.targetPlayer2Position -= 0.1;
                 }
                 if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-                    this.targetPlayer2Position -= 0.1;
+                    this.targetPlayer2Position += 0.1;
                 }
             }
         }
@@ -747,14 +747,16 @@ class PongGame {
 
     updateBall() {
         // Interpolate ball position for smooth movement
-        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.8;
-        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.8;
-
+        
+        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.7;
+        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.7;
+        
         // Throttle sending ball position
         const now = Date.now();
-        if (now - this.lastSentTime > 40) {
+        if (now - this.lastSentTime > 100) {
             this.sendBallPosition();
             this.lastSentTime = now;
+            console.log(now);
         }
     
         
@@ -820,8 +822,8 @@ class PongGame {
         window.removeEventListener("keydown", this.handleKeyDown);
         window.removeEventListener("keyup", this.handleKeyUp);
         window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
-        // window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-        // window.removeEventListener('popstate', this.handlePopState.bind(this));
+        window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        window.removeEventListener('popstate', this.handlePopState.bind(this));
         // Remove other event listeners, stop animations, etc.
         renderPage("home");
     }
