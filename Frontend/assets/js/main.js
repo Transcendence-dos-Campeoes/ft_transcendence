@@ -6,7 +6,7 @@ const router = {
 		login: "/login.html",
 		register: "/register.html",
 		pong: "/pong.html",
-		pongai: "/pongai.html",
+		pongai: "/pong.html",
 		42: "/42.html"
 	},
 };
