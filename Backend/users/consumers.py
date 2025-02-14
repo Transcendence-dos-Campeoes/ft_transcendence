@@ -144,22 +144,26 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def send_online_players(self):
         user = self.scope['user']
         serializer = FriendsSerializer(user)
-        players_data = serializer.data  # Serialize the data
+        friends_data = serializer.data.get('friends', [])
+        online_friends = [friend for friend in friends_data if friend['username'] in [user.username for user in channel_user_map.values()]]  
+
         data = {
             "type": "online.players.update",
-            "players_data": players_data,
+            "players_data": online_friends,
         }
         self.send(text_data=json.dumps(data))
 
     def broadcast_online_players(self):
         user = self.scope['user']
         serializer = FriendsSerializer(user)
-        players_data = serializer.data
+        friends_data = serializer.data.get('friends', [])
+        online_friends = [friend for friend in friends_data if friend['username'] in [user.username for user in channel_user_map.values()]]  
+
         async_to_sync(self.channel_layer.group_send)(
             "online_players",
             {
                 "type": "online.players.update",
-                "players_data": players_data,
+                "players_data": online_friends,
             }
         )
 
