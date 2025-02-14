@@ -604,23 +604,36 @@ class PongDuoGame {
             if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
                 this.rightPaddle.position.y -= 0.1;
             }
-        } else {
+        } else
+        {
             if (this.currentCamera === this.player1Camera) {
-                sideN = -1;
-            } else {
-                sideN = 1;
+                if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                    this.leftPaddle.position.y += 0.1 * sideN;
+                }
+                if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                    this.leftPaddle.position.y -= 0.1 * sideN;
+                }
+                if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
+                    this.rightPaddle.position.y += 0.1 * sideN;
+                }
+                if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
+                    this.rightPaddle.position.y -= 0.1 * sideN;
+                }
             }
-            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1 * sideN;
-            }
-            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1 * sideN;
-            }
-            if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-                this.rightPaddle.position.y += 0.1 * sideN;
-            }
-            if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-                this.rightPaddle.position.y -= 0.1 * sideN;
+            else
+            {
+                if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
+                    this.leftPaddle.position.y += 0.1 * sideN;
+                }
+                if (this.keys["a"] && this.leftPaddle.position.y > -paddleLimit) {
+                    this.leftPaddle.position.y -= 0.1 * sideN;
+                }
+                if (this.keys["ArrowRight"] && this.rightPaddle.position.y < paddleLimit) {
+                    this.rightPaddle.position.y += 0.1 * sideN;
+                }
+                if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
+                    this.rightPaddle.position.y -= 0.1 * sideN;
+                }
             }
         }
     }
