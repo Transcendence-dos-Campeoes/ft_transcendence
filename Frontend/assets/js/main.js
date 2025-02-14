@@ -113,7 +113,7 @@ async function renderPage(page) {
 		} else if (page === "42") {
 			handle42Callback();
 		} else if (page === "pongai") {
-			startGameDuo(null, null, 2, true);
+			startGameDuo(true);
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
