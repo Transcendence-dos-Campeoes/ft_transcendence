@@ -24,7 +24,6 @@ class PongDuoGame {
         this.camPos = 6.5;
         this.topCamera;
 
-
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
         this.player1Name = "";
         this.player2Name = "";
@@ -44,14 +43,14 @@ class PongDuoGame {
         this.isBallMovingRight = true;
         this.keys = {};
         this.isRunning = true;
-        console.error("'Game' instancce Started!");
+        console.log("'Game' instancce Started!");
         this.init();
     }
 
     setupRenderer() {
         this.board = document.getElementById("board");
         if (!this.board) {
-            console.error("'board' canvas not found!");
+            console.log("'board' canvas not found!");
             return;
         }
         this.renderer = new THREE.WebGLRenderer({
@@ -550,7 +549,7 @@ class PongDuoGame {
 
     setupScoreboard() {
         if (!this.board) {
-            console.error("oard element not found for scoreboard!");
+            console.log("loard element not found for scoreboard!");
             return;
         }
         // Create the scoreboard container
@@ -604,24 +603,8 @@ class PongDuoGame {
             if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
                 this.rightPaddle.position.y -= 0.1;
             }
-        } else
-        {
+        } else {
             if (this.currentCamera === this.player1Camera) {
-                if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                    this.leftPaddle.position.y += 0.1 * sideN;
-                }
-                if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                    this.leftPaddle.position.y -= 0.1 * sideN;
-                }
-                if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.rightPaddle.position.y += 0.1 * sideN;
-                }
-                if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-                    this.rightPaddle.position.y -= 0.1 * sideN;
-                }
-            }
-            else
-            {
                 if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
                     this.leftPaddle.position.y += 0.1 * sideN;
                 }
@@ -634,6 +617,19 @@ class PongDuoGame {
                 if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
                     this.rightPaddle.position.y -= 0.1 * sideN;
                 }
+                return;
+            }
+            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += 0.1 * sideN;
+            }
+            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= 0.1 * sideN;
+            }
+            if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
+                this.rightPaddle.position.y += 0.1 * sideN;
+            }
+            if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
+                this.rightPaddle.position.y -= 0.1 * sideN;
             }
         }
     }
