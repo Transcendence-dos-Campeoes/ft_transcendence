@@ -34,11 +34,9 @@ async function logout() {
 	} catch (error) {
 		console.error("Error logging out:", error);
 		localStorage.clear();
-		renderPage("login");
 	}
 }
 
 async function clearLocalStorage() {
 	localStorage.clear();
-	renderPage("login");
 }

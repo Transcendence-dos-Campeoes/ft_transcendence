@@ -75,6 +75,8 @@ async function renderElement(element) {
 		} else if (element === "changeMap") {
 			loadMaps();
 		}
+		// history.pushState({ element: element }, "", `/home/${element}`);
+		elements.currentElement = element;
 		console.log("✅ Component render complete:", element);
 	} catch (error) {
 		console.error("Error loading element:", error);

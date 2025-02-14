@@ -6,6 +6,7 @@ const router = {
 		login: "/login.html",
 		register: "/register.html",
 		pong: "/pong.html",
+		pongai: "/pong.html",
 		42: "/42.html"
 	},
 };
@@ -99,12 +100,12 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-      		// startGame(data.game_group, socket);
 			console.log(data);
 			startGame3d(data, socket);
-			//startGameDuo(null, null, 2, true);
 		} else if (page === "42") {
 			handle42Callback();
+		} else if (page === "pongai") {
+			startGameDuo(null, null, 2, true);
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
@@ -277,11 +278,11 @@ async function refreshTokenDiff(tokens) {
 }
 
 // Handle browser back/forward
-// window.addEventListener("popstate", (e) => {
-// 	if (e.state?.page) {
-// 		renderPage(e.state.page);
-// 	}
-// });
+window.addEventListener("popstate", (e) => {
+	if (e.state?.page) {
+		renderPage(e.state.page);
+	}
+});
 
 // Load initial page
 window.addEventListener("load", () => {
