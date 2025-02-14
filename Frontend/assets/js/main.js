@@ -99,7 +99,7 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-			startGameDuo(null, null, 1);
+			startGameDuo(null, null, 1, true);
       		// startGame(data.game_group, socket);
 			//console.log(data);
 			//startGame3d(data, socket);

@@ -1,7 +1,7 @@
 
 class PongDuoGame {
-    constructor(data, socket, gameMap) {
-        this.gameMap = gameMap;
+    constructor(data, socket, gameMap, aiMode) {
+        this.gameMap = 2;
         this.socket = socket;
         this.data = data;
         this.ballMaxAnglle = 60;
@@ -24,6 +24,15 @@ class PongDuoGame {
         this.camPos = 6.5;
         this.topCamera;
 
+        this.isAIMode = aiMode;
+        this.aiWorker = null;
+        this.lastAIUpdateTime = 0;
+        this.AI_UPDATE_INTERVAL = 1000;
+
+        if (this.isAIMode) {
+            this.setupAIWorker();
+        }
+
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
         this.player1Name = "";
         this.player2Name = "";
@@ -45,6 +54,22 @@ class PongDuoGame {
         this.isRunning = true;
         console.log("'Game' instancce Started!");
         this.init();
+    }
+
+    setupAIWorker() {
+        this.aiWorker = new Worker('./assets/js/aiWorker.js');
+        console.log('AI Worker initialized');
+        this.keys = this.keys || {};
+        this.aiWorker.onmessage = (e) => {
+            if (e.data.type === 'key_press') {
+
+                console.log('Received AI keys:', e.data.keys); // Debug log
+
+                // Use the correct key names that match updatePaddles
+                this.keys['ArrowUp'] = e.data.keys.ArrowUp;
+                this.keys['ArrowDown'] = e.data.keys.ArrowDown;
+            }
+        };
     }
 
     setupRenderer() {
@@ -359,13 +384,28 @@ class PongDuoGame {
     // Reset the ball to the center and changes state for next call
     resetBall() {
         this.ball.position.set(0, 0, 0);
+        //x horizontal y vertical
+        this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
             this.ballVelocity = { x: 0.05, y: 0 };
         } else {
             this.ballVelocity = { x: -0.05, y: 0 };
         }
         this.isBallMovingRight = !this.isBallMovingRight;
+        if (this.isAIMode && this.aiWorker) {
+            this.aiWorker.postMessage({
+                type: 'ball_reset',
+                ballPosition: {
+                    x: this.ball.position.x,
+                    y: this.ball.position.y
+                },
+                ballVelocity: this.ballVelocity,
+                fieldHeight: this.fieldWidth,
+                paddleY: this.rightPaddle.position.y
+            });
+        }
     }
+
 
     updateBall() {
         this.ball.position.x += this.ballVelocity.x;
@@ -391,6 +431,27 @@ class PongDuoGame {
         }
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
+
+        //this sends the ball position to the AI worker and directional velocity.
+        //x horizontal y vertical
+
+        if (this.isAIMode && this.aiWorker) {
+            const currentTime = Date.now();
+            //updates to 1 second intervals unless ball reset (new game)
+            if (!this.lastAIUpdate || currentTime - this.lastAIUpdate >= 1000) {
+                this.aiWorker.postMessage({
+                    type: 'ball_update',
+                    ballPosition: {
+                        x: this.ball.position.x,
+                        y: this.ball.position.y
+                    },
+                    ballVelocity: this.ballVelocity,
+                    fieldHeight: this.fieldWidth,
+                    paddleY: this.rightPaddle.position.y
+                });
+                this.lastAIUpdate = currentTime;
+            }
+        }
     }
 
 
@@ -585,54 +646,95 @@ class PongDuoGame {
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
 
-    //Controls padles and keeps them inside the field. 
-    // rotating camera views triggers movement switch of keys to adjust to view
+
     updatePaddles() {
-        const paddleLimit = this.fieldWidth / 2 - 1.1 / 2; // Limit paddles within field bounds
-        let sideN = 1;
-        if (this.currentCamera === this.topCamera) {
-            if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1;
-            }
-            if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1;
-            }
-            if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
-                this.rightPaddle.position.y += 0.1;
-            }
-            if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
-                this.rightPaddle.position.y -= 0.1;
-            }
-        } else {
-            if (this.currentCamera === this.player1Camera) {
-                if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
-                    this.leftPaddle.position.y += 0.1 * sideN;
-                }
-                if (this.keys["a"] && this.leftPaddle.position.y > -paddleLimit) {
-                    this.leftPaddle.position.y -= 0.1 * sideN;
-                }
-                if (this.keys["ArrowRight"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.rightPaddle.position.y += 0.1 * sideN;
-                }
-                if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
-                    this.rightPaddle.position.y -= 0.1 * sideN;
-                }
-                return;
-            }
-            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1 * sideN;
-            }
-            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1 * sideN;
-            }
-            if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-                this.rightPaddle.position.y += 0.1 * sideN;
-            }
-            if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-                this.rightPaddle.position.y -= 0.1 * sideN;
-            }
+        const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
+
+        // Handle human player (left paddle)
+        if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+            this.leftPaddle.position.y += 0.1;
+        }
+        if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+            this.leftPaddle.position.y -= 0.1;
+        }
+
+        // Handle AI or human player (right paddle)
+        if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
+            this.rightPaddle.position.y += 0.1;
+        }
+        if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
+            this.rightPaddle.position.y -= 0.1;
         }
     }
+
+    //Controls padles and keeps them inside the field. 
+    // rotating camera views triggers movement switch of keys to adjust to view
+    // updatePaddles() {
+    //     let sideN = 1;
+    //     const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
+
+    //     if (this.isAIMode) {
+    //         // Human player controls (left paddle)
+    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+    //             this.leftPaddle.position.y += 0.1;
+    //         }
+    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+    //             this.leftPaddle.position.y -= 0.1;
+    //         }
+
+    //         // AI controls (right paddle)
+    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
+    //             this.rightPaddle.position.y += 0.1;
+    //         }
+    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
+    //             this.rightPaddle.position.y -= 0.1;
+    //         }
+    //         return;
+    //     }
+    //     ////
+    //     if (this.currentCamera === this.topCamera) {
+    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+    //             this.leftPaddle.position.y += 0.1;
+    //         }
+    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+    //             this.leftPaddle.position.y -= 0.1;
+    //         }
+    //         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
+    //             this.rightPaddle.position.y += 0.1;
+    //         }
+    //         if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
+    //             this.rightPaddle.position.y -= 0.1;
+    //         }
+    //     } else {
+    //         if (this.currentCamera === this.player1Camera) {
+    //             if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
+    //                 this.leftPaddle.position.y += 0.1 * sideN;
+    //             }
+    //             if (this.keys["a"] && this.leftPaddle.position.y > -paddleLimit) {
+    //                 this.leftPaddle.position.y -= 0.1 * sideN;
+    //             }
+    //             if (this.keys["ArrowRight"] && this.rightPaddle.position.y < paddleLimit) {
+    //                 this.rightPaddle.position.y += 0.1 * sideN;
+    //             }
+    //             if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
+    //                 this.rightPaddle.position.y -= 0.1 * sideN;
+    //             }
+    //             return;
+    //         }
+    //         if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+    //             this.leftPaddle.position.y += 0.1 * sideN;
+    //         }
+    //         if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+    //             this.leftPaddle.position.y -= 0.1 * sideN;
+    //         }
+    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
+    //             this.rightPaddle.position.y += 0.1 * sideN;
+    //         }
+    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
+    //             this.rightPaddle.position.y -= 0.1 * sideN;
+    //         }
+    //     }
+    // }
 
     setupControls() {
         window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
@@ -699,9 +801,9 @@ class PongDuoGame {
 }
 
 /////    function called on main js 
-async function startGameDuo(data, socket, gameMap) {
+async function startGameDuo(data, socket, gameMap, aiMode) {
     console.log("Game starting...");
-    new PongDuoGame(data, socket, gameMap);
+    new PongDuoGame(data, socket, gameMap, aiMode);
 }
 
 
