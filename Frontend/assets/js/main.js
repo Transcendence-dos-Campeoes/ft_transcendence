@@ -99,7 +99,7 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-      		// startGame(data.game_group, socket);
+			// startGame(data.game_group, socket);
 			console.log(data);
 			startGame3d(data, socket);
 		} else if (page === "42") {
@@ -276,11 +276,11 @@ async function refreshTokenDiff(tokens) {
 }
 
 // Handle browser back/forward
-// window.addEventListener("popstate", (e) => {
-// 	if (e.state?.page) {
-// 		renderPage(e.state.page);
-// 	}
-// });
+window.addEventListener("popstate", (e) => {
+	if (e.state?.page) {
+		renderPage(e.state.page);
+	}
+});
 
 // Load initial page
 window.addEventListener("load", () => {
