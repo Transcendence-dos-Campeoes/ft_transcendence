@@ -77,8 +77,10 @@ async function cancelRegistration(responseStruct) {
 		"Are you sure you want to cancel your account registration? All your progress will be lost.",
 		"Cancel Account Registration"
 	);
-
-	renderAuthPage("two_fa_enable", responseStruct);
+	if (!result) {
+		renderAuthPage("two_fa_enable", responseStruct);
+		return;
+	}
 
 	try {
 		const response = await fetchWithDiffAuth('/api/users/delete/', {
@@ -176,7 +178,7 @@ async function verifyEnableOtpCode(responseStruct, otpCode) {
 			localStorage.setItem('username', responseStruct.username);
 			localStorage.setItem('email', responseStruct.email);
 			socket = new Socket(responseStruct.access);
-			
+
 			renderPage("home");
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);

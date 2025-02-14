@@ -28,10 +28,10 @@ class PongGame {
 
 
         // DEFINE PLAYER AND CAMERA
-        this.user = localStorage.getItem("username") 
+        this.user = localStorage.getItem("username")
         this.player = this.user === this.player1Name ? "player1" : "player2";
         this.currentCamera = this.player === "player1" ? "player1Camera" : "player2Camera";
-        
+
         //player stuff
         this.player1 = { position: { y: 0 } };
         this.player2 = { position: { y: 0 } };
@@ -110,7 +110,7 @@ class PongGame {
     setupSocketListeners() {
         this.socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
-    
+
             if (data.type === 'game_update') {
                 this.targetBallPosition.x = data.ball.x;
                 this.targetBallPosition.y = data.ball.y;
@@ -686,7 +686,7 @@ class PongGame {
 
     handlePlayerWarning(data) {
         this.ingame_modal = new MessageModal(MessageType.ERROR);
-        this.ingame_modal.show(`${data.user} gave up` , "Warning");
+        this.ingame_modal.show(`${data.user} gave up`, "Warning");
         this.isRunning = false; // Pause the game
     }
 
@@ -696,7 +696,7 @@ class PongGame {
 
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - this.paddleLenght / 2; // Limit paddles within field bounds
-    
+
         if (this.currentCamera === "topCamera") {
             // Controls for top view
             if (this.player === "player1") {
@@ -732,11 +732,11 @@ class PongGame {
                 }
             }
         }
-    
+
         // Interpolate paddle positions
         this.leftPaddle.position.y += (this.targetPlayer1Position - this.leftPaddle.position.y) * 0.3;
         this.rightPaddle.position.y += (this.targetPlayer2Position - this.rightPaddle.position.y) * 0.3;
-    
+
         // Send paddle position only if it has changed
         const paddlePosition = this.player === "player1" ? this.leftPaddle.position.y : this.rightPaddle.position.y;
         if (this.lastPlayerPosition[this.player] !== paddlePosition) {
@@ -766,11 +766,10 @@ class PongGame {
             else
                 this.stopGame(this.player2Name);
         }
-    
+
         // Check for paddle collisions
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
-    
     }
 
     sendBallPosition() {
@@ -823,11 +822,11 @@ class PongGame {
         window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
         window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
         window.removeEventListener('popstate', this.handlePopState.bind(this));
-
         renderPage("home");
     }
 
     stopGame(winner) {
+        this.displayEndGameMessage();
         console.log(`${winner} wins the game!`);
         this.socket.send(JSON.stringify({
             type: 'end_game',
@@ -842,10 +841,10 @@ class PongGame {
         this.cleanup();
     }
 
-    
+
     forfeitGame() {
         const forfeitingPlayer = this.user === this.player1Name ? "player1" : "player2";
-    
+
         this.socket.send(JSON.stringify({
             type: 'end_game',
             user: localStorage.getItem("username"),
@@ -856,6 +855,51 @@ class PongGame {
             player2Score: forfeitingPlayer === "player2" ? 0 : 3,
         }));
         this.cleanup();
+    }
+
+    displayEndGameMessage() {
+        if ((this.player1Score > this.player2Score) && (this.player === "player1")) {
+            this.displayMessage("Winner!");
+            return;
+        } else if ((this.player2Score > this.player1Score) && this.player === "player2") {
+            this.displayMessage("Winner!");
+            return;
+        } else {
+            this.displayMessage("You Lost!");
+        }
+    }
+
+    displayMessage(message) {
+        const div = document.createElement("div");
+        div.id = "endGameMessage";
+        div.style.position = "absolute";
+        div.style.top = "50%";
+        div.style.left = "50%";
+        div.style.transform = "translate(-50%, -50%)";
+        div.style.color = "white";
+        div.style.fontSize = "48px";
+        div.style.fontFamily = "'Arial', sans-serif";
+        div.style.padding = "20px";
+        div.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        div.style.borderRadius = "10px";
+        div.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+        div.style.textAlign = "center";
+        div.style.animation = "fadeIn 1s ease-in-out";
+        div.innerText = message;
+        document.body.appendChild(div);
+
+        const style = document.createElement("style");
+        style.innerHTML = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        // Remove the message after 4 seconds
+        setTimeout(() => {
+            div.remove();
+        }, 2000);
     }
 }
 

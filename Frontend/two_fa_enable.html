@@ -1,24 +1,25 @@
-<div class="screen">
-	<div class="container-fluid overflow-auto d-flex flex-column h-100">
-		<div class="row mt-4 mb-2 justify-content-center">
-			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
-				<h1>Enable 2FA</h1>
 
+<div class="screen">
+	<div class="justify-content-center container-fluid overflow-auto d-flex flex-column h-100">
+		<div class="row justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6">
+				<h1 class="text-center my-4">Enable 2FA</h1>
 				<form id="twoFaEnableForm">
-					<div class="mb-3">
-						<h5>Scan the QR code with your authenticator
-							app:</h5>
-						<div class="w-50 mx-auto">
-							<img id="qrCodeImage" class="img-fluid" alt="QR Code" style="max-width: 200px;">
+					<div class="mb-4 wowzers">
+						<div class="row">
+							<div class="col-md-6 text-center wowzers">
+								<img id="qrCodeImage" class="img-fluid" alt="QR Code" style="max-width: 200px;">
+							</div>
+							<div class="wowzers col-md-6 d-flex align-items-center">
+								<h5 class="text-center wowzers">Scan the QR code with your authenticator app:</h5>
+							</div>
 						</div>
 					</div>
-
-					<div class="mb-3">
-						<label for="otpCode" class="form-label">Enter the OTP code:</label>
+					<div class="mb-4 wowzers">
+						<label for="otpCode" class="wowzers form-label">Enter the OTP code:</label>
 						<input type="text" class="form-control" id="otpCode" required>
 					</div>
-
-					<div class="d-grid gap-2 d-md-flex">
+					<div class="d-flex justify-content-between">
 						<button type="submit" class="btn btn-success">Enable 2FA</button>
 						<button type="button" id="cancel" class="btn btn-danger">Cancel</button>
 					</div>

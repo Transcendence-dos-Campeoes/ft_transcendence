@@ -20,7 +20,7 @@ async function waitgame() {
 
         awaitModal = new MessageModal(MessageType.AWAIT);
         readyModal = new MessageModal(MessageType.READY);
-        giveUpModal = new MessageModal( );
+        giveUpModal = new MessageModal();
 
         awaitModal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
             if (!accept) {
@@ -43,10 +43,9 @@ async function waitgame() {
                             })
                         );
                         giveUpModal.show(`You gave up`, "Loss by forfeit")
-                        renderElement('overview');
+                        renderPage('home');
                     }
-                    else
-                    {
+                    else {
                         if (data.type != 'end_game')
                             socket.send(
                                 JSON.stringify({
@@ -69,11 +68,10 @@ async function waitgame() {
                 awaitModal.hide();
                 awaitModal.resolve(true);
             }
-            if (data.type === 'end_game')
-            {
+            if (data.type === 'end_game') {
                 readyModal.hide();
                 readyModal.resolve(true);
-                renderElement('overview');
+                renderPage('home');
             }
 
         });
