@@ -6,6 +6,7 @@ const router = {
 		login: "/login.html",
 		register: "/register.html",
 		pong: "/pong.html",
+		pongai: "/pongai.html",
 		42: "/42.html"
 	},
 };
@@ -99,11 +100,12 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-			// startGame(data.game_group, socket);
 			console.log(data);
 			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
+		} else if (page === "pongai") {
+			startGame(data.game_group, socket);
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
