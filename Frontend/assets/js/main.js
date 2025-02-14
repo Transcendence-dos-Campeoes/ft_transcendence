@@ -6,7 +6,9 @@ const router = {
 		login: "/login.html",
 		register: "/register.html",
 		pong: "/pong.html",
-		42: "/42.html"
+		pongai: "/pong.html",
+		42: "/42.html",
+		404: "/404.html"
 	},
 };
 
@@ -49,6 +51,11 @@ async function isAuthenticated() {
 
 // Page loader
 async function renderPage(page) {
+	if (!router.pages[page]) {
+		console.log(`Page not found: ${page}, rendering 404 page.`);
+		page = "404";
+	}
+
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 
@@ -105,6 +112,8 @@ async function renderPage(page) {
 			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
+		} else if (page === "pongai") {
+			startGameDuo(null, null, 2, true);
 		}
 		history.pushState({ page: page }, "", `/${page}`);
 		router.currentPage = page;
@@ -277,7 +286,7 @@ async function refreshTokenDiff(tokens) {
 }
 
 
-// Store the event listener function in a variable
+// Handle browser back/forward
 const handlePopState = (e) => {
     if (e.state?.page) {
         renderPage(e.state.page);
