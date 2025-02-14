@@ -7,7 +7,8 @@ const router = {
 		register: "/register.html",
 		pong: "/pong.html",
 		pongai: "/pong.html",
-		42: "/42.html"
+		42: "/42.html",
+		404: "/404.html"
 	},
 };
 
@@ -50,6 +51,11 @@ async function isAuthenticated() {
 
 // Page loader
 async function renderPage(page) {
+	if (!router.pages[page]) {
+		console.log(`Page not found: ${page}, rendering 404 page.`);
+		page = "404";
+	}
+
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 

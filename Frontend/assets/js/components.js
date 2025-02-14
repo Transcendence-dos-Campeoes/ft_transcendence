@@ -12,6 +12,7 @@ const elements = {
 		invites: "/components/invites.html",
 		tournamentBracket: "/components/tournamentBracket.html",
 		changeMap: "/components/changeMap.html",
+		404: "/components/404.html",
 	},
 };
 
@@ -25,6 +26,10 @@ function clearNavLinkButtons() {
 	});
 }
 async function renderElement(element) {
+	if (!elements.elements[element]) {
+		console.log(`Element not found: ${element}, rendering 404 element.`);
+		element = "404";
+	}
 	console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
 
