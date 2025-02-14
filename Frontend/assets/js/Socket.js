@@ -71,12 +71,12 @@ class Socket {
       console.log("WebSocket message received:", data); // Debugging line
 
       if (data.type === "online.players.update") {
-        const playersList = document.getElementById("online-players-list");
-        if (playersList) {
-          playersList.innerHTML = ""; // Clear the list before updating
-        }
-        if (data.players_data.friends) {
-          data.players_data.friends.forEach((friend) => {
+        if (data.players_data) {
+          const playersList = document.getElementById("online-players-list");
+          if (playersList) {
+            playersList.innerHTML = ""; // Clear the list before updating
+          }
+          data.players_data.forEach((friend) => {
             const a = document.createElement("a");
             a.href = "#";
             a.className = "list-group-item list-group-item-action py-3 lh-sm";
@@ -215,9 +215,9 @@ class Socket {
   addEventListener(type, listener) {
     this.socket.addEventListener(type, listener);
   }
-      
+
   removeEventListener(type, listener) {
-      this.socket.removeEventListener(type, listener);
+    this.socket.removeEventListener(type, listener);
   }
 
   destroy() {
