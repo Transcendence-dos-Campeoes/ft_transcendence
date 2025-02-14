@@ -76,6 +76,7 @@ async function renderElement(element) {
 			loadMaps();
 		}
 		console.log("✅ Component render complete:", element);
+		history.pushState({ element: element }, "", `/home/${element}`);
 	} catch (error) {
 		console.error("Error loading element:", error);
 	} finally {

@@ -651,8 +651,8 @@ class PongGame {
             }
         });
         window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
-        // window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-        // window.addEventListener('popstate', this.handlePopState.bind(this));
+        window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        window.addEventListener('popstate', this.handlePopState.bind(this));
 
     }
 

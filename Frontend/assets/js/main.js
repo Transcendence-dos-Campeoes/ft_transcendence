@@ -68,6 +68,7 @@ async function renderPage(page) {
 	// }
 
 	try {
+		window.addEventListener("popstate", handlePopState);
 		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
 		screen.classList.remove("zoom-in", "zoom-out");
@@ -99,8 +100,8 @@ async function renderPage(page) {
 				socket = new Socket(localStorage.getItem('access'));
 			socket.lobbyLoad(localStorage.getItem('access'));
 		} else if (page === "pong") {
-      		// startGame(data.game_group, socket);
 			console.log(data);
+			window.removeEventListener("popstate", handlePopState);
 			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
@@ -275,12 +276,13 @@ async function refreshTokenDiff(tokens) {
 	}
 }
 
-// Handle browser back/forward
-// window.addEventListener("popstate", (e) => {
-// 	if (e.state?.page) {
-// 		renderPage(e.state.page);
-// 	}
-// });
+
+// Store the event listener function in a variable
+const handlePopState = (e) => {
+    if (e.state?.page) {
+        renderPage(e.state.page);
+    }
+};
 
 // Load initial page
 window.addEventListener("load", () => {
