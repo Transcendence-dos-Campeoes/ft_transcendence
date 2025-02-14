@@ -276,11 +276,11 @@ async function refreshTokenDiff(tokens) {
 }
 
 // Handle browser back/forward
-window.addEventListener("popstate", (e) => {
-	if (e.state?.page) {
-		renderPage(e.state.page);
-	}
-});
+// window.addEventListener("popstate", (e) => {
+// 	if (e.state?.page) {
+// 		renderPage(e.state.page);
+// 	}
+// });
 
 // Load initial page
 window.addEventListener("load", () => {

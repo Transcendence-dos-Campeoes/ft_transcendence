@@ -1,11 +1,11 @@
 async function waitgame() {
 
     const loadingOverlay = new LoadingOverlay();
-    const authenticated = await isAuthenticated();
-    if (!authenticated) {
-        console.log("User not authenticated, redirecting to login page.");
-        renderPage('login');
-    }
+    // const authenticated = await isAuthenticated();
+    // if (!authenticated) {
+    //   console.log("User not authenticated, redirecting to login page.");
+    //   renderPage('login');
+    // }
 
     try {
         loadingOverlay.show();
@@ -50,11 +50,12 @@ async function waitgame() {
                             socket.send(
                                 JSON.stringify({
                                     type: 'random_ready',
+                                    user: localStorage.getItem("username"),
                                     from: data.from,
                                     game_group: data.game_group,
                                     player: data.player,
                                     player1: data.player1,
-                                    player2: data.player2
+                                    player2: data.player2,
                                 })
                             );
                     }

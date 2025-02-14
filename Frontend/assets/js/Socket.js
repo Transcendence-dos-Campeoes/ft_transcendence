@@ -215,6 +215,10 @@ class Socket {
   addEventListener(type, listener) {
     this.socket.addEventListener(type, listener);
   }
+      
+  removeEventListener(type, listener) {
+      this.socket.removeEventListener(type, listener);
+  }
 
   destroy() {
     if (this.socket) {
