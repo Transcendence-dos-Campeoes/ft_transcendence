@@ -1,10 +1,7 @@
 
 class PongDuoGame {
-    constructor(data, socket, gameMap, aiMode) {
-        this.gameMap = 2;
-        this.socket = socket;
-        this.data = data;
-        this.ballMaxAnglle = 60;
+    constructor( aiMode) {
+        this.gameMap = 2;//agfsgdhsjdghsjdfbdjsfnv
 
         // Scene & Renderer
         this.scene = new THREE.Scene();
@@ -34,13 +31,12 @@ class PongDuoGame {
         }
 
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
-        this.player1Name = "";
-        this.player2Name = "";
+        this.player1Name = "You";
+        this.player2Name = "AI Opponent";
 
         //player stuff
         this.player1;
         this.player2;
-        this.player1Camera;
         this.player2Camera;
         this.player1Score = 0;
         this.player2Score = 0;
@@ -48,24 +44,18 @@ class PongDuoGame {
         this.ballMaterial;
         this.cameraEventListener;
 
-        this.ballVelocity = { x: 0.05, y: 0.02 };
+        this.ballVelocity = { x: 0.04, y: 0.0 };
         this.isBallMovingRight = true;
         this.keys = {};
         this.isRunning = true;
-        console.log("'Game' instancce Started!");
         this.init();
     }
 
     setupAIWorker() {
         this.aiWorker = new Worker('./assets/js/aiWorker.js');
-        console.log('AI Worker initialized');
         this.keys = this.keys || {};
         this.aiWorker.onmessage = (e) => {
             if (e.data.type === 'key_press') {
-
-                console.log('Received AI keys:', e.data.keys); // Debug log
-
-                // Use the correct key names that match updatePaddles
                 this.keys['ArrowUp'] = e.data.keys.ArrowUp;
                 this.keys['ArrowDown'] = e.data.keys.ArrowDown;
             }
@@ -102,21 +92,16 @@ class PongDuoGame {
     }
 
     setupCamera() {
-        const fov = 82;
+        const fov = 60;
         const aspect = this.board.clientWidth / this.board.clientHeight;
         const near = 0.1;
         const far = 1000;
-        // Player 1 Camera
-        this.player1Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.player1Camera.position.set(this.camPos, 0, 3);
-        this.player1Camera.rotation.set(0.0, 1, 1.57);
-        // Player 2 Camera
         this.player2Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this.player2Camera.position.set(-this.camPos, 0, 3);
         this.player2Camera.rotation.set(0, -1, -1.57);
         // Top view
         this.topCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.topCamera.position.set(0, 0, 4);
+        this.topCamera.position.z = 6;
         this.topCamera.rotation.set(0, 0, 0);
     }
 
@@ -387,9 +372,9 @@ class PongDuoGame {
         //x horizontal y vertical
         this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
-            this.ballVelocity = { x: 0.05, y: 0 };
+            this.ballVelocity = { x: 0.04, y: 0 };
         } else {
-            this.ballVelocity = { x: -0.05, y: 0 };
+            this.ballVelocity = { x: -0.04, y: 0 };
         }
         this.isBallMovingRight = !this.isBallMovingRight;
         if (this.isAIMode && this.aiWorker) {
@@ -420,12 +405,10 @@ class PongDuoGame {
         }
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
-            console.log("Player 1 Scored! Score:", this.player1Score);
             this.updateScoreboard();
             this.resetBall();
         } else if (this.ball.position.x <= fieldLeft) {
             this.player2Score++;
-            console.log("Player 2 Scored! Score:", this.player2Score);
             this.resetBall();
             this.updateScoreboard();
         }
@@ -434,7 +417,6 @@ class PongDuoGame {
 
         //this sends the ball position to the AI worker and directional velocity.
         //x horizontal y vertical
-
         if (this.isAIMode && this.aiWorker) {
             const currentTime = Date.now();
             //updates to 1 second intervals unless ball reset (new game)
@@ -475,7 +457,7 @@ class PongDuoGame {
             ballTop >= paddleBottom &&
             ballBottom <= paddleTop
         ) {
-            this.ballVelocity.x *= -1.1;
+            this.ballVelocity.x *= -1.06;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
         }
@@ -616,10 +598,10 @@ class PongDuoGame {
         // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "5px"; // Keep inside board
+        this.scoreboard.style.top = "0px"; // Keep inside board
         this.scoreboard.style.left = "50%";
         this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "24px";
+        this.scoreboard.style.fontSize = "18px";
         this.scoreboard.style.fontWeight = "bold";
         this.scoreboard.style.color = "green";
         this.scoreboard.style.padding = "4px 30px";
@@ -650,15 +632,21 @@ class PongDuoGame {
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
 
-        // Handle human player (left paddle)
-        if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-            this.leftPaddle.position.y += 0.1;
+        if(this.topCamera === this.currentCamera) {
+            if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += 0.1;
+            }
+            if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= 0.1;
+            }
+        } else {
+            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += 0.1;
+            }
+            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= 0.1;
+            }
         }
-        if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-            this.leftPaddle.position.y -= 0.1;
-        }
-
-        // Handle AI or human player (right paddle)
         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
             this.rightPaddle.position.y += 0.1;
         }
@@ -750,8 +738,6 @@ class PongDuoGame {
             this.cameraEventListener = (e) => {
                 if (e.key === "c") {
                     if (this.currentCamera === this.topCamera) {
-                        this.currentCamera = this.player1Camera;
-                    } else if (this.currentCamera === this.player1Camera) {
                         this.currentCamera = this.player2Camera;
                     } else {
                         this.currentCamera = this.topCamera;
@@ -773,8 +759,7 @@ class PongDuoGame {
         }
     }
 
-    //class initialization
-
+    // Class initialization
     init() {
         this.setupCamera();
         this.setupLighting();
@@ -784,35 +769,19 @@ class PongDuoGame {
         this.setupScoreboard();
         this.animate();
     }
-    ////////  here is the main loop of the game    ///////////
 
+    // Main Game Loop
     animate() {
         requestAnimationFrame(() => this.animate());
-        //colisions and ball  position update
         this.updateBall();
-        //players control each paddle here
         this.updatePaddles();
-        //camera switch control and listeners
         this.cameraKeyControls();
-        //renders scene and starfield rotation with selected camera from precious functions
         this.renderer.render(this.scene, this.currentCamera);
         this.starfieldBackgroudRotation();
     }
 }
 
-/////    function called on main js 
-async function startGameDuo(data, socket, gameMap, aiMode) {
+async function startGameDuo(aiMode) {
     console.log("Game starting...");
-    new PongDuoGame(data, socket, gameMap, aiMode);
+    new PongDuoGame(aiMode);
 }
-
-
-//need to create cleanup function for all ellements.
-/*
-
-These ones are window event listeners....
-    this.cameraEventListener 
-    this.keys
-
-
-*/
