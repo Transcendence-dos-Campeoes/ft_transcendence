@@ -145,7 +145,6 @@ class PongGame {
     async handleEndGame() {
         await this.wait(1200);
         this.cleanup();
-        renderPage("home");
     }
 
     wait(ms) {
@@ -660,13 +659,11 @@ class PongGame {
     async handleBeforeUnload(event) {
         this.sendWarningToOpponent();
         this.forfeitGame();
-        renderPage("home");
     }
 
     async handlePopState(event) {
         this.sendWarningToOpponent();
         this.forfeitGame();
-        renderPage("home");
     }
 
     sendWarningToOpponent() {
@@ -674,7 +671,6 @@ class PongGame {
             type: 'player_warning',
             user: this.user,
             game_group: this.game_group,
-            message: `${this.user} might be giving up.`
         }));
         this.isRunning = false; // Pause the game
     }
@@ -684,7 +680,6 @@ class PongGame {
             type: 'resume_game',
             user: this.user,
             game_group: this.game_group,
-            message: `${this.user} has resumed the game.`
         }));
         this.isRunning = true; // Resume the game
     }
@@ -752,27 +747,17 @@ class PongGame {
 
     updateBall() {
         // Interpolate ball position for smooth movement
-        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.1;
-        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.1;
+        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.8;
+        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.8;
 
         // Throttle sending ball position
         const now = Date.now();
-        if (now - this.lastSentTime > 300) {
+        if (now - this.lastSentTime > 40) {
             this.sendBallPosition();
             this.lastSentTime = now;
         }
     
-        // Check for goals
-        if (this.ball.position.x >= fieldRight) {
-            this.player1Score++;
-            console.log("Player 1 Scored! Score:", this.player1Score);
-            this.updateScoreboard();
-        } else if (this.ball.position.x <= fieldLeft) {
-            this.player2Score++;
-            console.log("Player 2 Scored! Score:", this.player2Score);
-            this.updateScoreboard();
-        }
-    
+        
         // Check for game over
         if (this.player1Score >= 5 || this.player2Score >= 5) {
             console.log("Game Over!");
@@ -838,7 +823,8 @@ class PongGame {
         window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
         window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
         window.removeEventListener('popstate', this.handlePopState.bind(this));
-        // Remove other event listeners, stop animations, etc.
+
+        renderPage("home");
     }
 
     stopGame(winner) {
