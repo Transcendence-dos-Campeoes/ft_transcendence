@@ -461,9 +461,6 @@ class PongGame {
             this.ballVelocity.x *= -1.1;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
-
-            //send ball position and velocity
-            
         }
     }
 
