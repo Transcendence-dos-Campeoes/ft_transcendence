@@ -75,7 +75,7 @@ class Socket {
         if (playersList) {
           playersList.innerHTML = ""; // Clear the list before updating
         }
-        if (Array.isArray(data.players_data)) {
+        if (data.players_data.friends) {
           data.players_data.friends.forEach((friend) => {
             const a = document.createElement("a");
             a.href = "#";
@@ -112,33 +112,33 @@ class Socket {
                 `;
             playersList.appendChild(a);
           });
-        }
-        const inviteButtons = document.querySelectorAll(".invite-button");
-        inviteButtons.forEach((button) => {
-          button.addEventListener("click", (event) => {
-            event.preventDefault();
-            const username = button.getAttribute("data-username");
-            this.socket.send(
-              JSON.stringify({
-                type: "invite",
-                from: currentUser,
-                to: username,
-              })
-            );
-            this.waitingModal.show(`Waiting for ${username} to accept your game invite...`, "Invite Sent").then((accept) => {
-              if (!accept) {
-                this.socket.send(
-                  JSON.stringify({
-                    type: "decline_invite",
-                    from: currentUser,
-                    to: username,
-                  })
-                );
-                //this.declineModal.show(`Your game invite to ${username} was rejected.`, "Invite Rejected");
-              }
+          const inviteButtons = document.querySelectorAll(".invite-button");
+          inviteButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              const username = button.getAttribute("data-username");
+              this.socket.send(
+                JSON.stringify({
+                  type: "invite",
+                  from: currentUser,
+                  to: username,
+                })
+              );
+              this.waitingModal.show(`Waiting for ${username} to accept your game invite...`, "Invite Sent").then((accept) => {
+                if (!accept) {
+                  this.socket.send(
+                    JSON.stringify({
+                      type: "decline_invite",
+                      from: currentUser,
+                      to: username,
+                    })
+                  );
+                  //this.declineModal.show(`Your game invite to ${username} was rejected.`, "Invite Rejected");
+                }
+              });
             });
           });
-        });
+        }
       } else if (data.type === "invite") {
         this.messageModal.show(`${data.from} has invited you to play a game. Do you accept?`, "Invite").then((accept) => {
           if (accept) {
