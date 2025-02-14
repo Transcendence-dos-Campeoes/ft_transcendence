@@ -102,6 +102,7 @@ async function renderPage(page) {
 		} else if (page === "pong") {
 			console.log(data);
 			startGame3d(data, socket);
+			//startGameDuo(null, null, 2, true);
 		} else if (page === "42") {
 			handle42Callback();
 		} else if (page === "pongai") {
