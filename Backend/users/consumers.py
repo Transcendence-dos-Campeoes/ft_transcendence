@@ -13,6 +13,7 @@ from django.utils import timezone
 from web3 import Web3
 from django.conf import settings
 import random
+import asyncio
 
 import uuid
 
@@ -170,13 +171,33 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def online_players_update(self, event):
         self.send_online_players()
 
+    def is_user_in_group(self, username):
+        channel_name = get_channel_name(username)
+        if not channel_name:
+            return False
+        for channels in group_channel_map.values():
+            if channel_name in channels:
+                return True
+        return False
+    
     def invite(self, event):
         if event['to'] == self.scope['user'].username:
-            text_data=json.dumps({
-                'type': 'invite',
-                'from': event['from']
-            })
-            self.send(text_data)
+
+            if self.is_user_in_group(event['to']):
+                async_to_sync(self.channel_layer.group_send)(
+                "online_players",
+                {
+                    "type": "decline_invite",
+                    "from": self.scope['user'].username,
+                    "to": event['from']
+                }
+                )
+            else:
+                text_data=json.dumps({
+                    'type': 'invite',
+                    'from': event['from']
+                })
+                self.send(text_data)
             
     def accept_invite(self, event):
         if 'to' in event and event['to'] == self.scope['user'].username:
@@ -208,6 +229,8 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 'player1': event['to'],
                 'player2': event['from'],
             })
+
+
             match_serializer = MatchSerializer(data={
             'player2': SiteUser.objects.get(username=event['from']).id,
             'player1': SiteUser.objects.get(username=event['to']).id,
@@ -242,6 +265,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def start_game(self, event):
         if (event['from'] == self.scope['user'].username):
             self.send(text_data=json.dumps(event))
+
     
     def starting_game(self, event):
         self.send(text_data=json.dumps(event))
@@ -254,21 +278,6 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         game_group = data['game_group']
         player = data['player']
         position = data['position']
-
-        if game_group not in game_state:
-            game_state[game_group] = {
-                'player1_position': 0,
-                'player2_position': 0,
-                'ball_position': {'x': 0, 'y': 0},
-                'ball_velocity': {'x': (1 if random.random() > 0.5 else -1) * 0.1, 'y': (random.random() - 0.5) * 0.06},
-                'player1_score': 0,
-                'player2_score': 0
-            }
-
-        if player == 'player1':
-            game_state[game_group]['player1_position'] = position
-        else:
-            game_state[game_group]['player2_position'] = position
 
         async_to_sync(self.channel_layer.group_send)(
             data['game_group'], 
@@ -284,81 +293,78 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
     def handle_game_update(self, data):
         game_group = data['game_group']
-        if game_group not in game_state:
-            return
+        # state = game_state[game_group]
+        ball_position = data['ball']
+        ball_velocity = data['ballVelocity']
+        # field_length = 8.5
+        # field_width = 5
+        # ball_size = 0.2  
+        # paddle_height = 1.1
+        # paddle_width = 0.2
 
-        state = game_state[game_group]
-        ball_position = state['ball_position']
-        ball_velocity = state['ball_velocity']
-        field_length = 8.5
-        field_width = 5
-        ball_size = 0.2  
-        paddle_height = 1.1
-        paddle_width = 0.2
-
-        # Update ball position
-        ball_position['x'] += ball_velocity['x']
-        ball_position['y'] += ball_velocity['y']
+        # # Update ball position
+        # ball_position['x'] += ball_velocity['x']
+        # ball_position['y'] += ball_velocity['y']
     
-        # Check for collisions with the top and bottom walls
-        field_top = field_width / 2 - ball_size / 2
-        field_bottom = -field_width / 2 + ball_size / 2
-        if ball_position['y'] >= field_top or ball_position['y'] <= field_bottom:
-            ball_velocity['y'] *= -1
+        # # Check for collisions with the top and bottom walls
+        # field_top = field_width / 2 - ball_size / 2
+        # field_bottom = -field_width / 2 + ball_size / 2
+        # if ball_position['y'] >= field_top or ball_position['y'] <= field_bottom:
+        #     ball_velocity['y'] *= -1
     
-        # Check for paddle collisions
-        player1_position = state['player1_position']
-        player2_position = state['player2_position']
-        paddle_left = -(field_length / 2) + paddle_width / 2
-        paddle_right = (field_length / 2) - paddle_width / 2
+        # # Check for paddle collisions
+        # player1_position = state['player1_position']
+        # player2_position = state['player2_position']
+        # paddle_left = -(field_length / 2) + paddle_width / 2
+        # paddle_right = (field_length / 2) - paddle_width / 2
 
-        # Check collision with player 1's paddle
+        # # Check collision with player 1's paddle
 
-        VELOCITY_MULTIPLIER = 1.1
-        IMPACT_MULTIPLIER = 0.1
-        COLLISION_OFFSET = 0.05
+        # VELOCITY_MULTIPLIER = 1.1
+        # IMPACT_MULTIPLIER = 0.1
+        # COLLISION_OFFSET = 0.05
 
-        if (ball_position['x'] <= paddle_left + ball_size / 2 and
-            player1_position - paddle_height / 2 <= ball_position['y'] <= player1_position + paddle_height / 2):
-            ball_velocity['x'] *= -VELOCITY_MULTIPLIER
-            impact_point = (ball_position['y'] - player1_position) / (paddle_height / 2)
-            ball_velocity['y'] += impact_point * IMPACT_MULTIPLIER
-            ball_position['x'] = paddle_left + ball_size / 2 + COLLISION_OFFSET
+        # if (ball_position['x'] <= paddle_left + ball_size / 2 and
+        #     player1_position - paddle_height / 2 <= ball_position['y'] <= player1_position + paddle_height / 2):
+        #     ball_velocity['x'] *= -VELOCITY_MULTIPLIER
+        #     impact_point = (ball_position['y'] - player1_position) / (paddle_height / 2)
+        #     ball_velocity['y'] += impact_point * IMPACT_MULTIPLIER
+        #     ball_position['x'] = paddle_left + ball_size / 2 + COLLISION_OFFSET
 
-        # Check collision with player 2's paddle
-        if (ball_position['x'] >= paddle_right - ball_size / 2 and
-            player2_position - paddle_height / 2 <= ball_position['y'] <= player2_position + paddle_height / 2):
-            ball_velocity['x'] *= -VELOCITY_MULTIPLIER
-            impact_point = (ball_position['y'] - player2_position) / (paddle_height / 2)
-            ball_velocity['y'] += impact_point * IMPACT_MULTIPLIER
-            ball_position['x'] = paddle_right - ball_size / 2 - COLLISION_OFFSET
+        # # Check collision with player 2's paddle
+        # if (ball_position['x'] >= paddle_right - ball_size / 2 and
+        #     player2_position - paddle_height / 2 <= ball_position['y'] <= player2_position + paddle_height / 2):
+        #     ball_velocity['x'] *= -VELOCITY_MULTIPLIER
+        #     impact_point = (ball_position['y'] - player2_position) / (paddle_height / 2)
+        #     ball_velocity['y'] += impact_point * IMPACT_MULTIPLIER
+        #     ball_position['x'] = paddle_right - ball_size / 2 - COLLISION_OFFSET
 
 
-        # Check for goals
-        field_left = -(field_length + 0.5) / 2
-        field_right = (field_length + 0.5) / 2
+        # # Check for goals
+        # field_left = -(field_length + 0.5) / 2
+        # field_right = (field_length + 0.5) / 2
         player1_score = data['player1Score']
         player2_score = data['player2Score']
-        if ball_position['x'] >= field_right:
-            player1_score += 1
-            ball_position = {'x': 0, 'y': 0}
-            ball_velocity = {'x': -0.1, 'y': 0.06}
-        elif ball_position['x'] <= field_left:
-            player2_score += 1
-            ball_position = {'x': 0, 'y': 0}
-            ball_velocity = {'x': 0.1, 'y': 0.06}
+        # if ball_position['x'] >= field_right:
+        #     player1_score += 1
+        #     ball_position = {'x': 0, 'y': 0}
+        #     ball_velocity = {'x': -0.1, 'y': 0.06}
+        # elif ball_position['x'] <= field_left:
+        #     player2_score += 1
+        #     ball_position = {'x': 0, 'y': 0}
+        #     ball_velocity = {'x': 0.1, 'y': 0.06}
     
-        # Update the game state
-        state['ball_position'] = ball_position
-        state['ball_velocity'] = ball_velocity
-        state['player1_score'] = player1_score
-        state['player2_score'] = player2_score
+        # # Update the game state
+        # state['ball_position'] = ball_position
+        # state['ball_velocity'] = ball_velocity
+        # state['player1_score'] = player1_score
+        # state['player2_score'] = player2_score
 
         # Check for game over
         if player1_score >= 5 or player2_score >= 5:
             self.handle_end_game({
                 'user': data['user'],
-                'game_group': data['game_group'],
+                'game_group': game_group,
                 'player1Score': player1_score,
                 'player2Score': player2_score
             })
@@ -398,8 +404,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     
 
     def game_update(self, event):
-        # if (event['user'] != self.scope['user'].username):
-        self.send(text_data=json.dumps(event))
+        if not 'user' in event:
+            self.send(text_data=json.dumps(event))
+        elif (event['user'] != self.scope['user'].username):
+            self.send(text_data=json.dumps(event))
         
     def player_move(self, event):
         if (event['user'] != self.scope['user'].username):
@@ -526,7 +534,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
     def handle_ready(self, event):
         if 'game_group' not in event:
             user = event['user']
-            if get_channel_name(user) in group_channel_map:
+            if self.is_user_in_group(user):
                 game_group = group_channel_map[user]
             else:
                 print("Error: 'game_group' key not found in event and user is not part of any game group")

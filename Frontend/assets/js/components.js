@@ -83,6 +83,7 @@ async function renderElement(element) {
 		// history.pushState({ element: element }, "", `/home/${element}`);
 		elements.currentElement = element;
 		console.log("✅ Component render complete:", element);
+		history.pushState({ element: element }, "", `/home/${element}`);
 	} catch (error) {
 		console.error("Error loading element:", error);
 	} finally {

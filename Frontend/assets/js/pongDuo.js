@@ -4,6 +4,7 @@ class PongDuoGame {
         this.gameMap = selectedMap;
         this.WINNING_SCORE = 1;
         this.gameOver = false;
+      
         // Scene & Renderer
         this.scene = new THREE.Scene();
         this.setupRenderer();
@@ -766,6 +767,7 @@ class PongDuoGame {
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
 
+
         if (this.topCamera === this.currentCamera) {
             if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
                 this.leftPaddle.position.y += 0.1;
@@ -860,6 +862,7 @@ class PongDuoGame {
         this.starfieldBackgroudRotation();
     }
 }
+
 
 async function startGameDuo() {
     const loadingOverlay = new LoadingOverlay();
