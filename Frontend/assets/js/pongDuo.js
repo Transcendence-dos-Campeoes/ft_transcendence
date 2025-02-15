@@ -12,7 +12,7 @@ class PongDuoGame {
         this.normalPaddleSpeed = 0.1;
         this.boostedPaddleSpeed = 0.18;
         this.currentPaddleSpeed = this.normalPaddleSpeed;
-      
+
         // Scene & Renderer
         this.scene = new THREE.Scene();
         this.setupRenderer();
@@ -412,6 +412,12 @@ class PongDuoGame {
         const fieldRight = (this.fieldLength + 0.5) / 2;
         if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
             this.ballVelocity.y *= -1;
+            if (this.ball.position.y >= fieldTop) {
+                this.ball.position.y = fieldTop - 0.01;
+            }
+            if (this.ball.position.y <= fieldBottom) {
+                this.ball.position.y = fieldBottom + 0.01;
+            }
         }
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
@@ -647,7 +653,7 @@ class PongDuoGame {
         this.isRunning = false;
         const overlay = document.createElement('div');
         overlay.className = 'countdown-overlay';
-        
+
         // Create a container for both countdown and controls info
         const container = document.createElement('div');
         Object.assign(container.style, {
@@ -663,7 +669,7 @@ class PongDuoGame {
             alignItems: 'center',
             zIndex: '1000'
         });
-    
+
         // Style the countdown text
         const countdownText = document.createElement('div');
         Object.assign(countdownText.style, {
@@ -674,7 +680,7 @@ class PongDuoGame {
             marginBottom: 'auto',
             paddingTop: '100px'  // Reduced padding to move text higher up
         });
-    
+
         // Add controls info at the bottom
         const controlsInfo = document.createElement('div');
         Object.assign(controlsInfo.style, {
@@ -689,23 +695,23 @@ class PongDuoGame {
             lineHeight: '1.5',
             opacity: '0.8'
         });
-        
+
         controlsInfo.innerHTML = `
             Move: w/s or a/d<br>
             Powerup: [space]<br>
             Camera: C
         `;
-    
+
         container.appendChild(countdownText);
         container.appendChild(controlsInfo);
         this.board.parentElement.appendChild(container);
-    
+
         // Run countdown
         for (let i = 3; i > 0; i--) {
             countdownText.innerHTML = `Get Ready<br>${i}`;
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-    
+
         container.remove();
         this.isRunning = true;
         this.animate();
@@ -784,7 +790,7 @@ class PongDuoGame {
                 this.activatePowerUp();
             }
         });
-        
+
         window.addEventListener("keyup", (e) => {
             this.keys[e.key] = false;
         });
@@ -792,20 +798,20 @@ class PongDuoGame {
 
     activatePowerUp() {
         if (!this.powerUpAvailable || this.powerUpActive || this.powerUpCount <= 0) return;
-        
+
         this.powerUpCount--;
         this.powerUpActive = true;
         this.currentPaddleSpeed = this.boostedPaddleSpeed;
-        
+
         // Just update the text, no need to create the display
         this.powerUpDisplay.textContent = `Power-ups: ${this.powerUpCount}`;
-    
+
         setTimeout(() => {
             this.powerUpActive = false;
             this.currentPaddleSpeed = this.normalPaddleSpeed;
         }, 5000);
     }
-    
+
 
     setupPowerUpDisplay() {
         this.powerUpDisplay = document.createElement('div');
