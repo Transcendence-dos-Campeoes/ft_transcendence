@@ -169,10 +169,10 @@ class OnlinePlayersConsumer(WebsocketConsumer):
         )
     
     def broadcast_all_online(self):
-        online_friends = user.username for user in channel_user_map.values()
+        players_data = [{"username": user.username} for user in channel_user_map.values()]
         data = {
-            "type": "online.players.update",
-            "players_data": online_friends,
+            "type": "all_online",
+            "players_data": players_data,
         }
         self.send(text_data=json.dumps(data))
 
