@@ -150,7 +150,7 @@ async function verifyOtpCode(responseStruct, otpCode) {
 			localStorage.setItem('username', responseStruct.username);
 			localStorage.setItem('email', responseStruct.email);
 			socket = new Socket(responseStruct.access);
-			renderPage("home");
+			window.location.href = `${window.location.origin}/home`;
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);
 			renderAuthPage("two_fa_verify", responseStruct);
@@ -178,8 +178,7 @@ async function verifyEnableOtpCode(responseStruct, otpCode) {
 			localStorage.setItem('username', responseStruct.username);
 			localStorage.setItem('email', responseStruct.email);
 			socket = new Socket(responseStruct.access);
-
-			renderPage("home");
+			window.location.href = `${window.location.origin}/home`;
 		} else {
 			displayMessage("Invalid OTP code", MessageType.ERROR);
 			renderAuthPage("two_fa_enable", responseStruct);
