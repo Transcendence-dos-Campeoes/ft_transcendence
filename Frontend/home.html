@@ -19,21 +19,21 @@
 				<nav class="nav nav-pills flex-column">
 					<ul class="nav nav-pills flex-column mb-auto">
 						<li class="nav-item">
-							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+							<a href="/home" class="nav-link link-body-emphasis px-3" aria-current="page"
 								onclick="renderElement('overview')">
 								<i class="bi bi-house-door me-2"></i>
 								Home
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+							<a href="/matches" class="nav-link link-body-emphasis px-3" aria-current="page"
 								onclick="renderElement('matches')">
 								<i class="bi bi-dice-6 me-2"></i>
 								Matches
 							</a>
 						</li>
 						<li>
-							<a href="#" class="nav-link link-body-emphasis" data-bs-toggle="collapse"
+							<a href="/tournaments" class="nav-link link-body-emphasis" data-bs-toggle="collapse"
 								data-bs-target="#tournamentsSubmenu">
 								<i class="bi bi-joystick me-2"></i>
 								Tournaments
@@ -42,14 +42,14 @@
 							<div class="collapse" id="tournamentsSubmenu">
 								<ul class="nav nav-pills flex-column ms-3 mt-2">
 									<li>
-										<a href="#" class="nav-link link-body-emphasis"
+										<a href="/newtournament" class="nav-link link-body-emphasis"
 											onclick="renderElement('newtournament')">
 											<i class="bi bi-plus-circle me-2"></i>
 											New
 										</a>
 									</li>
 									<li>
-										<a href="#" class="nav-link link-body-emphasis"
+										<a href="/tournaments" class="nav-link link-body-emphasis"
 											onclick="renderElement('tournaments')">
 											<i class="bi bi-door-open me-2"></i>
 											Overview
@@ -59,7 +59,7 @@
 							</div>
 						</li>
 						<li class="nav-item">
-							<a href="#" class="nav-link link-body-emphasis px-3" aria-current="page"
+							<a href="/pongai" class="nav-link link-body-emphasis px-3" aria-current="page"
 								onclick="renderPage('pongai')">
 								<i class="bi bi-controller me-2"></i>
 								Play game
@@ -78,12 +78,12 @@
 						<strong class="user-display"></strong>
 					</a>
 					<ul class="dropdown-menu dropdown-menu-end">
-						<li><a class="dropdown-item" href="#" onclick="renderElement('settings')">Settings</a></li>
+						<li><a class="dropdown-item" href="/settings" onclick="renderElement('settings')">Settings</a></li>
 						<li>
-							<a class="dropdown-item" href="#" onclick="renderElement('profile')">Profile</a>
+							<a class="dropdown-item" href="/profile" onclick="renderElement('profile')">Profile</a>
 						</li>
 						<li>
-							<a class="dropdown-item" href="#" onclick="renderElement('invites')">Invites</a>
+							<a class="dropdown-item" href="/invites" onclick="renderElement('invites')">Invites</a>
 						</li>
 						<li>
 							<hr class="dropdown-divider" />
