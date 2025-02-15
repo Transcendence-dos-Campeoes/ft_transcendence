@@ -756,7 +756,6 @@ class PongGame {
         if (now - this.lastSentTime > 100) {
             this.sendBallPosition();
             this.lastSentTime = now;
-            console.log(now);
         }
     
         

@@ -71,7 +71,6 @@ async function joinMatch(encodedMatch, currentUser) {
   socket.send(JSON.stringify({ type: "update_lobby" }));
   await wait(500);
   const players = data.players_data.map(player => player.username);
-  console.log(players);
 
   if (players.includes(match.match__player1__username) && players.includes(match.match__player2__username)) {
     console.log("Both players are in the players_data list.");
