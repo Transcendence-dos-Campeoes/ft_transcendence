@@ -53,28 +53,27 @@ async function isAuthenticated() {
 // Page loader
 async function renderPage(page) {
 	if (!router.pages[page]) {
-		console.log(`Page not found: ${page}, rendering 404 page.`);
+		console.error(`Page not found: ${page}, rendering 404 page.`);
 		page = "404";
 	}
 
 	console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 
-	if (page === "home" || page === "pong") {
+	if (page === "home" || page === "pong" || page === "pongai") {
 		const authenticated = await isAuthenticated();
 		if (!authenticated) {
 			console.log("User not authenticated, redirecting to login page.");
 			page = "login";
 		}
 	}
-
-	// else {
-	// 	const authenticated = await isAuthenticated();
-	// 	if (authenticated) {
-	// 		console.log("User authenticated, redirecting to home page.");
-	// 		page = "home";
-	// 	}
-	// }
+	else if (page === "login" || page === "register" || page === "42") {
+		const authenticated = await isAuthenticated();
+		if (authenticated) {
+			console.log("User authenticated, redirecting to home page.");
+			page = "home";
+		}
+	}
 
 	try {
 		window.addEventListener("popstate", handlePopState);
@@ -119,7 +118,7 @@ async function renderPage(page) {
 		} else if (page === "403") {
 			console.error(`Page not found: ${page}`);
 		}
-		if (page !== "403" || page !== "404"){
+		if (page !== "403" || page !== "404" || page !== "42") {
 			history.pushState({ page: page }, "", `/${page}`);
 			router.currentPage = page;
 		}
@@ -294,9 +293,9 @@ async function refreshTokenDiff(tokens) {
 
 // Handle browser back/forward
 const handlePopState = (e) => {
-    if (e.state?.page) {
-        renderPage(e.state.page);
-    }
+	if (e.state?.page) {
+		renderPage(e.state.page);
+	}
 };
 
 // Load initial page
