@@ -4,7 +4,7 @@ class PongLocalGame {
         this.gameMap = gameMap;
         this.ballMaxAnglle = 60;
         this.isRunning = true;
-        this.WINNING_SCORE = 1;
+        this.WINNING_SCORE = 5;
         this.gameOver = false;
 
 
