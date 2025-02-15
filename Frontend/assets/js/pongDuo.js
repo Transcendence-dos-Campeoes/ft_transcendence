@@ -2,8 +2,15 @@
 class PongDuoGame {
     constructor(selectedMap) {
         this.gameMap = selectedMap;
-        this.WINNING_SCORE = 1;
+        this.WINNING_SCORE = 5;
         this.gameOver = false;
+        //powerups stuff
+
+        this.powerUpAvailable = true;
+        this.powerUpActive = false;
+        this.normalPaddleSpeed = 0.01;
+        this.boostedPaddleSpeed = 0.2;
+        this.currentPaddleSpeed = this.normalPaddleSpeed;
       
         // Scene & Renderer
         this.scene = new THREE.Scene();
@@ -770,17 +777,17 @@ class PongDuoGame {
 
         if (this.topCamera === this.currentCamera) {
             if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1;
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
             }
             if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1;
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         } else {
             if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1;
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
             }
             if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1;
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         }
         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
@@ -791,9 +798,34 @@ class PongDuoGame {
         }
     }
 
+    // setupControls() {
+    //     window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
+    //     window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+    // }
     setupControls() {
-        window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
-        window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+        // Handle regular key presses
+        window.addEventListener("keydown", (e) => {
+            this.keys[e.key] = true;
+            // Handle spacebar power-up separately
+            if (e.code === "Space" && this.powerUpAvailable && !this.powerUpActive) {
+                this.activatePowerUp();
+            }
+        });
+        
+        window.addEventListener("keyup", (e) => {
+            this.keys[e.key] = false;
+        });
+    }
+
+    activatePowerUp() {
+        this.powerUpAvailable = false;
+        this.powerUpActive = true;
+        this.currentPaddleSpeed = this.boostedPaddleSpeed;
+    
+        setTimeout(() => {
+            this.powerUpActive = false;
+            this.currentPaddleSpeed = this.normalPaddleSpeed;
+        }, 5000);
     }
 
     //press c to rotate between camera views
