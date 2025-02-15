@@ -7,6 +7,7 @@ const router = {
 		register: "/register.html",
 		pong: "/pong.html",
 		pongai: "/pong.html",
+		ponglocal: "/pong.html",
 		42: "/42.html",
 		404: "/404.html",
 		403: "/403.html"
@@ -102,6 +103,8 @@ async function renderPage(page, element) {
 			handle42Callback();
 		} else if (page === "pongai") {
 			startGameDuo();
+		} else if (page === "ponglocal") {
+			startGameLocal();
 		} else if (page === "403") {
 			console.error(`Page not found: ${page}`);
 		}
@@ -280,7 +283,7 @@ const handlePopState = async (e) => {
 		let path = window.location.pathname.slice(1) || "home";
 		console.log(path);
 
-		if (path === "home" || path === "pong" || path === "pongai" || elements.elements[path]) {
+		if (path === "home" || path === "pong" || path === "pongai" || path === "ponglocal" || elements.elements[path]) {
 			const authenticated = await isAuthenticated();
 			if (!authenticated) {
 				console.log("User not authenticated, redirecting to login page.");
@@ -315,7 +318,7 @@ window.addEventListener("load", async () => {
 	let path = window.location.pathname.slice(1) || "home";
 	console.log(path);
 
-	if (path === "home" || path === "pong" || path === "pongai" || elements.elements[path]) {
+	if (path === "home" || path === "pong" || path === "pongai" || path === "ponglocal" || elements.elements[path]) {
 		const authenticated = await isAuthenticated();
 		if (!authenticated) {
 			console.log("User not authenticated, redirecting to login page.");
