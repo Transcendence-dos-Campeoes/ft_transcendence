@@ -56,7 +56,6 @@ async function renderPage(page, element) {
 	const loadingOverlay = new LoadingOverlay();
 
 	try {
-		window.addEventListener("popstate", handlePopState);
 		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
 
@@ -81,22 +80,18 @@ async function renderPage(page, element) {
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
-			if (router.currentPage !== page) {
 				updateUserProfile();
 				load_profile_pic();
 				//console.log("Before Load");
 				if (!socket || socket == undefined)
 					socket = new Socket(localStorage.getItem('access'));
 				socket.lobbyLoad(localStorage.getItem('access'));
-			}
-			if (!element) {
-				renderElement("overview");
-			} else {
-				renderElement(element);
-			}
-
+        if (!element) {
+          renderElement("overview");
+        } else {
+          renderElement(element);
+        }
 		} else if (page === "pong") {
-			window.removeEventListener("popstate", handlePopState);
 			startGame3d(data, socket);
 		} else if (page === "42") {
 			handle42Callback();
@@ -116,7 +111,6 @@ async function renderPage(page, element) {
 }
 
 async function renderAuthPage(page, responseStruct) {
-	// console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 
 	try {
@@ -275,41 +269,6 @@ async function refreshTokenDiff(tokens) {
 		return false;
 	}
 }
-
-
-const handlePopState = async (e) => {
-	if (e.state?.page) {
-		let path = window.location.pathname.slice(1) || "home";
-		//console.log(path);
-
-		if (path === "home" || path === "pong" || path === "pongai" || path === "ponglocal" || elements.elements[path]) {
-			const authenticated = await isAuthenticated();
-			if (!authenticated) {
-				//console.log("User not authenticated, redirecting to login page.");
-				history.pushState({ page: "login" }, "", "/login");
-				path = "login";
-			}
-		}
-		else if (path === "login" || path === "register" || path === "42") {
-			const authenticated = await isAuthenticated();
-			if (authenticated) {
-				//console.log("User authenticated, redirecting to home page.");
-				history.pushState({ page: "home" }, "", "/home");
-				path = "home";
-			}
-		}
-
-		if (!router.pages[path] && !elements.elements[path] && !routerAuth.pages[path]) {
-			renderPage("404");
-		}
-		else if (router.pages[path]) {
-			renderPage(path);
-		}
-		else if (elements.elements[path]) {
-			renderPage("home", path);
-		}
-	}
-};
 
 // Load initial page
 window.addEventListener("load", async () => {
