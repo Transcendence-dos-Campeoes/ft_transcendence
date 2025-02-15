@@ -106,7 +106,7 @@ class OnlinePlayersConsumer(WebsocketConsumer):
 
         #friends
         elif data['type'] == 'update_lobby':
-            self.broadcast_online_players()
+            self.broadcast_all_online()
         # elif data['type'] == 'random_game':
         #     self.handle_random(data)
         elif data['type'] == 'close_await':
@@ -167,6 +167,14 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 "players_data": online_friends,
             }
         )
+    
+    def broadcast_all_online(self):
+        players_data = [{"username": user.username} for user in channel_user_map.values()]
+        data = {
+            "type": "all_online",
+            "players_data": players_data,
+        }
+        self.send(text_data=json.dumps(data))
 
     def online_players_update(self, event):
         self.send_online_players()
