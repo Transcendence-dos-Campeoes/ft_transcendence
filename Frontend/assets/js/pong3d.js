@@ -304,7 +304,7 @@ class PongGame {
             this.scene.add(this.leftPaddle, this.rightPaddle);
         }
         if (this.gameMap == 4) {
-            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFFF" });
+            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFF" });
             const paddleGeometry = new THREE.BoxGeometry(this.overallHight, this.paddleLenght, this.overallHight);
             this.leftPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
             this.rightPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);

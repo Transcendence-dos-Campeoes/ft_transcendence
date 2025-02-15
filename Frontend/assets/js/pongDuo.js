@@ -1,11 +1,9 @@
 
 class PongDuoGame {
-    constructor(data, socket, gameMap, aiMode) {
-        this.gameMap = 2;
-        this.socket = socket;
-        this.data = data;
-        this.ballMaxAnglle = 60;
-
+    constructor(selectedMap) {
+        this.gameMap = selectedMap;
+        this.WINNING_SCORE = 1;
+        this.gameOver = false;
         // Scene & Renderer
         this.scene = new THREE.Scene();
         this.setupRenderer();
@@ -23,24 +21,22 @@ class PongDuoGame {
         this.playerPos = this.fieldLength / 2 + this.overallHight / 2;
         this.camPos = 6.5;
         this.topCamera;
+        this.endOverlay;
+        this.winnerPlayer = 0;
 
-        this.isAIMode = aiMode;
+        this.isAIMode = true;
         this.aiWorker = null;
         this.lastAIUpdateTime = 0;
         this.AI_UPDATE_INTERVAL = 1000;
-
-        if (this.isAIMode) {
-            this.setupAIWorker();
-        }
+        this.setupAIWorker();
 
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
-        this.player1Name = "";
-        this.player2Name = "";
+        this.player1Name = "You";
+        this.player2Name = "AI";
 
         //player stuff
         this.player1;
         this.player2;
-        this.player1Camera;
         this.player2Camera;
         this.player1Score = 0;
         this.player2Score = 0;
@@ -48,24 +44,18 @@ class PongDuoGame {
         this.ballMaterial;
         this.cameraEventListener;
 
-        this.ballVelocity = { x: 0.05, y: 0.02 };
+        this.ballVelocity = { x: 0.04, y: 0.0 };
         this.isBallMovingRight = true;
         this.keys = {};
         this.isRunning = true;
-        console.log("'Game' instancce Started!");
         this.init();
     }
 
     setupAIWorker() {
         this.aiWorker = new Worker('./assets/js/aiWorker.js');
-        console.log('AI Worker initialized');
         this.keys = this.keys || {};
         this.aiWorker.onmessage = (e) => {
             if (e.data.type === 'key_press') {
-
-                console.log('Received AI keys:', e.data.keys); // Debug log
-
-                // Use the correct key names that match updatePaddles
                 this.keys['ArrowUp'] = e.data.keys.ArrowUp;
                 this.keys['ArrowDown'] = e.data.keys.ArrowDown;
             }
@@ -93,30 +83,25 @@ class PongDuoGame {
         this.renderer.setSize(this.board.clientWidth, this.board.clientHeight, false);
         this.renderer.shadowMap.enabled = true;
         const colors = {
-            1: "#0A001E",
-            2: "#001700",
-            3: "#2299FF",
-            4: "#00000F"
+            1: "#070016",
+            2: "#001200",
+            3: "#1A7ACC",
+            4: "#00000A"
         };
         this.renderer.setClearColor(colors[this.gameMap] || "#000000");
     }
 
     setupCamera() {
-        const fov = 82;
+        const fov = 60;
         const aspect = this.board.clientWidth / this.board.clientHeight;
         const near = 0.1;
         const far = 1000;
-        // Player 1 Camera
-        this.player1Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.player1Camera.position.set(this.camPos, 0, 3);
-        this.player1Camera.rotation.set(0.0, 1, 1.57);
-        // Player 2 Camera
         this.player2Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this.player2Camera.position.set(-this.camPos, 0, 3);
         this.player2Camera.rotation.set(0, -1, -1.57);
         // Top view
         this.topCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.topCamera.position.set(0, 0, 4);
+        this.topCamera.position.z = 6;
         this.topCamera.rotation.set(0, 0, 0);
     }
 
@@ -253,7 +238,7 @@ class PongDuoGame {
             this.scene.add(this.leftPaddle, this.rightPaddle);
         }
         if (this.gameMap == 4) {
-            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFFF" });
+            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFF" });
             const paddleGeometry = new THREE.BoxGeometry(this.overallHight, this.paddleLenght, this.overallHight);
             this.leftPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
             this.rightPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
@@ -384,12 +369,12 @@ class PongDuoGame {
     // Reset the ball to the center and changes state for next call
     resetBall() {
         this.ball.position.set(0, 0, 0);
-        //x horizontal y vertical
+
         this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
-            this.ballVelocity = { x: 0.05, y: 0 };
+            this.ballVelocity = { x: 0.04, y: 0 };
         } else {
-            this.ballVelocity = { x: -0.05, y: 0 };
+            this.ballVelocity = { x: -0.04, y: 0 };
         }
         this.isBallMovingRight = !this.isBallMovingRight;
         if (this.isAIMode && this.aiWorker) {
@@ -408,6 +393,7 @@ class PongDuoGame {
 
 
     updateBall() {
+        if (this.gameOver) return;
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.goalPosition = (this.fieldLength + 0.4) / 2;
@@ -420,21 +406,26 @@ class PongDuoGame {
         }
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
-            console.log("Player 1 Scored! Score:", this.player1Score);
             this.updateScoreboard();
+            if (this.player1Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(true);
+                return;
+            }
             this.resetBall();
         } else if (this.ball.position.x <= fieldLeft) {
             this.player2Score++;
-            console.log("Player 2 Scored! Score:", this.player2Score);
-            this.resetBall();
             this.updateScoreboard();
+            if (this.player2Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(false);
+                return;
+            }
+            this.resetBall();
         }
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
 
         //this sends the ball position to the AI worker and directional velocity.
         //x horizontal y vertical
-
         if (this.isAIMode && this.aiWorker) {
             const currentTime = Date.now();
             //updates to 1 second intervals unless ball reset (new game)
@@ -475,7 +466,7 @@ class PongDuoGame {
             ballTop >= paddleBottom &&
             ballBottom <= paddleTop
         ) {
-            this.ballVelocity.x *= -1.1;
+            this.ballVelocity.x *= -1.06;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
         }
@@ -610,28 +601,26 @@ class PongDuoGame {
 
     setupScoreboard() {
         if (!this.board) {
-            console.log("loard element not found for scoreboard!");
+            console.log("board element not found for scoreboard!");
             return;
         }
-        // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "5px"; // Keep inside board
+        this.scoreboard.style.top = "1px";
         this.scoreboard.style.left = "50%";
-        this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "24px";
+        this.scoreboard.style.transform = "translateX(-50%)";
+        this.scoreboard.style.fontSize = "20px";
         this.scoreboard.style.fontWeight = "bold";
-        this.scoreboard.style.color = "green";
-        this.scoreboard.style.padding = "4px 30px";
+        this.scoreboard.style.color = "#000060";
+        this.scoreboard.style.textShadow = '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF, 0 0 4px #0000FF, 0 0 5px #0000FF';
+        this.scoreboard.style.padding = "4px 50px";
         this.scoreboard.style.borderRadius = "4px";
         this.scoreboard.style.textAlign = "center";
-        this.scoreboard.style.zIndex = "10";
-
-        // Create Player 1 and Player 2 score spans
+        this.scoreboard.style.whiteSpace = "nowrap";
         this.player1ScoreText = document.createElement("span");
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.scoreSeparator = document.createElement("span");
-        this.scoreSeparator.textContent = " - ";
+        this.scoreSeparator.textContent = " vs ";
         this.scoreSeparator.style.margin = "0px";
         this.player2ScoreText = document.createElement("span");
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
@@ -646,19 +635,152 @@ class PongDuoGame {
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
 
+    async startCountdown() {
+        this.isRunning = false;
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: '#00008B',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        for (let i = 3; i > 0; i--) {
+            overlay.innerHTML = `Get Ready<br>${i}`; // Use innerHTML to insert line break
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        overlay.remove();
+        this.isRunning = true;
+        this.animate();
+    }
+
+
+    // async displayEndGameMessage(isWinner) {
+    //     this.isRunning = false;
+    //     this.gameOver = true;
+    
+    //     const overlay = document.createElement('div');
+    //     overlay.className = 'countdown-overlay';
+    //     Object.assign(overlay.style, {
+    //         position: 'absolute',
+    //         top: '0',
+    //         left: '0',
+    //         width: '100%',
+    //         height: '100%',
+    //         backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    //         display: 'flex',
+    //         flexDirection: 'column',
+    //         justifyContent: 'center',
+    //         alignItems: 'center',
+    //         fontSize: '48px',
+    //         color: isWinner ? '#00FF00' : '#FF0000',
+    //         textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+    //         zIndex: '1000',
+    //         transition: 'opacity 0.5s',
+    //         textAlign: 'center',
+    //         gap: '20px' // Add space between elements
+    //     });
+    
+    //     // Create and style the button
+    //     const homeButton = document.createElement('button');
+    //     Object.assign(homeButton.style, {
+    //         padding: '10px 20px',
+    //         fontSize: '24px',
+    //         backgroundColor: '#0000FF',
+    //         color: '#FFFFFF',
+    //         border: 'none',
+    //         borderRadius: '5px',
+    //         cursor: 'pointer',
+    //         marginTop: '20px',
+    //         boxShadow: '0 0 10px #0000FF, 0 0 20px #0000FF',
+    //         transition: 'all 0.3s ease'
+    //     });
+        
+    //     // Add hover effect
+    //     homeButton.onmouseover = () => {
+    //         homeButton.style.transform = 'scale(1.1)';
+    //         homeButton.style.boxShadow = '0 0 15px #0000FF, 0 0 30px #0000FF';
+    //     };
+    //     homeButton.onmouseout = () => {
+    //         homeButton.style.transform = 'scale(1)';
+    //         homeButton.style.boxShadow = '0 0 10px #0000FF, 0 0 20px #0000FF';
+    //     };
+    
+    //     homeButton.textContent = 'Return to Home';
+    //     homeButton.onclick = () => {
+    //         renderPage("home");
+    //     };
+    
+    //     this.board.parentElement.appendChild(overlay);
+    //     overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
+    //     overlay.appendChild(homeButton);
+    // }
+
+    async displayEndGameMessage(isWinner) {
+        this.isRunning = false;
+        this.gameOver = true;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: isWinner ? '#00FF00' : '#FF0000',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
+        await new Promise(resolve => setTimeout(resolve, 2400));
+        overlay.remove();
+        renderPage("home");
+    }
+
 
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
 
-        // Handle human player (left paddle)
-        if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-            this.leftPaddle.position.y += 0.1;
+        if (this.topCamera === this.currentCamera) {
+            if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += 0.1;
+            }
+            if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= 0.1;
+            }
+        } else {
+            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += 0.1;
+            }
+            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= 0.1;
+            }
         }
-        if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-            this.leftPaddle.position.y -= 0.1;
-        }
-
-        // Handle AI or human player (right paddle)
         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
             this.rightPaddle.position.y += 0.1;
         }
@@ -666,75 +788,6 @@ class PongDuoGame {
             this.rightPaddle.position.y -= 0.1;
         }
     }
-
-    //Controls padles and keeps them inside the field. 
-    // rotating camera views triggers movement switch of keys to adjust to view
-    // updatePaddles() {
-    //     let sideN = 1;
-    //     const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
-
-    //     if (this.isAIMode) {
-    //         // Human player controls (left paddle)
-    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1;
-    //         }
-
-    //         // AI controls (right paddle)
-    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1;
-    //         }
-    //         return;
-    //     }
-    //     ////
-    //     if (this.currentCamera === this.topCamera) {
-    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1;
-    //         }
-    //         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1;
-    //         }
-    //     } else {
-    //         if (this.currentCamera === this.player1Camera) {
-    //             if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
-    //                 this.leftPaddle.position.y += 0.1 * sideN;
-    //             }
-    //             if (this.keys["a"] && this.leftPaddle.position.y > -paddleLimit) {
-    //                 this.leftPaddle.position.y -= 0.1 * sideN;
-    //             }
-    //             if (this.keys["ArrowRight"] && this.rightPaddle.position.y < paddleLimit) {
-    //                 this.rightPaddle.position.y += 0.1 * sideN;
-    //             }
-    //             if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
-    //                 this.rightPaddle.position.y -= 0.1 * sideN;
-    //             }
-    //             return;
-    //         }
-    //         if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1 * sideN;
-    //         }
-    //         if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1 * sideN;
-    //         }
-    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1 * sideN;
-    //         }
-    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1 * sideN;
-    //         }
-    //     }
-    // }
 
     setupControls() {
         window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
@@ -750,8 +803,6 @@ class PongDuoGame {
             this.cameraEventListener = (e) => {
                 if (e.key === "c") {
                     if (this.currentCamera === this.topCamera) {
-                        this.currentCamera = this.player1Camera;
-                    } else if (this.currentCamera === this.player1Camera) {
                         this.currentCamera = this.player2Camera;
                     } else {
                         this.currentCamera = this.topCamera;
@@ -773,8 +824,7 @@ class PongDuoGame {
         }
     }
 
-    //class initialization
-
+    // Class initialization
     init() {
         this.setupCamera();
         this.setupLighting();
@@ -782,37 +832,54 @@ class PongDuoGame {
         this.setupGlowingGrid();
         this.setupControls();
         this.setupScoreboard();
-        this.animate();
+        this.startCountdown(); // animates the game loading
     }
-    ////////  here is the main loop of the game    ///////////
 
+    cleanup() {
+        window.removeEventListener("keydown", this.cameraEventListener);
+        window.removeEventListener("keydown", (e) => (this.keys[e.key] = true));
+        window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
+        if (this.aiWorker) {
+            this.aiWorker.terminate();
+            this.aiWorker = null;
+        }
+    }
+
+    // Main Game Loop
     animate() {
+        if (!this.isRunning || this.gameOver) {
+            this.cleanup();
+            //renderPage("home");
+            return;
+        }
         requestAnimationFrame(() => this.animate());
-        //colisions and ball  position update
         this.updateBall();
-        //players control each paddle here
         this.updatePaddles();
-        //camera switch control and listeners
         this.cameraKeyControls();
-        //renders scene and starfield rotation with selected camera from precious functions
         this.renderer.render(this.scene, this.currentCamera);
         this.starfieldBackgroudRotation();
     }
 }
 
-/////    function called on main js 
-async function startGameDuo(data, socket, gameMap, aiMode) {
+async function startGameDuo() {
+    const loadingOverlay = new LoadingOverlay();
+    let selectedMap;
+    try {
+        loadingOverlay.show();
+        const response = await fetchWithAuth("/api/users/selectedmap/");
+        if (!response.ok) {
+            throw new Error("Failed to fetch selected map");
+        }
+        const mapData = await response.json();
+        console.log(mapData);
+        selectedMap = mapData.map_number || 1;
+        console.log("Selected map:", selectedMap);
+    } catch {
+        displayMessage("Failed to load profile data", MessageType.ERROR);
+    } finally {
+        loadingOverlay.hide();
+    }
     console.log("Game starting...");
-    new PongDuoGame(data, socket, gameMap, aiMode);
+
+    const pongDuo = new PongDuoGame(selectedMap);
 }
-
-
-//need to create cleanup function for all ellements.
-/*
-
-These ones are window event listeners....
-    this.cameraEventListener 
-    this.keys
-
-
-*/
