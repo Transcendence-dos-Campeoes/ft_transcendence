@@ -26,11 +26,7 @@ function clearNavLinkButtons() {
 	});
 }
 async function renderElement(element) {
-	if (!elements.elements[element]) {
-		console.error(`Element not found: ${element}, rendering 404 element.`);
-		element = "404";
-	}
-	console.log("Rendering element:", element);
+	// console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
 
 	try {
@@ -50,14 +46,10 @@ async function renderElement(element) {
 			throw new Error("Content container not found");
 		}
 
-		console.log("📡 Fetching component HTML:", elements.elements[element]);
 		const response = await fetch(elements.elements[element]);
 		const html = await response.text();
-		console.log("📥 HTML received, length:", html.length);
 
-		console.log("🎨 Updating DOM");
 		content.innerHTML = html;
-		elements.currentElement = element;
 
 		console.log("🎯 Initializing component:", element);
 		if (element === "profile") {
@@ -82,7 +74,6 @@ async function renderElement(element) {
 		}
 		elements.currentElement = element;
 		console.log("✅ Component render complete:", element);
-		history.pushState({ element: element }, "", `/${element}`);
 	} catch (error) {
 		console.error("Error loading element:", error);
 	} finally {

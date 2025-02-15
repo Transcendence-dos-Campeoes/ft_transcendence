@@ -51,62 +51,49 @@ async function isAuthenticated() {
 }
 
 // Page loader
-async function renderPage(page) {
-	if (!router.pages[page]) {
-		console.error(`Page not found: ${page}, rendering 404 page.`);
-		page = "404";
-	}
-
-	console.log(`Attempting to render page: ${page}`);
+async function renderPage(page, element) {
 	const loadingOverlay = new LoadingOverlay();
-
-	if (page === "home" || page === "pong" || page === "pongai") {
-		const authenticated = await isAuthenticated();
-		if (!authenticated) {
-			console.log("User not authenticated, redirecting to login page.");
-			page = "login";
-		}
-	}
-	else if (page === "login" || page === "register" || page === "42") {
-		const authenticated = await isAuthenticated();
-		if (authenticated) {
-			console.log("User authenticated, redirecting to home page.");
-			page = "home";
-		}
-	}
 
 	try {
 		window.addEventListener("popstate", handlePopState);
 		loadingOverlay.show();
 		const screen = document.querySelector(".screen-container");
-		screen.classList.remove("zoom-in", "zoom-out");
-
-		if (page === "home") {
-			screen.classList.add("zoom-in");
-		} else if (router.currentPage === "home") {
-			screen.classList.add("zoom-out");
-			await new Promise((resolve) => setTimeout(resolve, 500));
-			screen.classList.remove("zoom-out");
-		}
 
 		// Load the new page
-		const mainContent = document.getElementById("main-content");
-		const response = await fetch(router.pages[page]);
-		const html = await response.text();
-		mainContent.innerHTML = html;
+		if (router.currentPage !== page) {
+			screen.classList.remove("zoom-in", "zoom-out");
+			if (page === "home") {
+				screen.classList.add("zoom-in");
+			} else if (router.currentPage === "home") {
+				screen.classList.add("zoom-out");
+				await new Promise((resolve) => setTimeout(resolve, 500));
+				screen.classList.remove("zoom-out");
+			}
+			const mainContent = document.getElementById("main-content");
+			const response = await fetch(router.pages[page]);
+			const html = await response.text();
+			mainContent.innerHTML = html;
+		}
 
 		if (page === "login") {
 			attachLoginFormListener();
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
-			updateUserProfile();
-			load_profile_pic();
-			renderElement("overview");
-			console.log("Before Load");
-			if (!socket || socket == undefined)
-				socket = new Socket(localStorage.getItem('access'));
-			socket.lobbyLoad(localStorage.getItem('access'));
+			if (router.currentPage !== page) {
+				updateUserProfile();
+				load_profile_pic();
+				console.log("Before Load");
+				if (!socket || socket == undefined)
+					socket = new Socket(localStorage.getItem('access'));
+				socket.lobbyLoad(localStorage.getItem('access'));
+			}
+			if (!element) {
+				renderElement("overview");
+			} else {
+				renderElement(element);
+			}
+
 		} else if (page === "pong") {
 			console.log(data);
 			window.removeEventListener("popstate", handlePopState);
@@ -118,10 +105,7 @@ async function renderPage(page) {
 		} else if (page === "403") {
 			console.error(`Page not found: ${page}`);
 		}
-		if (page !== "403" || page !== "404" || page !== "42") {
-			history.pushState({ page: page }, "", `/${page}`);
-			router.currentPage = page;
-		}
+		router.currentPage = page;
 	} catch (error) {
 		console.error("Error loading page:", error);
 	} finally {
@@ -130,7 +114,7 @@ async function renderPage(page) {
 }
 
 async function renderAuthPage(page, responseStruct) {
-	console.log(`Attempting to render page: ${page}`);
+	// console.log(`Attempting to render page: ${page}`);
 	const loadingOverlay = new LoadingOverlay();
 
 	try {
@@ -291,15 +275,66 @@ async function refreshTokenDiff(tokens) {
 }
 
 
-// Handle browser back/forward
-const handlePopState = (e) => {
+const handlePopState = async (e) => {
 	if (e.state?.page) {
-		renderPage(e.state.page);
+		let path = window.location.pathname.slice(1) || "home";
+		console.log(path);
+
+		if (path === "home" || path === "pong" || path === "pongai" || elements.elements[path]) {
+			const authenticated = await isAuthenticated();
+			if (!authenticated) {
+				console.log("User not authenticated, redirecting to login page.");
+				path = "login";
+			}
+		}
+		else if (path === "login" || path === "register" || path === "42") {
+			const authenticated = await isAuthenticated();
+			if (authenticated) {
+				console.log("User authenticated, redirecting to home page.");
+				path = "home";
+			}
+		}
+
+		if (!router.pages[path] && !elements.elements[path] && !routerAuth.pages[path]) {
+			renderPage("404");
+		}
+		else if (router.pages[path]) {
+			renderPage(path);
+		}
+		else if (elements.elements[path]) {
+			renderPage("home", path);
+		}
 	}
 };
 
 // Load initial page
-window.addEventListener("load", () => {
-	const initialPage = window.location.pathname.slice(1) || "home";
-	renderPage(initialPage);
+window.addEventListener("load", async () => {
+
+	let path = window.location.pathname.slice(1) || "home";
+	console.log(path);
+
+	if (path === "home" || path === "pong" || path === "pongai" || elements.elements[path]) {
+		const authenticated = await isAuthenticated();
+		if (!authenticated) {
+			console.log("User not authenticated, redirecting to login page.");
+			path = "login";
+		}
+	}
+	else if (path === "login" || path === "register" || path === "42") {
+		const authenticated = await isAuthenticated();
+		if (authenticated) {
+			console.log("User authenticated, redirecting to home page.");
+			path = "home";
+		}
+	}
+
+	if (!router.pages[path] && !elements.elements[path] && !routerAuth.pages[path]) {
+		renderPage("404");
+	}
+	else if (router.pages[path]) {
+		renderPage(path);
+	}
+	else if (elements.elements[path]) {
+		renderPage("home", path);
+	}
 });
