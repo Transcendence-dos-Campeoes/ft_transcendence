@@ -764,6 +764,7 @@ class PongGame {
             this.player1Score++;
             this.resetBall();
             this.updateScoreboard();
+            this.sendBallPosition();
         } else if (this.player == "player1" && this.ball.position.x <= fieldLeft) {
             this.player2Score++;
             this.resetBall();
