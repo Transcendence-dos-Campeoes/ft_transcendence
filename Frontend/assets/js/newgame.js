@@ -77,7 +77,7 @@ async function waitgame() {
         });
     }
     catch (error) {
-        console.error("Error loading element:", error);
+        //console.error("Error loading element:", error);
     } finally {
         loadingOverlay.hide();
     }

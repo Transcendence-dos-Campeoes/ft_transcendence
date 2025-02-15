@@ -64,17 +64,17 @@ function renderTournamentMatch(match, currentUser) {
 // PLAY TOURNAMENT MATCHES
 async function joinMatch(encodedMatch, currentUser) {
   const match = JSON.parse(decodeURIComponent(encodedMatch));
-  console.log(`Joining match with ID: ${match.match__id}`);
-  console.log(`Player1: ${match.match__player1__username}`);
-  console.log(`Player2: ${match.match__player2__username}`);
+  // console.log(`Joining match with ID: ${match.match__id}`);
+  // console.log(`Player1: ${match.match__player1__username}`);
+  // console.log(`Player2: ${match.match__player2__username}`);
 
   socket.send(JSON.stringify({ type: "update_lobby" }));
   await wait(500);
   const players = data.players_data.map(player => player.username);
-  console.log(players);
+  // console.log(players);
 
   if (players.includes(match.match__player1__username) && players.includes(match.match__player2__username)) {
-    console.log("Both players are in the players_data list.");
+    // console.log("Both players are in the players_data list.");
     const opponent = match.match__player1__username === currentUser ? match.match__player2__username : match.match__player1__username;
     waitingModal = new MessageModal(MessageType.INVITE);
     declineModal = new DeclineModal(MessageType.INFO);
@@ -112,7 +112,7 @@ async function joinMatch(encodedMatch, currentUser) {
     });
 
   } else {
-    console.log("One or both players are not in the players_data list.");
+    //console.log("One or both players are not in the players_data list.");
     displayMessage("The other player is missing", "error")
   }
   // You can add an API call here to join the match
@@ -165,7 +165,7 @@ async function loadMatches() {
     loadingOverlay.show();
     const authenticated = await isAuthenticated();
     if (!authenticated) {
-      console.log("User not authenticated, redirecting to login page.");
+      //console.log("User not authenticated, redirecting to login page.");
       renderPage('login');
     }
     const response = await fetchWithAuth("/api/users/matches/");

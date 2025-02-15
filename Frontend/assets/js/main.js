@@ -80,18 +80,17 @@ async function renderPage(page, element) {
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
-			updateUserProfile();
-			load_profile_pic();
-			console.log("Before Load");
-			if (!socket || socket == undefined)
-				socket = new Socket(localStorage.getItem('access'));
-			socket.lobbyLoad(localStorage.getItem('access'));
-			if (!element) {
-				renderElement("overview");
-			} else {
-				renderElement(element);
-			}
-
+				updateUserProfile();
+				load_profile_pic();
+				//console.log("Before Load");
+				if (!socket || socket == undefined)
+					socket = new Socket(localStorage.getItem('access'));
+				socket.lobbyLoad(localStorage.getItem('access'));
+        if (!element) {
+          renderElement("overview");
+        } else {
+          renderElement(element);
+        }
 		} else if (page === "pong") {
 			startGame3d(data, socket);
 		} else if (page === "42") {
@@ -105,7 +104,7 @@ async function renderPage(page, element) {
 		}
 		router.currentPage = page;
 	} catch (error) {
-		console.error("Error loading page:", error);
+		//console.log("Error loading page:", error);
 	} finally {
 		loadingOverlay.hide();
 	}
@@ -135,7 +134,7 @@ async function renderAuthPage(page, responseStruct) {
 		}
 		routerAuth.currentPage = page;
 	} catch (error) {
-		console.error("Error loading page:", error);
+		//console.log("Error loading page:", error);
 	} finally {
 		loadingOverlay.hide();
 	}
@@ -157,7 +156,7 @@ async function fetchWithAuth(url, options = {}) {
 
 		if (response.status === 401) {
 			const refreshed = await refreshToken();
-			console.log(refreshed);
+			//console.log(refreshed);
 			if (!refreshed) {
 				clearLocalStorage();
 				return;
@@ -168,7 +167,7 @@ async function fetchWithAuth(url, options = {}) {
 				socket = null;
 			}
 			socket = new Socket(refreshed.access);
-			console.log("creating new socket");
+			//console.log("creating new socket");
 
 			response = await fetch(`${window.location.origin}${url}`, {
 				...options,
@@ -180,7 +179,7 @@ async function fetchWithAuth(url, options = {}) {
 		}
 		return response;
 	} catch (error) {
-		console.error("Error in fetchWithAuth:", error);
+		//console.log("Error in fetchWithAuth:", error);
 		logout();
 		throw error;
 	} finally {
@@ -275,12 +274,12 @@ async function refreshTokenDiff(tokens) {
 window.addEventListener("load", async () => {
 
 	let path = window.location.pathname.slice(1) || "home";
-	console.log(path);
+	//console.log(path);
 
 	if (path === "home" || path === "pong" || path === "pongai" || path === "ponglocal" || elements.elements[path]) {
 		const authenticated = await isAuthenticated();
 		if (!authenticated) {
-			console.log("User not authenticated, redirecting to login page.");
+			//console.log("User not authenticated, redirecting to login page.");
 			history.pushState({ page: "login" }, "", "/login");
 			path = "login";
 		}
@@ -288,7 +287,7 @@ window.addEventListener("load", async () => {
 	else if (path === "login" || path === "register" || path === "42") {
 		const authenticated = await isAuthenticated();
 		if (authenticated) {
-			console.log("User authenticated, redirecting to home page.");
+			//console.log("User authenticated, redirecting to home page.");
 			history.pushState({ page: "home" }, "", "/home");
 			path = "home";
 		}

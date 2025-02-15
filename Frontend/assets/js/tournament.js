@@ -1,13 +1,13 @@
 async function attachTournamentFormListener() {
   const form = document.getElementById("new-tournament-form");
   if (!form) {
-    console.error("Tournament form not found");
+    //console.error("Tournament form not found");
     return;
   }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("📝 Submitting tournament form");
+    //console.log("📝 Submitting tournament form");
     const loadingOverlay = new LoadingOverlay();
 
     const tournamentName = document.getElementById("tournament-name").value;
@@ -34,7 +34,7 @@ async function attachTournamentFormListener() {
       renderElement("overview");
       displayMessage("Tournament created successfully", MessageType.SUCCESS);
     } catch (error) {
-      console.error("❌ Error creating tournament:", error);
+      //console.error("❌ Error creating tournament:", error);
       displayMessage("Failed to create tournament", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();

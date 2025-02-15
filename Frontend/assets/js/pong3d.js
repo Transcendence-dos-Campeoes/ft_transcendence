@@ -54,14 +54,14 @@ class PongGame {
 
         this.ingame_modal = null;
 
-        console.log("PongGame Initialized!");
+        //console.log("PongGame Initialized!");
         this.init();
     }
 
     setupRenderer() {
         this.board = document.getElementById("board");
         if (!this.board) {
-            console.error("❌ 'board' canvas not found!");
+            //console.error("❌ 'board' canvas not found!");
             return;
         }
 
@@ -593,7 +593,7 @@ class PongGame {
     setupScoreboard() {
         // Ensure board exists
         if (!this.board) {
-            console.error("❌ Board element not found for scoreboard!");
+            //console.error("❌ Board element not found for scoreboard!");
             return;
         }
 
@@ -835,7 +835,7 @@ class PongGame {
 
     stopGame(winner) {
         this.displayEndGameMessage();
-        console.log(`${winner} wins the game!`);
+       // console.log(`${winner} wins the game!`);
         this.socket.send(JSON.stringify({
             type: 'end_game',
             user: localStorage.getItem("username"),
@@ -925,16 +925,16 @@ async function startGame3d(data, socket) {
         }
 
         const mapData = await response.json();
-        console.log(mapData);
+        //console.log(mapData);
 
         selectedMap = mapData.map_number || 1;
-        console.log("Selected map:", selectedMap);
+        //console.log("Selected map:", selectedMap);
     } catch {
         displayMessage("Failed to load profile data", MessageType.ERROR);
     } finally {
         loadingOverlay.hide();
     }
-    console.log("Game starting...");
+    //console.log("Game starting...");
     try {
         const pongGame = new PongGame(data, socket, selectedMap);
     }

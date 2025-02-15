@@ -51,7 +51,7 @@ async function renderElement(element) {
 
 		content.innerHTML = html;
 
-		console.log("🎯 Initializing component:", element);
+		//console.log("Initializing component:", element);
 		if (element === "profile") {
 			await viewProfile();
 		} else if (element === "overview") {
@@ -73,9 +73,9 @@ async function renderElement(element) {
 			loadMaps();
 		}
 		elements.currentElement = element;
-		console.log("✅ Component render complete:", element);
+		//console.log("Component render complete:", element);
 	} catch (error) {
-		console.error("Error loading element:", error);
+		//console.error("Error loading element:", error);
 	} finally {
 		loadingOverlay.hide();
 	}
