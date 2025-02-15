@@ -104,6 +104,44 @@
           "format": "bytes"
         }
       ]
+    },
+    {
+      "title": "PostgreSQL Connections",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "pg_stat_activity_count{datname='hello_django_dev'}",
+          "legendFormat": "Connections"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "lines": true,
+      "linewidth": 2
+    },
+    {
+      "title": "PostgreSQL Cache Hit Ratio",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "pg_stat_database_blks_hit{datname='hello_django_dev'} / (pg_stat_database_blks_hit{datname='hello_django_dev'} + pg_stat_database_blks_read{datname='hello_django_dev'})",
+          "legendFormat": "Cache Hit Ratio"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "lines": true,
+      "linewidth": 2
     }
   ],
   "refresh": "1s",
