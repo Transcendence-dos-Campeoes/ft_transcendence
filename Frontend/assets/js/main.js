@@ -118,7 +118,7 @@ async function renderPage(page) {
 		} else if (page === "403") {
 			console.error(`Page not found: ${page}`);
 		}
-		if (page !== "403" || page !== "404" !== "42") {
+		if (page !== "403" || page !== "404" || page !== "42") {
 			history.pushState({ page: page }, "", `/${page}`);
 			router.currentPage = page;
 		}
