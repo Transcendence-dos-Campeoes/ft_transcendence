@@ -36,7 +36,7 @@ class Socket {
     };
 
     this.socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      //console.error("WebSocket error:", error);
     };
 
     this.lobbyLoad(token);
@@ -44,9 +44,9 @@ class Socket {
 
   async lobbyLoad(token) {
 
-    console.log("pathname:", window.location.pathname);
+    //console.log("pathname:", window.location.pathname);
     const currentUser = localStorage.getItem("username"); // Assuming you store the username in localStorage
-    console.log("WebSocket user:", currentUser);
+    //console.log("WebSocket user:", currentUser);
 
     if (typeof this.socket === "undefined" || this.socket.readyState === WebSocket.CLOSED) {
       this.socket = new WebSocket(
@@ -68,7 +68,7 @@ class Socket {
 
     this.socket.onmessage = async (event) => {
       data = JSON.parse(event.data);
-      console.log("WebSocket message received:", data); // Debugging line
+      //console.log("WebSocket message received:", data); // Debugging line
 
       if (data.type === "online.players.update") {
         if (data.players_data) {
@@ -150,7 +150,7 @@ class Socket {
                 to: data.from,
               })
             );
-            console.log("Game started with:", data.from);
+            //console.log("Game started with:", data.from);
           } else {
             // User declined the invitation
             this.socket.send(
@@ -168,10 +168,10 @@ class Socket {
         if (data.to === currentUser)
           this.declineModal.show(`Game invite rejected.`, "Invite Rejected");
 
-        console.log("Invite declined by:", data.from);
+        //console.log("Invite declined by:", data.from);
       } else if (data.type === "start_game") {
         this.waitingModal.hide();
-        console.log("Game started with:", data.from);
+        //console.log("Game started with:", data.from);
         renderPage("pong");
       } else if (data.type === "close_connection") {
         this.socket.close();
@@ -191,7 +191,7 @@ class Socket {
                 player2: data.player2,
               })
             );
-            console.log("Game started with:", data.from);
+            //console.log("Game started with:", data.from);
           } else {
             // User declined the invitation
             this.socket.send(
@@ -225,6 +225,6 @@ class Socket {
       this.socket.close();
       this.socket = null;
     }
-    console.log("Socket connection closed and resources cleaned up.");
+    //console.log("Socket connection closed and resources cleaned up.");
   }
 }

@@ -45,14 +45,14 @@ class PongLocalGame {
         this.isBallMovingRight = true;
         this.keys = {};
         this.isRunning = true;
-        console.log("'Game' instancce Started!");
+        //console.log("'Game' instancce Started!");
         this.init();
     }
 
     setupRenderer() {
         this.board = document.getElementById("board");
         if (!this.board) {
-            console.log("'board' canvas not found!");
+            //console.log("'board' canvas not found!");
             return;
         }
         this.renderer = new THREE.WebGLRenderer({
@@ -598,7 +598,7 @@ class PongLocalGame {
 
     setupScoreboard() {
         if (!this.board) {
-            console.log("board element not found for scoreboard!");
+            //console.log("board element not found for scoreboard!");
             return;
         }
         this.scoreboard = document.createElement("div");
@@ -831,25 +831,14 @@ async function startGameLocal() {
             throw new Error("Failed to fetch selected map");
         }
         const mapData = await response.json();
-        console.log(mapData);
+        //console.log(mapData);
         selectedMap = mapData.map_number || 1;
-        console.log("Selected map:", selectedMap);
+        //console.log("Selected map:", selectedMap);
     } catch {
         displayMessage("Failed to load profile data", MessageType.ERROR);
     } finally {
         loadingOverlay.hide();
     }
-    console.log("Game starting...");
+    //console.log("Game starting...");
     new PongLocalGame(selectedMap);
 }
-
-
-//need to create cleanup function for all ellements.
-/*
-
-These ones are window event listeners....
-    this.cameraEventListener 
-    this.keys
-
-
-*/

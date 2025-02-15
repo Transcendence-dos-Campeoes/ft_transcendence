@@ -1,19 +1,19 @@
 async function attachSettingsFormListener() {
   const formUser = document.getElementById("profile-form");
   if (!formUser) {
-    console.error("Profile form not found");
+   //console.error("Profile form not found");
     return;
   }
 
   const formPassword = document.getElementById("password-form");
   if (!formPassword) {
-    console.error("Password form not found");
+    //console.error("Password form not found");
     return;
   }
 
   formUser.addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("📝 Submitting profile form");
+    //console.log("📝 Submitting profile form");
     const loadingOverlay = new LoadingOverlay();
 
     const username = document.getElementById("username-input").value;
@@ -29,7 +29,7 @@ async function attachSettingsFormListener() {
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
     }
-    console.log(formData)
+    //console.log(formData)
     try {
       loadingOverlay.show();
       const response = await fetchWithAuth("/api/users/settings/update/", {
@@ -42,13 +42,13 @@ async function attachSettingsFormListener() {
       }
 
       const data = await response.json();
-      console.log("✅ Profile updated:", data);
+      //console.log("✅ Profile updated:", data);
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
       renderPage("home");
     } catch (error) {
-      console.error("❌ Error updating profile:", error);
+      //console.error("❌ Error updating profile:", error);
       displayMessage("Failed to update profile", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
@@ -57,7 +57,7 @@ async function attachSettingsFormListener() {
 
   formPassword.addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("📝 Submitting password form");
+    //console.log("📝 Submitting password form");
     const loadingOverlay = new LoadingOverlay();
 
     const currPassword = document.getElementById("current-password").value;
@@ -86,7 +86,7 @@ async function attachSettingsFormListener() {
       displayMessage("Password updated successfully", MessageType.SUCCESS);
       renderElement("overview");
     } catch (error) {
-      console.error("❌ Password updating:", error);
+      //console.error("❌ Password updating:", error);
       displayMessage("Failed to update password", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();

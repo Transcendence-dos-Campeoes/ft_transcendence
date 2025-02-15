@@ -1,7 +1,7 @@
 function attachLoginFormListener() {
 	const form = document.getElementById("loginForm");
 	if (!form) {
-		console.error("Form not found");
+		//console.error("Form not found");
 		return;
 	}
 	form.addEventListener("submit", async function (event) {
@@ -48,7 +48,7 @@ async function login(username, password) {
 			displayMessage("An error occurred while logging in", MessageType.ERROR);
 		}
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("An error occurred while logging in", MessageType.ERROR);
 	}
 }

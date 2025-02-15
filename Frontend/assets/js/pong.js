@@ -139,7 +139,7 @@ function startGame(gameGroup, socket) {
 function initializeGame(socket, gameGroup, actualPlayer) {
     const board = document.getElementById("board");
     if (!board) {
-        console.error("Board element not found");
+        //console.error("Board element not found");
         return;
     }
     board.height = boardHeight;

@@ -4,7 +4,7 @@ function attach2FAVerifyFormListener(responseStruct) {
 	const disableBtn = document.getElementById("disable");
 
 	if (!form) {
-		console.error("Form not found");
+		//console.error("Form not found");
 		return;
 	}
 
@@ -28,7 +28,7 @@ function attach2FAEnableFormListener(responseStruct) {
 	const cancelBtn = document.getElementById("cancel");
 
 	if (!form) {
-		console.error("Form not found");
+		//console.error("Form not found");
 		return;
 	}
 
@@ -49,7 +49,7 @@ function attach2FaRecoverFormListener(responseStruct) {
 	const requestBtn = document.getElementById("request");
 
 	if (!form) {
-		console.error("Form not found");
+		//console.error("Form not found");
 		return;
 	}
 
@@ -98,13 +98,13 @@ async function cancelRegistration(responseStruct) {
 		localStorage.clear();
 		window.location.href = '/register';
 	} catch (error) {
-		console.error('Error:', error);
+		//console.error('Error:', error);
 		displayMessage('An error occurred while deleting user', MessageType.ERROR);
 	}
 }
 
 function cancelVerification() {
-	console.log("2FA verification canceled.");
+	//console.log("2FA verification canceled.");
 	localStorage.clear();
 	window.location.href = `${window.location.origin}/login`;
 }
@@ -129,7 +129,7 @@ async function get_two_fa_qr(responseStruct) {
 			qrCodeImage.src = responseData.qr_code;
 		}
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("An error occurred while enabling 2FA.", MessageType.ERROR);
 	}
 }
@@ -156,7 +156,7 @@ async function verifyOtpCode(responseStruct, otpCode) {
 			renderAuthPage("two_fa_verify", responseStruct);
 		}
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("Failed to verify OTP", MessageType.ERROR);
 		renderAuthPage("two_fa_verify", responseStruct);
 	}
@@ -184,7 +184,7 @@ async function verifyEnableOtpCode(responseStruct, otpCode) {
 			renderAuthPage("two_fa_enable", responseStruct);
 		}
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("Failed to verify OTP", MessageType.ERROR);
 		renderAuthPage("two_fa_enable", responseStruct);
 	}
@@ -208,7 +208,7 @@ async function requestOtp(responseStruct, email) {
 
 		displayMessage("Recovery OTP sent to email", MessageType.SUCCESS);
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("Failed to send recovery OTP", MessageType.ERROR);
 		renderAuthPage("two_fa_recover", responseStruct);
 	}
@@ -232,7 +232,7 @@ async function checkRecoverOTP(responseStruct, otp_code) {
 
 		renderAuthPage("two_fa_enable", responseStruct);
 	} catch (error) {
-		console.error("Error:", error);
+		//console.error("Error:", error);
 		displayMessage("Failed to verify recovery code", MessageType.ERROR);
 		renderAuthPage("two_fa_recover", responseStruct);
 	}
