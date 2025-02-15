@@ -8,7 +8,8 @@ const router = {
 		pong: "/pong.html",
 		pongai: "/pong.html",
 		42: "/42.html",
-		404: "/404.html"
+		404: "/404.html",
+		403: "/403.html"
 	},
 };
 
@@ -66,6 +67,7 @@ async function renderPage(page) {
 			page = "login";
 		}
 	}
+
 	// else {
 	// 	const authenticated = await isAuthenticated();
 	// 	if (authenticated) {
@@ -114,9 +116,13 @@ async function renderPage(page) {
 			handle42Callback();
 		} else if (page === "pongai") {
 			startGameDuo();
+		} else if (page === "403") {
+			console.error(`Page not found: ${page}`);
 		}
-		history.pushState({ page: page }, "", `/${page}`);
-		router.currentPage = page;
+		if (page !== "403" || page !== "404"){
+			history.pushState({ page: page }, "", `/${page}`);
+			router.currentPage = page;
+		}
 	} catch (error) {
 		console.error("Error loading page:", error);
 	} finally {
