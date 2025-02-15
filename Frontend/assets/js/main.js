@@ -80,25 +80,25 @@ async function renderPage(page, element) {
 		} else if (page === "register") {
 			attachRegisterFormListener();
 		} else if (page === "home") {
-				updateUserProfile();
-				load_profile_pic();
-				//console.log("Before Load");
-				if (!socket || socket == undefined)
-					socket = new Socket(localStorage.getItem('access'));
-				socket.lobbyLoad(localStorage.getItem('access'));
-        if (!element) {
-          renderElement("overview");
-        } else {
-          renderElement(element);
-        }
+			await updateUserProfile();
+			await load_profile_pic();
+			//console.log("Before Load");
+			if (!socket || socket == undefined)
+				socket = new Socket(localStorage.getItem('access'));
+			socket.lobbyLoad(localStorage.getItem('access'));
+			if (!element) {
+				await renderElement("overview");
+			} else {
+				await renderElement(element);
+			}
 		} else if (page === "pong") {
-			startGame3d(data, socket);
+			await startGame3d(data, socket);
 		} else if (page === "42") {
-			handle42Callback();
+			await handle42Callback();
 		} else if (page === "pongai") {
-			startGameDuo();
+			await startGameDuo();
 		} else if (page === "ponglocal") {
-			startGameLocal();
+			await startGameLocal();
 		} else if (page === "403") {
 			console.error(`Page not found: ${page}`);
 		}
@@ -305,5 +305,5 @@ window.addEventListener("load", async () => {
 });
 
 function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+	return new Promise(resolve => setTimeout(resolve, ms));
 }

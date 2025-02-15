@@ -55,7 +55,7 @@ async function renderElement(element) {
 		if (element === "profile") {
 			await viewProfile();
 		} else if (element === "overview") {
-			loadChart();
+			await loadChart();
 		} else if (element === "invites") {
 			new FriendSystem();
 		} else if (element === "settings") {
@@ -64,13 +64,13 @@ async function renderElement(element) {
 		} else if (element === "newtournament") {
 			attachTournamentFormListener();
 		} else if (element === "tournaments") {
-			loadAvailableTournaments();
+			await loadAvailableTournaments();
 		} else if (element === "matches") {
-			loadMatches();
+			await loadMatches();
 		} else if (element === "newgame") {
-			waitgame();
+			await waitgame();
 		} else if (element === "changeMap") {
-			loadMaps();
+			await loadMaps();
 		}
 		elements.currentElement = element;
 		//console.log("Component render complete:", element);
