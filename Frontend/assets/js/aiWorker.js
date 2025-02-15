@@ -1,6 +1,6 @@
 let lastUpdateTime = 0;
 const UPDATE_INTERVAL = 1000; // Ball position update interval
-const DECISION_INTERVAL = 30; // AI decision making interval
+const DECISION_INTERVAL = 50; // AI decision making interval
 let lastDecisionTime = 0;
 let lastKnownBallPosition = { x: 0, y: 0 };
 let lastKnownBallVelocity = { x: 0, y: 0 };
@@ -55,7 +55,7 @@ function calculateAIPaddlePosition() {
 
     // Apply reaction time randomness to make it more human-like
     const reactionError = (Math.random() - 0.5) * 0.3;
-    const predictionError = (Math.random() - 0.5) * 0.1;
+    const predictionError = (Math.random() - 0.5) * 0.2;
     let predictedY = simulatedY + reactionError + predictionError;
 
     return Math.max(-paddleLimit, Math.min(paddleLimit, predictedY)); // Clamp value
@@ -69,8 +69,8 @@ function updateAIMovement() {
 
     targetPosition = calculateAIPaddlePosition();
 
-    let speedFactor = 0.08; // Base AI speed
-    let maxSpeed = 0.15; // Maximum AI speed
+    let speedFactor = 0.08;
+    let maxSpeed = 0.15;
 
     let difference = targetPosition - currentPaddlePosition;
     let acceleration = Math.min(Math.abs(difference) * 0.2, maxSpeed);
@@ -80,10 +80,10 @@ function updateAIMovement() {
     } else if (difference < 0) {
         paddleVelocity = Math.max(paddleVelocity - acceleration, -maxSpeed);
     } else {
-        paddleVelocity *= 0.8; // Slow down if no movement needed
+        paddleVelocity *= 0.6;
     }
 
-    // Simulate key presses for smooth movement
+    // Simulate key
     const keys = {
         ArrowUp: paddleVelocity > speedFactor,
         ArrowDown: paddleVelocity < -speedFactor
