@@ -6,6 +6,9 @@ class PongGame {
         this.data = data;
         this.game_group = data.game_group;
 
+        this.WINNING_SCORE = 5;
+        this.gameOver = false;
+
         // Scene & Renderer
         this.scene = new THREE.Scene();
         this.setupRenderer();
@@ -25,6 +28,8 @@ class PongGame {
         this.topCamera;
         this.player1Name = this.data.player1;
         this.player2Name = this.data.player2;
+        this.endOverlay;
+        this.winnerPlayer = 0;
 
 
         // DEFINE PLAYER AND CAMERA
@@ -46,7 +51,6 @@ class PongGame {
         this.keys = {};
         this.isRunning = true;
         this.lastSentTime = 0;
-        this.targetBallPosition = { x: 0, y: 0 };
         this.targetPlayer1Position = 0;
         this.targetPlayer2Position = 0;
         this.lastPlayerPosition = { player1: 0, player2: 0 };
@@ -80,17 +84,12 @@ class PongGame {
         // this.renderer.setPixelRatio(2);
         this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         this.renderer.setSize(this.board.clientWidth, this.board.clientHeight, false);
-
-        ///////////////////////////// this here  influences the   game window ////////////////////
-        //this.renderer.setPixelRatio(window.devicePixelRatio);
-        //this.renderer.setSize(this.board.clientWidth, this.board.clientHeight);
-        ///////////////////////////////////////////////////////////////////////////////////// 
         this.renderer.shadowMap.enabled = true;
         const colors = {
-            1: "#0A001E",
-            2: "#001700",
-            3: "#2299FF",
-            4: "#00000F"
+            1: "#070016",
+            2: "#001200",
+            3: "#1A7ACC",
+            4: "#00000A"
         };
         this.renderer.setClearColor(colors[this.gameMap] || "#000000");
     }
@@ -601,17 +600,17 @@ class PongGame {
         // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "5px"; // Keep inside board
+        this.scoreboard.style.top = "1px";
         this.scoreboard.style.left = "50%";
-        this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "24px";
+        this.scoreboard.style.transform = "translateX(-50%)";
+        this.scoreboard.style.fontSize = "20px";
         this.scoreboard.style.fontWeight = "bold";
-        this.scoreboard.style.color = "green";
-        // this.scoreboard.style.background = "rgba(0, 0, 0, 0.5)";
-        this.scoreboard.style.padding = "4px 30px";
+        this.scoreboard.style.color = "#000060";
+        this.scoreboard.style.textShadow = '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF, 0 0 4px #0000FF, 0 0 5px #0000FF';
+        this.scoreboard.style.padding = "4px 50px";
         this.scoreboard.style.borderRadius = "4px";
         this.scoreboard.style.textAlign = "center";
-        this.scoreboard.style.zIndex = "10";
+        this.scoreboard.style.whiteSpace = "nowrap";
 
         // Create Player 1 and Player 2 score spans
         this.player1ScoreText = document.createElement("span");
@@ -639,6 +638,38 @@ class PongGame {
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
 
+    async startCountdown() {
+        this.isRunning = false;
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: '#00008B',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        for (let i = 3; i > 0; i--) {
+            overlay.innerHTML = `Get Ready<br>${i}`; // Use innerHTML to insert line break
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        overlay.remove();
+        this.isRunning = true;
+        this.animate();
+    }
 
     ////////////////CONTROLS AND CAMERA! //////////////////////////////////
     ////////////////////////////////////////////////////////////
