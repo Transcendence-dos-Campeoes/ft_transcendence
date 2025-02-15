@@ -75,12 +75,11 @@ class Socket {
           const playersList = document.getElementById("online-players-list");
           if (playersList) {
             playersList.innerHTML = ""; // Clear the list before updating
-          }
-          data.players_data.forEach((friend) => {
-            const a = document.createElement("a");
-            a.href = "#";
-            a.className = "list-group-item list-group-item-action py-3 lh-sm";
-            a.innerHTML = `
+            data.players_data.forEach((friend) => {
+              const a = document.createElement("a");
+              a.href = "#";
+              a.className = "list-group-item list-group-item-action py-3 lh-sm";
+              a.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             <span>${friend.username}</span>
@@ -110,8 +109,9 @@ class Socket {
                         </div>
                     </div>
                 `;
-            playersList.appendChild(a);
-          });
+              playersList.appendChild(a);
+            });
+          }
           const inviteButtons = document.querySelectorAll(".invite-button");
           inviteButtons.forEach((button) => {
             button.addEventListener("click", (event) => {
@@ -209,7 +209,22 @@ class Socket {
   }
 
   async send(message) {
-    this.socket.send(message);
+    if (typeof this.socket === "undefined" || this.socket.readyState === WebSocket.CLOSED) {
+      this.socket = new WebSocket(
+        `wss://${window.location.host}/ws/users/online-players/?token=${token}`
+      );
+      await new Promise((resolve, reject) => {
+        this.socket.onopen = resolve;
+        this.socket.onerror = reject;
+      });
+    } else if (this.socket.readyState === WebSocket.CONNECTING) {
+      await new Promise((resolve, reject) => {
+        this.socket.onopen = resolve;
+        this.socket.onerror = reject;
+      });
+    } else {
+      this.socket.send(message);
+    }
   }
 
   addEventListener(type, listener) {

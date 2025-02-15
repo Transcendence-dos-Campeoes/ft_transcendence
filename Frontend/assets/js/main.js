@@ -303,3 +303,7 @@ window.addEventListener("load", async () => {
 		renderPage("home", path);
 	}
 });
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
