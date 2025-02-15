@@ -22,6 +22,7 @@ class PongDuoGame {
         this.camPos = 6.5;
         this.topCamera;
         this.endOverlay;
+        this.winnerPlayer = 0;
 
         this.isAIMode = true;
         this.aiWorker = null;
@@ -667,6 +668,68 @@ class PongDuoGame {
         this.animate();
     }
 
+
+    // async displayEndGameMessage(isWinner) {
+    //     this.isRunning = false;
+    //     this.gameOver = true;
+    
+    //     const overlay = document.createElement('div');
+    //     overlay.className = 'countdown-overlay';
+    //     Object.assign(overlay.style, {
+    //         position: 'absolute',
+    //         top: '0',
+    //         left: '0',
+    //         width: '100%',
+    //         height: '100%',
+    //         backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    //         display: 'flex',
+    //         flexDirection: 'column',
+    //         justifyContent: 'center',
+    //         alignItems: 'center',
+    //         fontSize: '48px',
+    //         color: isWinner ? '#00FF00' : '#FF0000',
+    //         textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+    //         zIndex: '1000',
+    //         transition: 'opacity 0.5s',
+    //         textAlign: 'center',
+    //         gap: '20px' // Add space between elements
+    //     });
+    
+    //     // Create and style the button
+    //     const homeButton = document.createElement('button');
+    //     Object.assign(homeButton.style, {
+    //         padding: '10px 20px',
+    //         fontSize: '24px',
+    //         backgroundColor: '#0000FF',
+    //         color: '#FFFFFF',
+    //         border: 'none',
+    //         borderRadius: '5px',
+    //         cursor: 'pointer',
+    //         marginTop: '20px',
+    //         boxShadow: '0 0 10px #0000FF, 0 0 20px #0000FF',
+    //         transition: 'all 0.3s ease'
+    //     });
+        
+    //     // Add hover effect
+    //     homeButton.onmouseover = () => {
+    //         homeButton.style.transform = 'scale(1.1)';
+    //         homeButton.style.boxShadow = '0 0 15px #0000FF, 0 0 30px #0000FF';
+    //     };
+    //     homeButton.onmouseout = () => {
+    //         homeButton.style.transform = 'scale(1)';
+    //         homeButton.style.boxShadow = '0 0 10px #0000FF, 0 0 20px #0000FF';
+    //     };
+    
+    //     homeButton.textContent = 'Return to Home';
+    //     homeButton.onclick = () => {
+    //         renderPage("home");
+    //     };
+    
+    //     this.board.parentElement.appendChild(overlay);
+    //     overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
+    //     overlay.appendChild(homeButton);
+    // }
+
     async displayEndGameMessage(isWinner) {
         this.isRunning = false;
         this.gameOver = true;
@@ -694,8 +757,9 @@ class PongDuoGame {
 
         this.board.parentElement.appendChild(overlay);
         overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
-        await new Promise(resolve => setTimeout(resolve, 4000));
-        //overlay.remove();
+        await new Promise(resolve => setTimeout(resolve, 2400));
+        overlay.remove();
+        renderPage("home");
     }
 
 
@@ -785,7 +849,7 @@ class PongDuoGame {
     animate() {
         if (!this.isRunning || this.gameOver) {
             this.cleanup();
-            renderPage("home");
+            //renderPage("home");
             return;
         }
         requestAnimationFrame(() => this.animate());
