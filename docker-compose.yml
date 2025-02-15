@@ -52,6 +52,7 @@ services:
 
     prometheus:
         image: prom/prometheus
+        user: "${UID}:${GID}"
         volumes:
             - ./Prometheus:/etc/prometheus
             - ./Prometheus/data:/prometheus
