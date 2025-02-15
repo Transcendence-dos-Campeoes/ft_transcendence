@@ -3,6 +3,10 @@ class PongLocalGame {
     constructor(gameMap) {
         this.gameMap = gameMap;
         this.ballMaxAnglle = 60;
+        this.isRunning = true;
+        this.WINNING_SCORE = 5;
+        this.gameOver = false;
+
 
         // Scene & Renderer
         this.scene = new THREE.Scene();
@@ -23,8 +27,8 @@ class PongLocalGame {
         this.topCamera;
 
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
-        this.player1Name = "";
-        this.player2Name = "";
+        this.player1Name = "You";
+        this.player2Name = "Opponent";
 
         //player stuff
         this.player1;
@@ -357,15 +361,19 @@ class PongLocalGame {
     // Reset the ball to the center and changes state for next call
     resetBall() {
         this.ball.position.set(0, 0, 0);
+
+        this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
-            this.ballVelocity = { x: 0.05, y: 0 };
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.05, y: (Math.random() - 0.4) * 0.1 };
         } else {
-            this.ballVelocity = { x: -0.05, y: 0 };
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.05, y: (Math.random() - 0.4) * 0.1 };
         }
         this.isBallMovingRight = !this.isBallMovingRight;
     }
 
+
     updateBall() {
+        if (this.gameOver) return;
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.goalPosition = (this.fieldLength + 0.4) / 2;
@@ -375,22 +383,65 @@ class PongLocalGame {
         const fieldRight = (this.fieldLength + 0.5) / 2;
         if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
             this.ballVelocity.y *= -1;
+            if (this.ball.position.y >= fieldTop) {
+                this.ball.position.y = fieldTop - 0.01;
+            }
+            if (this.ball.position.y <= fieldBottom) {
+                this.ball.position.y = fieldBottom + 0.01;
+            }
         }
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
-            console.log("Player 1 Scored! Score:", this.player1Score);
             this.updateScoreboard();
+            if (this.player1Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(true);
+                return;
+            }
             this.resetBall();
         } else if (this.ball.position.x <= fieldLeft) {
             this.player2Score++;
-            console.log("Player 2 Scored! Score:", this.player2Score);
-            this.resetBall();
             this.updateScoreboard();
+            if (this.player2Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(true);
+                return;
+            }
+            this.resetBall();
         }
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
     }
 
+    async displayEndGameMessage(isWinner) {
+        this.isRunning = false;
+        this.gameOver = true;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: isWinner ? '#00FF00' : '#FF0000',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        overlay.innerHTML = isWinner ? 'Player 1 Wins!' : 'Player 2 Wins!';
+        await new Promise(resolve => setTimeout(resolve, 2400));
+        overlay.remove();
+        renderPage("home");
+    }
 
     checkPaddleCollision(paddle) {
         const paddleWidth = this.overallHight;
@@ -412,7 +463,7 @@ class PongLocalGame {
             ballTop >= paddleBottom &&
             ballBottom <= paddleTop
         ) {
-            this.ballVelocity.x *= -1.1;
+            this.ballVelocity.x *= -1.05;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
         }
@@ -547,28 +598,26 @@ class PongLocalGame {
 
     setupScoreboard() {
         if (!this.board) {
-            console.log("loard element not found for scoreboard!");
+            console.log("board element not found for scoreboard!");
             return;
         }
-        // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "5px"; // Keep inside board
+        this.scoreboard.style.top = "1px";
         this.scoreboard.style.left = "50%";
-        this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "24px";
+        this.scoreboard.style.transform = "translateX(-50%)";
+        this.scoreboard.style.fontSize = "20px";
         this.scoreboard.style.fontWeight = "bold";
-        this.scoreboard.style.color = "green";
-        this.scoreboard.style.padding = "4px 30px";
+        this.scoreboard.style.color = "#000060";
+        this.scoreboard.style.textShadow = '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF, 0 0 4px #0000FF, 0 0 5px #0000FF';
+        this.scoreboard.style.padding = "4px 50px";
         this.scoreboard.style.borderRadius = "4px";
         this.scoreboard.style.textAlign = "center";
-        this.scoreboard.style.zIndex = "10";
-
-        // Create Player 1 and Player 2 score spans
+        this.scoreboard.style.whiteSpace = "nowrap";
         this.player1ScoreText = document.createElement("span");
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.scoreSeparator = document.createElement("span");
-        this.scoreSeparator.textContent = " - ";
+        this.scoreSeparator.textContent = " vs ";
         this.scoreSeparator.style.margin = "0px";
         this.player2ScoreText = document.createElement("span");
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
@@ -582,6 +631,7 @@ class PongLocalGame {
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
+
 
     //Controls padles and keeps them inside the field. 
     // rotating camera views triggers movement switch of keys to adjust to view
@@ -669,6 +719,74 @@ class PongLocalGame {
         }
     }
 
+    async startCountdown() {
+        this.isRunning = false;
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+
+        // Create a container for both countdown and controls info
+        const container = document.createElement('div');
+        Object.assign(container.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: '1000'
+        });
+
+        // Style the countdown text
+        const countdownText = document.createElement('div');
+        Object.assign(countdownText.style, {
+            fontSize: '48px',
+            color: '#00008B',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            textAlign: 'center',
+            marginBottom: 'auto',
+            paddingTop: '100px'
+        });
+
+        // Add controls info at the bottom
+        const controlsInfo = document.createElement('div');
+        Object.assign(controlsInfo.style, {
+            position: 'absolute',
+            bottom: '30px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: '#FFFFFF',
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            lineHeight: '1.5',
+            opacity: '0.8'
+        });
+
+        controlsInfo.innerHTML = `
+            P1: w|s or a|d <br>
+            P2: Arrows <br>
+            Camera: C
+        `;
+
+        container.appendChild(countdownText);
+        container.appendChild(controlsInfo);
+        this.board.parentElement.appendChild(container);
+
+        // Run countdown
+        for (let i = 3; i > 0; i--) {
+            countdownText.innerHTML = `Get Ready<br>${i}`;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        container.remove();
+        this.isRunning = true;
+        this.animate();
+    }
+
     //class initialization
 
     init() {
@@ -678,7 +796,7 @@ class PongLocalGame {
         this.setupGlowingGrid();
         this.setupControls();
         this.setupScoreboard();
-        this.animate();
+        this.startCountdown();
     }
     ////////  here is the main loop of the game    ///////////
 
@@ -695,6 +813,12 @@ class PongLocalGame {
         this.starfieldBackgroudRotation();
     }
 }
+
+
+
+
+
+
 
 /////    function called on main js 
 async function startGameLocal() {
