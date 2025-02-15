@@ -2,8 +2,16 @@
 class PongDuoGame {
     constructor(selectedMap) {
         this.gameMap = selectedMap;
-        this.WINNING_SCORE = 1;
+        this.WINNING_SCORE = 5;
         this.gameOver = false;
+        //powerups stuff
+
+        this.powerUpAvailable = true;
+        this.powerUpActive = false;
+        this.powerUpCount = 3;
+        this.normalPaddleSpeed = 0.1;
+        this.boostedPaddleSpeed = 0.18;
+        this.currentPaddleSpeed = this.normalPaddleSpeed;
       
         // Scene & Renderer
         this.scene = new THREE.Scene();
@@ -373,9 +381,9 @@ class PongDuoGame {
 
         this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
-            this.ballVelocity = { x: 0.04, y: 0 };
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.04, y: (Math.random() - 0.4) * 0.1 };
         } else {
-            this.ballVelocity = { x: -0.04, y: 0 };
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.04, y: (Math.random() - 0.4) * 0.1 };
         }
         this.isBallMovingRight = !this.isBallMovingRight;
         if (this.isAIMode && this.aiWorker) {
@@ -478,7 +486,7 @@ class PongDuoGame {
     createHexagon(size, opacity) {
         const hexGeometry = new THREE.CircleGeometry(size, 6); // Hexagon shape
         const edges = new THREE.EdgesGeometry(hexGeometry);
-        const material = new THREE.LineBasicMaterial({ color: "#4440FF", opacity: 0.8, transparent: true });
+        const material = new THREE.LineBasicMaterial({ color: "#7766FF", opacity: 0.8, transparent: true });
         const hexagon = new THREE.LineSegments(edges, material);
         return hexagon;
     }
@@ -635,12 +643,14 @@ class PongDuoGame {
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
-
     async startCountdown() {
         this.isRunning = false;
         const overlay = document.createElement('div');
         overlay.className = 'countdown-overlay';
-        Object.assign(overlay.style, {
+        
+        // Create a container for both countdown and controls info
+        const container = document.createElement('div');
+        Object.assign(container.style, {
             position: 'absolute',
             top: '0',
             left: '0',
@@ -651,85 +661,55 @@ class PongDuoGame {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
+            zIndex: '1000'
+        });
+    
+        // Style the countdown text
+        const countdownText = document.createElement('div');
+        Object.assign(countdownText.style, {
             fontSize: '48px',
             color: '#00008B',
             textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
-            zIndex: '1000',
-            transition: 'opacity 0.5s',
-            textAlign: 'center'
+            textAlign: 'center',
+            marginBottom: 'auto',
+            paddingTop: '100px'  // Reduced padding to move text higher up
         });
-
-        this.board.parentElement.appendChild(overlay);
+    
+        // Add controls info at the bottom
+        const controlsInfo = document.createElement('div');
+        Object.assign(controlsInfo.style, {
+            position: 'absolute',
+            bottom: '30px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: '#FFFFFF',
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            lineHeight: '1.5',
+            opacity: '0.8'
+        });
+        
+        controlsInfo.innerHTML = `
+            Move: w/s or a/d<br>
+            Powerup: [space]<br>
+            Camera: C
+        `;
+    
+        container.appendChild(countdownText);
+        container.appendChild(controlsInfo);
+        this.board.parentElement.appendChild(container);
+    
+        // Run countdown
         for (let i = 3; i > 0; i--) {
-            overlay.innerHTML = `Get Ready<br>${i}`; // Use innerHTML to insert line break
+            countdownText.innerHTML = `Get Ready<br>${i}`;
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        overlay.remove();
+    
+        container.remove();
         this.isRunning = true;
         this.animate();
     }
-
-
-    // async displayEndGameMessage(isWinner) {
-    //     this.isRunning = false;
-    //     this.gameOver = true;
-    
-    //     const overlay = document.createElement('div');
-    //     overlay.className = 'countdown-overlay';
-    //     Object.assign(overlay.style, {
-    //         position: 'absolute',
-    //         top: '0',
-    //         left: '0',
-    //         width: '100%',
-    //         height: '100%',
-    //         backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    //         display: 'flex',
-    //         flexDirection: 'column',
-    //         justifyContent: 'center',
-    //         alignItems: 'center',
-    //         fontSize: '48px',
-    //         color: isWinner ? '#00FF00' : '#FF0000',
-    //         textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
-    //         zIndex: '1000',
-    //         transition: 'opacity 0.5s',
-    //         textAlign: 'center',
-    //         gap: '20px' // Add space between elements
-    //     });
-    
-    //     // Create and style the button
-    //     const homeButton = document.createElement('button');
-    //     Object.assign(homeButton.style, {
-    //         padding: '10px 20px',
-    //         fontSize: '24px',
-    //         backgroundColor: '#0000FF',
-    //         color: '#FFFFFF',
-    //         border: 'none',
-    //         borderRadius: '5px',
-    //         cursor: 'pointer',
-    //         marginTop: '20px',
-    //         boxShadow: '0 0 10px #0000FF, 0 0 20px #0000FF',
-    //         transition: 'all 0.3s ease'
-    //     });
-        
-    //     // Add hover effect
-    //     homeButton.onmouseover = () => {
-    //         homeButton.style.transform = 'scale(1.1)';
-    //         homeButton.style.boxShadow = '0 0 15px #0000FF, 0 0 30px #0000FF';
-    //     };
-    //     homeButton.onmouseout = () => {
-    //         homeButton.style.transform = 'scale(1)';
-    //         homeButton.style.boxShadow = '0 0 10px #0000FF, 0 0 20px #0000FF';
-    //     };
-    
-    //     homeButton.textContent = 'Return to Home';
-    //     homeButton.onclick = () => {
-    //         renderPage("home");
-    //     };
-    
-    //     this.board.parentElement.appendChild(overlay);
-    //     overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
-    //     overlay.appendChild(homeButton);
-    // }
 
     async displayEndGameMessage(isWinner) {
         this.isRunning = false;
@@ -770,17 +750,17 @@ class PongDuoGame {
 
         if (this.topCamera === this.currentCamera) {
             if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1;
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
             }
             if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1;
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         } else {
             if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                this.leftPaddle.position.y += 0.1;
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
             }
             if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                this.leftPaddle.position.y -= 0.1;
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         }
         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
@@ -791,11 +771,60 @@ class PongDuoGame {
         }
     }
 
+    // setupControls() {
+    //     window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
+    //     window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+    // }
     setupControls() {
-        window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
-        window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+        // Handle regular key presses
+        window.addEventListener("keydown", (e) => {
+            this.keys[e.key] = true;
+            // Handle spacebar power-up separately
+            if (e.code === "Space" && this.powerUpAvailable && !this.powerUpActive) {
+                this.activatePowerUp();
+            }
+        });
+        
+        window.addEventListener("keyup", (e) => {
+            this.keys[e.key] = false;
+        });
     }
 
+    activatePowerUp() {
+        if (!this.powerUpAvailable || this.powerUpActive || this.powerUpCount <= 0) return;
+        
+        this.powerUpCount--;
+        this.powerUpActive = true;
+        this.currentPaddleSpeed = this.boostedPaddleSpeed;
+        
+        // Just update the text, no need to create the display
+        this.powerUpDisplay.textContent = `Power-ups: ${this.powerUpCount}`;
+    
+        setTimeout(() => {
+            this.powerUpActive = false;
+            this.currentPaddleSpeed = this.normalPaddleSpeed;
+        }, 5000);
+    }
+    
+
+    setupPowerUpDisplay() {
+        this.powerUpDisplay = document.createElement('div');
+        Object.assign(this.powerUpDisplay.style, {
+            position: 'absolute',
+            bottom: '1px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: '#000060',
+            textShadow: '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF',
+            zIndex: '1000'
+        });
+        this.board.parentElement.appendChild(this.powerUpDisplay);
+        this.powerUpDisplay.textContent = `Power-ups: ${this.powerUpCount}`;
+    }
     //press c to rotate between camera views
     cameraKeyControls() {
         if (!this.currentCamera) {
@@ -834,6 +863,7 @@ class PongDuoGame {
         this.setupGlowingGrid();
         this.setupControls();
         this.setupScoreboard();
+        this.setupPowerUpDisplay();
         this.startCountdown(); // animates the game loading
     }
 
