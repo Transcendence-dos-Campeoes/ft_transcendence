@@ -32,7 +32,7 @@ async function logout() {
 			}
 		}
 	} catch (error) {
-		console.error("Error logging out:", error);
+		//console.error("Error logging out:", error);
 		localStorage.clear();
 	}
 }

@@ -68,7 +68,7 @@ class Socket {
 
     this.socket.onmessage = async (event) => {
       data = JSON.parse(event.data);
-      console.log("WebSocket message received:", data); // Debugging line
+      // console.log("WebSocket message received:", data); // Debugging line
 
       if (data.type === "online.players.update") {
         if (data.players_data) {
