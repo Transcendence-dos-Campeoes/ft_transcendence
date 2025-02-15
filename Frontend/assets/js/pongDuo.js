@@ -1,8 +1,9 @@
 
 class PongDuoGame {
-    constructor( aiMode) {
-        this.gameMap = 2;//agfsgdhsjdghsjdfbdjsfnv
-
+    constructor(selectedMap) {
+        this.gameMap = selectedMap;
+        this.WINNING_SCORE = 1;
+        this.gameOver = false;
         // Scene & Renderer
         this.scene = new THREE.Scene();
         this.setupRenderer();
@@ -20,19 +21,17 @@ class PongDuoGame {
         this.playerPos = this.fieldLength / 2 + this.overallHight / 2;
         this.camPos = 6.5;
         this.topCamera;
+        this.endOverlay;
 
-        this.isAIMode = aiMode;
+        this.isAIMode = true;
         this.aiWorker = null;
         this.lastAIUpdateTime = 0;
         this.AI_UPDATE_INTERVAL = 1000;
-
-        if (this.isAIMode) {
-            this.setupAIWorker();
-        }
+        this.setupAIWorker();
 
         //scoreboard stuff and names needed to fill in the tables with correct names and scores
         this.player1Name = "You";
-        this.player2Name = "AI Opponent";
+        this.player2Name = "AI";
 
         //player stuff
         this.player1;
@@ -83,10 +82,10 @@ class PongDuoGame {
         this.renderer.setSize(this.board.clientWidth, this.board.clientHeight, false);
         this.renderer.shadowMap.enabled = true;
         const colors = {
-            1: "#0A001E",
-            2: "#001700",
-            3: "#2299FF",
-            4: "#00000F"
+            1: "#070016",
+            2: "#001200",
+            3: "#1A7ACC",
+            4: "#00000A"
         };
         this.renderer.setClearColor(colors[this.gameMap] || "#000000");
     }
@@ -238,7 +237,7 @@ class PongDuoGame {
             this.scene.add(this.leftPaddle, this.rightPaddle);
         }
         if (this.gameMap == 4) {
-            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFFF" });
+            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFF" });
             const paddleGeometry = new THREE.BoxGeometry(this.overallHight, this.paddleLenght, this.overallHight);
             this.leftPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
             this.rightPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
@@ -369,7 +368,7 @@ class PongDuoGame {
     // Reset the ball to the center and changes state for next call
     resetBall() {
         this.ball.position.set(0, 0, 0);
-        //x horizontal y vertical
+
         this.lastAIUpdateTime = 0;
         if (this.isBallMovingRight) {
             this.ballVelocity = { x: 0.04, y: 0 };
@@ -393,6 +392,7 @@ class PongDuoGame {
 
 
     updateBall() {
+        if (this.gameOver) return;
         this.ball.position.x += this.ballVelocity.x;
         this.ball.position.y += this.ballVelocity.y;
         this.goalPosition = (this.fieldLength + 0.4) / 2;
@@ -406,11 +406,19 @@ class PongDuoGame {
         if (this.ball.position.x >= fieldRight) {
             this.player1Score++;
             this.updateScoreboard();
+            if (this.player1Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(true);
+                return;
+            }
             this.resetBall();
         } else if (this.ball.position.x <= fieldLeft) {
             this.player2Score++;
-            this.resetBall();
             this.updateScoreboard();
+            if (this.player2Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(false);
+                return;
+            }
+            this.resetBall();
         }
         this.checkPaddleCollision(this.leftPaddle);
         this.checkPaddleCollision(this.rightPaddle);
@@ -592,28 +600,26 @@ class PongDuoGame {
 
     setupScoreboard() {
         if (!this.board) {
-            console.log("loard element not found for scoreboard!");
+            console.log("board element not found for scoreboard!");
             return;
         }
-        // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "0px"; // Keep inside board
+        this.scoreboard.style.top = "1px";
         this.scoreboard.style.left = "50%";
-        this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "18px";
+        this.scoreboard.style.transform = "translateX(-50%)";
+        this.scoreboard.style.fontSize = "20px";
         this.scoreboard.style.fontWeight = "bold";
-        this.scoreboard.style.color = "green";
-        this.scoreboard.style.padding = "4px 30px";
+        this.scoreboard.style.color = "#000060";
+        this.scoreboard.style.textShadow = '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF, 0 0 4px #0000FF, 0 0 5px #0000FF';
+        this.scoreboard.style.padding = "4px 50px";
         this.scoreboard.style.borderRadius = "4px";
         this.scoreboard.style.textAlign = "center";
-        this.scoreboard.style.zIndex = "10";
-
-        // Create Player 1 and Player 2 score spans
+        this.scoreboard.style.whiteSpace = "nowrap";
         this.player1ScoreText = document.createElement("span");
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.scoreSeparator = document.createElement("span");
-        this.scoreSeparator.textContent = " - ";
+        this.scoreSeparator.textContent = " vs ";
         this.scoreSeparator.style.margin = "0px";
         this.player2ScoreText = document.createElement("span");
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
@@ -628,11 +634,75 @@ class PongDuoGame {
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
 
+    async startCountdown() {
+        this.isRunning = false;
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: '#00008B',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        for (let i = 3; i > 0; i--) {
+            overlay.innerHTML = `Get Ready<br>${i}`; // Use innerHTML to insert line break
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        overlay.remove();
+        this.isRunning = true;
+        this.animate();
+    }
+
+    async displayEndGameMessage(isWinner) {
+        this.isRunning = false;
+        this.gameOver = true;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: isWinner ? '#00FF00' : '#FF0000',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        //overlay.remove();
+    }
+
 
     updatePaddles() {
         const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
 
-        if(this.topCamera === this.currentCamera) {
+        if (this.topCamera === this.currentCamera) {
             if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
                 this.leftPaddle.position.y += 0.1;
             }
@@ -654,75 +724,6 @@ class PongDuoGame {
             this.rightPaddle.position.y -= 0.1;
         }
     }
-
-    //Controls padles and keeps them inside the field. 
-    // rotating camera views triggers movement switch of keys to adjust to view
-    // updatePaddles() {
-    //     let sideN = 1;
-    //     const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
-
-    //     if (this.isAIMode) {
-    //         // Human player controls (left paddle)
-    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1;
-    //         }
-
-    //         // AI controls (right paddle)
-    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1;
-    //         }
-    //         return;
-    //     }
-    //     ////
-    //     if (this.currentCamera === this.topCamera) {
-    //         if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1;
-    //         }
-    //         if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1;
-    //         }
-    //         if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1;
-    //         }
-    //     } else {
-    //         if (this.currentCamera === this.player1Camera) {
-    //             if (this.keys["d"] && this.leftPaddle.position.y < paddleLimit) {
-    //                 this.leftPaddle.position.y += 0.1 * sideN;
-    //             }
-    //             if (this.keys["a"] && this.leftPaddle.position.y > -paddleLimit) {
-    //                 this.leftPaddle.position.y -= 0.1 * sideN;
-    //             }
-    //             if (this.keys["ArrowRight"] && this.rightPaddle.position.y < paddleLimit) {
-    //                 this.rightPaddle.position.y += 0.1 * sideN;
-    //             }
-    //             if (this.keys["ArrowLeft"] && this.rightPaddle.position.y > -paddleLimit) {
-    //                 this.rightPaddle.position.y -= 0.1 * sideN;
-    //             }
-    //             return;
-    //         }
-    //         if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-    //             this.leftPaddle.position.y += 0.1 * sideN;
-    //         }
-    //         if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-    //             this.leftPaddle.position.y -= 0.1 * sideN;
-    //         }
-    //         if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
-    //             this.rightPaddle.position.y += 0.1 * sideN;
-    //         }
-    //         if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
-    //             this.rightPaddle.position.y -= 0.1 * sideN;
-    //         }
-    //     }
-    // }
 
     setupControls() {
         window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
@@ -767,11 +768,26 @@ class PongDuoGame {
         this.setupGlowingGrid();
         this.setupControls();
         this.setupScoreboard();
-        this.animate();
+        this.startCountdown(); // animates the game loading
+    }
+
+    cleanup() {
+        window.removeEventListener("keydown", this.cameraEventListener);
+        window.removeEventListener("keydown", (e) => (this.keys[e.key] = true));
+        window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
+        if (this.aiWorker) {
+            this.aiWorker.terminate();
+            this.aiWorker = null;
+        }
     }
 
     // Main Game Loop
     animate() {
+        if (!this.isRunning || this.gameOver) {
+            this.cleanup();
+            renderPage("home");
+            return;
+        }
         requestAnimationFrame(() => this.animate());
         this.updateBall();
         this.updatePaddles();
@@ -781,7 +797,25 @@ class PongDuoGame {
     }
 }
 
-async function startGameDuo(aiMode) {
+async function startGameDuo() {
+    const loadingOverlay = new LoadingOverlay();
+    let selectedMap;
+    try {
+        loadingOverlay.show();
+        const response = await fetchWithAuth("/api/users/selectedmap/");
+        if (!response.ok) {
+            throw new Error("Failed to fetch selected map");
+        }
+        const mapData = await response.json();
+        console.log(mapData);
+        selectedMap = mapData.map_number || 1;
+        console.log("Selected map:", selectedMap);
+    } catch {
+        displayMessage("Failed to load profile data", MessageType.ERROR);
+    } finally {
+        loadingOverlay.hide();
+    }
     console.log("Game starting...");
-    new PongDuoGame(aiMode);
+
+    const pongDuo = new PongDuoGame(selectedMap);
 }
