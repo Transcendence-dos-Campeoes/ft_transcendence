@@ -33,6 +33,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     selected_map = models.IntegerField(default=1)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_42user = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

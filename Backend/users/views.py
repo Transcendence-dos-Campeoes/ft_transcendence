@@ -439,6 +439,8 @@ def updateMap(request):
 def updateUserProfile(request):
     try:
         user = request.user
+        if user.is_42user == True:
+            return Response({'error': 'Profile update not allowed for 42 users'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = SiteUserSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
@@ -619,10 +621,12 @@ def oauth_callback(request):
             user.set_unusable_password()
             image_name = f"{username}.jpg"
             user.profile_image.save(image_name, ContentFile(image_response.content))
+            user.is_42user = True
             user.save()
             print(f"User {username} created with an unusable password.")
         else:
             user.email = email
+            user.is_42user = True
             user.save()
 
         refresh = RefreshToken.for_user(user)
