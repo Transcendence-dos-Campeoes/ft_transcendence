@@ -284,6 +284,7 @@ const handlePopState = async (e) => {
 			const authenticated = await isAuthenticated();
 			if (!authenticated) {
 				console.log("User not authenticated, redirecting to login page.");
+				history.pushState({ page: "login" }, "", "/login");
 				path = "login";
 			}
 		}
@@ -291,6 +292,7 @@ const handlePopState = async (e) => {
 			const authenticated = await isAuthenticated();
 			if (authenticated) {
 				console.log("User authenticated, redirecting to home page.");
+				history.pushState({ page: "home" }, "", "/home");
 				path = "home";
 			}
 		}
