@@ -96,7 +96,6 @@ async function renderPage(page, element) {
 			}
 
 		} else if (page === "pong") {
-			console.log(data);
 			window.removeEventListener("popstate", handlePopState);
 			startGame3d(data, socket);
 		} else if (page === "42") {

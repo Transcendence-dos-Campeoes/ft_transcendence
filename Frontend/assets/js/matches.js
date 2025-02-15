@@ -87,7 +87,7 @@ async function joinMatch(encodedMatch, currentUser) {
         to: opponent,
         game: match.match__id,
         player1: match.match__player1__username,
-        player2: match.match__player1__username,
+        player2: match.match__player2__username,
       })
     );
 

@@ -450,20 +450,22 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                 users.append(channel_user_map[channel_name])
                 async_to_sync(self.channel_layer.group_discard)(data['game_group'], channel_name)
             del group_channel_map[data['game_group']]
-            user1 = users[0]
-            user2 = users[1]
-
-            try:
-                user1_id = SiteUser.objects.get(username=user1).id
-                user2_id = SiteUser.objects.get(username=user2).id
-
-            except SiteUser.DoesNotExist as e:
-                print(f"Error: {e}")
-
+            
             match_id = group_match_map[data['game_group']]
             match = Match.objects.get(id=match_id)
             if not match:
                 print ("Nao há arroz")
+
+            user1 = match.player1
+            user2 = match.player2
+
+
+            try:
+                user1_id = match.player1.id
+                user2_id = match.player2.id
+
+            except SiteUser.DoesNotExist as e:
+                print(f"Error: {e}")
             match.player1_score = data['player1Score']
             match.player2_score = data ['player2Score']
             if data['player1Score'] > data['player2Score']:
@@ -673,16 +675,16 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                         'from': event['from'],
                         'game_group': game_group_name,
                         'player': 'player1',
-                        'player1': event['from'],
-                        'player2': event['to'],
+                        'player1': event['player1'],
+                        'player2': event['player2'],
                     }))
                     async_to_sync(self.channel_layer.group_send)(game_group_name, {
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
                         'player': 'player2',
-                        'player1': event['from'],
-                        'player2': event['to'],
+                        'player1': event['player1'],
+                        'player2': event['player2'],
                     })
                 else:
                     self.send(text_data=json.dumps({
@@ -690,16 +692,16 @@ class OnlinePlayersConsumer(WebsocketConsumer):
                         'from': event['from'],
                         'game_group': game_group_name,
                         'player': 'player2',
-                        'player1': event['to'],
-                        'player2': event['from'],
+                        'player1': event['player1'],
+                        'player2': event['player2'],
                     }))
                     async_to_sync(self.channel_layer.group_send)(game_group_name, {
                         'type': 'start_game',
                         'from': event['from'],
                         'game_group': game_group_name,
                         'player': 'player1',
-                        'player1': event['to'],
-                        'player2': event['from'],
+                        'player1': event['player1'],
+                        'player2': event['player2'],
                     })
             else:
                 print("Match not found.")

@@ -110,7 +110,6 @@ class PongGame {
     setupSocketListeners() {
         this.socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
-            console.log(data);
             if (data.type === 'game_update') {
                 this.ball.position.x = data.ball.x;
                 this.ball.position.y = data.ball.y;

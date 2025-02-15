@@ -196,7 +196,6 @@ async function update(context, socket, gameGroup) {
         }
 
     // Draw the updated state
-        console.log(socket);
     // Send game state updates if the current client is the host
         const currentUser = localStorage.getItem("username");
         socket.send(JSON.stringify({
