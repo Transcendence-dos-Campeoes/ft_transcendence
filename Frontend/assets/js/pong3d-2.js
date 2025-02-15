@@ -42,7 +42,7 @@ class PongGame {
         this.gridMaterial;
         this.ballMaterial;
 
-        this.ballVelocity = { x: 0.04, y: 0.00 };
+        this.ballVelocity = { x: 0.05, y: 0.02 };
         this.keys = {};
         this.isRunning = true;
         this.lastSentTime = 0;
@@ -110,9 +110,10 @@ class PongGame {
     setupSocketListeners() {
         this.socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
+
             if (data.type === 'game_update') {
-                this.ball.position.x = data.ball.x;
-                this.ball.position.y = data.ball.y;
+                this.targetBallPosition.x = data.ball.x;
+                this.targetBallPosition.y = data.ball.y;
                 this.ballVelocity = data.ballVelocity;
                 this.player1Score = data.player1Score;
                 this.player2Score = data.player2Score;
@@ -214,6 +215,7 @@ class PongGame {
             this.setupWalls();
         }
         this.setupSquareBall();
+        this.resetBall();
         const starField = this.generateRotatingStarfield();
         if (this.gameMap == 1) {
             const GameField = this.setupGlowingGrid();
@@ -302,7 +304,7 @@ class PongGame {
             this.scene.add(this.leftPaddle, this.rightPaddle);
         }
         if (this.gameMap == 4) {
-            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFF" });
+            const paddleMaterial = new THREE.MeshStandardMaterial({ color: "#FFFFFFF" });
             const paddleGeometry = new THREE.BoxGeometry(this.overallHight, this.paddleLenght, this.overallHight);
             this.leftPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
             this.rightPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
@@ -459,9 +461,6 @@ class PongGame {
             this.ballVelocity.x *= -1.1;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
-
-            //send ball position and velocity
-            this.sendBallPosition();
         }
     }
 
@@ -718,18 +717,18 @@ class PongGame {
         } else {
             // Controls for player view
             if (this.player === "player1") {
-                if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                if (this.keys["ArrowLeft"] && this.leftPaddle.position.y < paddleLimit) {
                     this.targetPlayer1Position += 0.1;
                 }
-                if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                if (this.keys["ArrowRight"] && this.leftPaddle.position.y > -paddleLimit) {
                     this.targetPlayer1Position -= 0.1;
                 }
             } else {
-                if (this.keys["d"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.targetPlayer2Position += 0.1;
-                }
-                if (this.keys["a"] && this.rightPaddle.position.y > -paddleLimit) {
+                if (this.keys["ArrowLeft"] && this.rightPaddle.position.y < paddleLimit) {
                     this.targetPlayer2Position -= 0.1;
+                }
+                if (this.keys["ArrowRight"] && this.rightPaddle.position.y > -paddleLimit) {
+                    this.targetPlayer2Position += 0.1;
                 }
             }
         }
@@ -747,36 +746,31 @@ class PongGame {
     }
 
     updateBall() {
-
-        this.ball.position.x += this.ballVelocity.x;
-        this.ball.position.y += this.ballVelocity.y;
-        this.goalPosition = (this.fieldLength + 0.4) / 2;
-        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        const fieldRight = (this.fieldLength + 0.5) / 2;
-        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-            this.ballVelocity.y *= -1;
+        // Interpolate ball position for smooth movement
+        
+        this.ball.position.x += (this.targetBallPosition.x - this.ball.position.x) * 0.7;
+        this.ball.position.y += (this.targetBallPosition.y - this.ball.position.y) * 0.7;
+        
+        // Throttle sending ball position
+        const now = Date.now();
+        if (now - this.lastSentTime > 100) {
+            this.sendBallPosition();
+            this.lastSentTime = now;
         }
-
-        if (this.player == "player2" && this.ball.position.x >= fieldRight) {
-            this.player1Score++;
-            this.resetBall();
-            this.updateScoreboard();
-            this.sendBallPosition();
-        } else if (this.player == "player1" && this.ball.position.x <= fieldLeft) {
-            this.player2Score++;
-            this.resetBall();
-            this.updateScoreboard();
-            this.sendBallPosition();
+    
+        
+        // Check for game over
+        if (this.player1Score >= 5 || this.player2Score >= 5) {
+            //console.log("Game Over!");
+            if (this.player1Score >= 5)
+                this.stopGame(this.player1Name);
+            else
+                this.stopGame(this.player2Name);
         }
 
         // Check for paddle collisions
-        if (this.player === "player1") {
-            this.checkPaddleCollision(this.leftPaddle);
-        } else if (this.player === "player2") {
-            this.checkPaddleCollision(this.rightPaddle);
-        }
+        this.checkPaddleCollision(this.leftPaddle);
+        this.checkPaddleCollision(this.rightPaddle);
     }
 
     sendBallPosition() {
@@ -835,7 +829,7 @@ class PongGame {
 
     stopGame(winner) {
         this.displayEndGameMessage();
-       // console.log(`${winner} wins the game!`);
+        //console.log(`${winner} wins the game!`);
         this.socket.send(JSON.stringify({
             type: 'end_game',
             user: localStorage.getItem("username"),
@@ -935,12 +929,7 @@ async function startGame3d(data, socket) {
         loadingOverlay.hide();
     }
     //console.log("Game starting...");
-    try {
-        const pongGame = new PongGame(data, socket, selectedMap);
-    }
-    catch {
-        renderPage("403");
-    }
+    const pongGame = new PongGame(data, socket, selectedMap);
 }
 
 //window.addEventListener("load", () => startGame(null, null, null));

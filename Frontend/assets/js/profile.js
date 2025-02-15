@@ -202,7 +202,7 @@ async function deleteAccount() {
 			alert("Failed to delete account");
 		}
 	} catch (error) {
-		console.error("Error deleting account:", error);
+		//console.error("Error deleting account:", error);
 		alert("Error deleting account");
 	} finally {
 		loadingOverlay.hide();

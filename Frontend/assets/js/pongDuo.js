@@ -1,10 +1,17 @@
 
-class PongGame {
-    constructor(data, socket, gameMap) {
-        this.gameMap = gameMap;
-        this.socket = socket;
-        this.data = data;
-        this.game_group = data.game_group;
+class PongDuoGame {
+    constructor(selectedMap) {
+        this.gameMap = selectedMap;
+        this.WINNING_SCORE = 5;
+        this.gameOver = false;
+        //powerups stuff
+
+        this.powerUpAvailable = true;
+        this.powerUpActive = false;
+        this.powerUpCount = 3;
+        this.normalPaddleSpeed = 0.1;
+        this.boostedPaddleSpeed = 0.18;
+        this.currentPaddleSpeed = this.normalPaddleSpeed;
 
         // Scene & Renderer
         this.scene = new THREE.Scene();
@@ -23,48 +30,53 @@ class PongGame {
         this.playerPos = this.fieldLength / 2 + this.overallHight / 2;
         this.camPos = 6.5;
         this.topCamera;
-        this.player1Name = this.data.player1;
-        this.player2Name = this.data.player2;
+        this.endOverlay;
+        this.winnerPlayer = 0;
 
+        this.isAIMode = true;
+        this.aiWorker = null;
+        this.lastAIUpdateTime = 0;
+        this.AI_UPDATE_INTERVAL = 1000;
+        this.setupAIWorker();
 
-        // DEFINE PLAYER AND CAMERA
-        this.user = localStorage.getItem("username")
-        this.player = this.user === this.player1Name ? "player1" : "player2";
-        this.currentCamera = this.player === "player1" ? "player1Camera" : "player2Camera";
+        //scoreboard stuff and names needed to fill in the tables with correct names and scores
+        this.player1Name = "You";
+        this.player2Name = "AI";
 
         //player stuff
-        this.player1 = { position: { y: 0 } };
-        this.player2 = { position: { y: 0 } };
-        this.player1Camera;
+        this.player1;
+        this.player2;
         this.player2Camera;
         this.player1Score = 0;
         this.player2Score = 0;
         this.gridMaterial;
         this.ballMaterial;
+        this.cameraEventListener;
 
-        this.ballVelocity = { x: 0.04, y: 0.00 };
+        this.ballVelocity = { x: 0.04, y: 0.0 };
+        this.isBallMovingRight = true;
         this.keys = {};
         this.isRunning = true;
-        this.lastSentTime = 0;
-        this.targetBallPosition = { x: 0, y: 0 };
-        this.targetPlayer1Position = 0;
-        this.targetPlayer2Position = 0;
-        this.lastPlayerPosition = { player1: 0, player2: 0 };
-        this.isRunning = true;
-
-        this.ingame_modal = null;
-
-        //console.log("PongGame Initialized!");
         this.init();
+    }
+
+    setupAIWorker() {
+        this.aiWorker = new Worker('./assets/js/aiWorker.js');
+        this.keys = this.keys || {};
+        this.aiWorker.onmessage = (e) => {
+            if (e.data.type === 'key_press') {
+                this.keys['ArrowUp'] = e.data.keys.ArrowUp;
+                this.keys['ArrowDown'] = e.data.keys.ArrowDown;
+            }
+        };
     }
 
     setupRenderer() {
         this.board = document.getElementById("board");
         if (!this.board) {
-            //console.error("❌ 'board' canvas not found!");
+            //console.log("'board' canvas not found!");
             return;
         }
-
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.board,
             antialias: true,
@@ -75,98 +87,30 @@ class PongGame {
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: 1.0
         });
-
-
-        // this.renderer.setPixelRatio(2);
+        //sets render image quality
         this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         this.renderer.setSize(this.board.clientWidth, this.board.clientHeight, false);
-
-        ///////////////////////////// this here  influences the   game window ////////////////////
-        //this.renderer.setPixelRatio(window.devicePixelRatio);
-        //this.renderer.setSize(this.board.clientWidth, this.board.clientHeight);
-        ///////////////////////////////////////////////////////////////////////////////////// 
         this.renderer.shadowMap.enabled = true;
         const colors = {
-            1: "#0A001E",
-            2: "#001700",
-            3: "#2299FF",
-            4: "#00000F"
+            1: "#070016",
+            2: "#001200",
+            3: "#1A7ACC",
+            4: "#00000A"
         };
         this.renderer.setClearColor(colors[this.gameMap] || "#000000");
     }
 
-    init() {
-        this.setupCamera();
-        this.setupLighting();
-        this.setupGameElements();
-        this.setupGlowingGrid();
-        this.setupControls();
-        this.setupScoreboard();
-        this.setupSocketListeners();
-
-        this.animate();
-    }
-
-    setupSocketListeners() {
-        this.socket.addEventListener('message', (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'game_update') {
-                this.ball.position.x = data.ball.x;
-                this.ball.position.y = data.ball.y;
-                this.ballVelocity = data.ballVelocity;
-                this.player1Score = data.player1Score;
-                this.player2Score = data.player2Score;
-                this.updateScoreboard();
-            }
-    
-            if (data.type === 'player_move') {
-                if (data.player === 'player1') {
-                    this.targetPlayer1Position = data.position;
-                } else {
-                    this.targetPlayer2Position = data.position;
-                }
-            }
-    
-            if (data.type === 'end_game') {
-                this.handleEndGame();
-            }
-    
-            if (data.type === 'player_warning') {
-                this.handlePlayerWarning(data);
-            }
-    
-            if (data.type === 'resume_game') {
-                this.handleResumeGame(data);
-            }
-        });
-    }
-
-    async handleEndGame() {
-        await this.wait(1200);
-        this.cleanup();
-    }
-
-    wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     setupCamera() {
-        const fov = 80;
-        // const aspect = window.innerWidth / window.innerHeight;
+        const fov = 60;
         const aspect = this.board.clientWidth / this.board.clientHeight;
         const near = 0.1;
         const far = 1000;
-        // Player 2 Camera
         this.player2Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.player2Camera.position.set(this.camPos, 0, 3);
-        this.player2Camera.rotation.set(0.0, 1, 1.57);
-        // Player 1 Camera
-        this.player1Camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.player1Camera.position.set(-this.camPos, 0, 3);
-        this.player1Camera.rotation.set(0, -1, -1.57);
+        this.player2Camera.position.set(-this.camPos, 0, 3);
+        this.player2Camera.rotation.set(0, -1, -1.57);
         // Top view
         this.topCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.topCamera.position.set(0, 0, 4);
+        this.topCamera.position.z = 6;
         this.topCamera.rotation.set(0, 0, 0);
     }
 
@@ -214,6 +158,7 @@ class PongGame {
             this.setupWalls();
         }
         this.setupSquareBall();
+        this.resetBall();
         const starField = this.generateRotatingStarfield();
         if (this.gameMap == 1) {
             const GameField = this.setupGlowingGrid();
@@ -430,9 +375,89 @@ class PongGame {
         return fieldGroup;
     }
 
+    // Reset the ball to the center and changes state for next call
     resetBall() {
         this.ball.position.set(0, 0, 0);
-        this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.05, y: (Math.random() - 0.5) * 0.1 };
+
+        this.lastAIUpdateTime = 0;
+        if (this.isBallMovingRight) {
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.04, y: (Math.random() - 0.4) * 0.1 };
+        } else {
+            this.ballVelocity = { x: (Math.random() > 0.5 ? 1 : -1) * 0.04, y: (Math.random() - 0.4) * 0.1 };
+        }
+        this.isBallMovingRight = !this.isBallMovingRight;
+        if (this.isAIMode && this.aiWorker) {
+            this.aiWorker.postMessage({
+                type: 'ball_reset',
+                ballPosition: {
+                    x: this.ball.position.x,
+                    y: this.ball.position.y
+                },
+                ballVelocity: this.ballVelocity,
+                fieldHeight: this.fieldWidth,
+                paddleY: this.rightPaddle.position.y
+            });
+        }
+    }
+
+
+    updateBall() {
+        if (this.gameOver) return;
+        this.ball.position.x += this.ballVelocity.x;
+        this.ball.position.y += this.ballVelocity.y;
+        this.goalPosition = (this.fieldLength + 0.4) / 2;
+        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
+        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
+        const fieldLeft = -(this.fieldLength + 0.5) / 2;
+        const fieldRight = (this.fieldLength + 0.5) / 2;
+        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
+            this.ballVelocity.y *= -1;
+            if (this.ball.position.y >= fieldTop) {
+                this.ball.position.y = fieldTop - 0.01;
+            }
+            if (this.ball.position.y <= fieldBottom) {
+                this.ball.position.y = fieldBottom + 0.01;
+            }
+        }
+        if (this.ball.position.x >= fieldRight) {
+            this.player1Score++;
+            this.updateScoreboard();
+            if (this.player1Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(true);
+                return;
+            }
+            this.resetBall();
+        } else if (this.ball.position.x <= fieldLeft) {
+            this.player2Score++;
+            this.updateScoreboard();
+            if (this.player2Score >= this.WINNING_SCORE) {
+                this.displayEndGameMessage(false);
+                return;
+            }
+            this.resetBall();
+        }
+        this.checkPaddleCollision(this.leftPaddle);
+        this.checkPaddleCollision(this.rightPaddle);
+
+        //this sends the ball position to the AI worker and directional velocity.
+        //x horizontal y vertical
+        if (this.isAIMode && this.aiWorker) {
+            const currentTime = Date.now();
+            //updates to 1 second intervals unless ball reset (new game)
+            if (!this.lastAIUpdate || currentTime - this.lastAIUpdate >= 1000) {
+                this.aiWorker.postMessage({
+                    type: 'ball_update',
+                    ballPosition: {
+                        x: this.ball.position.x,
+                        y: this.ball.position.y
+                    },
+                    ballVelocity: this.ballVelocity,
+                    fieldHeight: this.fieldWidth,
+                    paddleY: this.rightPaddle.position.y
+                });
+                this.lastAIUpdate = currentTime;
+            }
+        }
     }
 
 
@@ -456,19 +481,18 @@ class PongGame {
             ballTop >= paddleBottom &&
             ballBottom <= paddleTop
         ) {
-            this.ballVelocity.x *= -1.1;
+            this.ballVelocity.x *= -1.06;
             const impactPoint = (this.ball.position.y - paddle.position.y) / (paddleHeight / 2);
             this.ballVelocity.y += impactPoint * 0.1;
-
-            //send ball position and velocity
-            this.sendBallPosition();
         }
     }
+
+    ////////////// game elements creation functions
 
     createHexagon(size, opacity) {
         const hexGeometry = new THREE.CircleGeometry(size, 6); // Hexagon shape
         const edges = new THREE.EdgesGeometry(hexGeometry);
-        const material = new THREE.LineBasicMaterial({ color: "#4440FF", opacity: 0.8, transparent: true });
+        const material = new THREE.LineBasicMaterial({ color: "#7766FF", opacity: 0.8, transparent: true });
         const hexagon = new THREE.LineSegments(edges, material);
         return hexagon;
     }
@@ -591,227 +615,243 @@ class PongGame {
     }
 
     setupScoreboard() {
-        // Ensure board exists
         if (!this.board) {
-            //console.error("❌ Board element not found for scoreboard!");
+            //console.log("board element not found for scoreboard!");
             return;
         }
-
-        // Create the scoreboard container
         this.scoreboard = document.createElement("div");
         this.scoreboard.style.position = "absolute";
-        this.scoreboard.style.top = "5px"; // Keep inside board
+        this.scoreboard.style.top = "1px";
         this.scoreboard.style.left = "50%";
-        this.scoreboard.style.transform = "translateX(-50%)"; // Center it
-        this.scoreboard.style.fontSize = "24px";
+        this.scoreboard.style.transform = "translateX(-50%)";
+        this.scoreboard.style.fontSize = "20px";
         this.scoreboard.style.fontWeight = "bold";
-        this.scoreboard.style.color = "green";
-        // this.scoreboard.style.background = "rgba(0, 0, 0, 0.5)";
-        this.scoreboard.style.padding = "4px 30px";
+        this.scoreboard.style.color = "#000060";
+        this.scoreboard.style.textShadow = '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF, 0 0 4px #0000FF, 0 0 5px #0000FF';
+        this.scoreboard.style.padding = "4px 50px";
         this.scoreboard.style.borderRadius = "4px";
         this.scoreboard.style.textAlign = "center";
-        this.scoreboard.style.zIndex = "10";
-
-        // Create Player 1 and Player 2 score spans
+        this.scoreboard.style.whiteSpace = "nowrap";
         this.player1ScoreText = document.createElement("span");
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
-
         this.scoreSeparator = document.createElement("span");
-        this.scoreSeparator.textContent = " - ";
+        this.scoreSeparator.textContent = " vs ";
         this.scoreSeparator.style.margin = "0px";
-
         this.player2ScoreText = document.createElement("span");
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
-
-        // Append elements
         this.scoreboard.appendChild(this.player1ScoreText);
         this.scoreboard.appendChild(this.scoreSeparator);
         this.scoreboard.appendChild(this.player2ScoreText);
-
-        // Attach scoreboard inside the board container
         this.board.parentElement.appendChild(this.scoreboard);
     }
 
-    // Function to update the scoreboard when a player scores
     updateScoreboard() {
         this.player1ScoreText.textContent = this.player1Name + " " + this.player1Score;
         this.player2ScoreText.textContent = this.player2Score + " " + this.player2Name;
     }
+    async startCountdown() {
+        this.isRunning = false;
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
 
-
-    ////////////////CONTROLS AND CAMERA! //////////////////////////////////
-    ////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-
-    setupControls() {
-        window.addEventListener("keydown", (e) => {
-            this.keys[e.key] = true;
-            if (e.key === "c") {
-                // Toggle between the player's camera and the top view
-                this.currentCamera = this.currentCamera === "topCamera" ? (this.player === "player1" ? "player1Camera" : "player2Camera") : "topCamera";
-            }
+        // Create a container for both countdown and controls info
+        const container = document.createElement('div');
+        Object.assign(container.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: '1000'
         });
-        window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
-        window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-        window.addEventListener('popstate', this.handlePopState.bind(this));
 
+        // Style the countdown text
+        const countdownText = document.createElement('div');
+        Object.assign(countdownText.style, {
+            fontSize: '48px',
+            color: '#00008B',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            textAlign: 'center',
+            marginBottom: 'auto',
+            paddingTop: '100px'  // Reduced padding to move text higher up
+        });
+
+        // Add controls info at the bottom
+        const controlsInfo = document.createElement('div');
+        Object.assign(controlsInfo.style, {
+            position: 'absolute',
+            bottom: '30px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: '#FFFFFF',
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            lineHeight: '1.5',
+            opacity: '0.8'
+        });
+
+        controlsInfo.innerHTML = `
+            Move: w/s or a/d<br>
+            Powerup: [space]<br>
+            Camera: C
+        `;
+
+        container.appendChild(countdownText);
+        container.appendChild(controlsInfo);
+        this.board.parentElement.appendChild(container);
+
+        // Run countdown
+        for (let i = 3; i > 0; i--) {
+            countdownText.innerHTML = `Get Ready<br>${i}`;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        container.remove();
+        this.isRunning = true;
+        this.animate();
     }
 
-    async handleBeforeUnload(event) {
-        this.sendWarningToOpponent();
-        this.forfeitGame();
+    async displayEndGameMessage(isWinner) {
+        this.isRunning = false;
+        this.gameOver = true;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'countdown-overlay';
+        Object.assign(overlay.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '48px',
+            color: isWinner ? '#00FF00' : '#FF0000',
+            textShadow: '0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF, 0 0 20px #0000FF, 0 0 25px #0000FF',
+            zIndex: '1000',
+            transition: 'opacity 0.5s',
+            textAlign: 'center'
+        });
+
+        this.board.parentElement.appendChild(overlay);
+        overlay.innerHTML = isWinner ? 'Winner!' : 'You Lost!';
+        await new Promise(resolve => setTimeout(resolve, 2400));
+        overlay.remove();
+        renderPage("home");
     }
 
-    async handlePopState(event) {
-        this.sendWarningToOpponent();
-        this.forfeitGame();
-    }
-
-    sendWarningToOpponent() {
-        this.socket.send(JSON.stringify({
-            type: 'player_warning',
-            user: this.user,
-            game_group: this.game_group,
-        }));
-        this.isRunning = false; // Pause the game
-    }
-
-    sendResumeToOpponent() {
-        this.socket.send(JSON.stringify({
-            type: 'resume_game',
-            user: this.user,
-            game_group: this.game_group,
-        }));
-        this.isRunning = true; // Resume the game
-    }
-
-    handlePlayerWarning(data) {
-        this.ingame_modal = new MessageModal(MessageType.ERROR);
-        this.ingame_modal.show(`${data.user} gave up`, "Warning");
-        this.isRunning = false; // Pause the game
-    }
-
-    handleResumeGame(data) {
-        this.isRunning = true; // Resume the game
-    }
 
     updatePaddles() {
-        const paddleLimit = this.fieldWidth / 2 - this.paddleLenght / 2; // Limit paddles within field bounds
+        const paddleLimit = this.fieldWidth / 2 - 1.1 / 2;
 
-        if (this.currentCamera === "topCamera") {
-            // Controls for top view
-            if (this.player === "player1") {
-                if (this.keys["ArrowUp"] && this.leftPaddle.position.y < paddleLimit) {
-                    this.targetPlayer1Position += 0.1;
-                }
-                if (this.keys["ArrowDown"] && this.leftPaddle.position.y > -paddleLimit) {
-                    this.targetPlayer1Position -= 0.1;
-                }
-            } else {
-                if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.targetPlayer2Position += 0.1;
-                }
-                if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
-                    this.targetPlayer2Position -= 0.1;
-                }
+
+        if (this.topCamera === this.currentCamera) {
+            if (this.keys["w"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
+            }
+            if (this.keys["s"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         } else {
-            // Controls for player view
-            if (this.player === "player1") {
-                if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
-                    this.targetPlayer1Position += 0.1;
-                }
-                if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
-                    this.targetPlayer1Position -= 0.1;
-                }
-            } else {
-                if (this.keys["d"] && this.rightPaddle.position.y < paddleLimit) {
-                    this.targetPlayer2Position += 0.1;
-                }
-                if (this.keys["a"] && this.rightPaddle.position.y > -paddleLimit) {
-                    this.targetPlayer2Position -= 0.1;
-                }
+            if (this.keys["a"] && this.leftPaddle.position.y < paddleLimit) {
+                this.leftPaddle.position.y += this.currentPaddleSpeed;
+            }
+            if (this.keys["d"] && this.leftPaddle.position.y > -paddleLimit) {
+                this.leftPaddle.position.y -= this.currentPaddleSpeed;
             }
         }
-
-        // Interpolate paddle positions
-        this.leftPaddle.position.y += (this.targetPlayer1Position - this.leftPaddle.position.y) * 0.3;
-        this.rightPaddle.position.y += (this.targetPlayer2Position - this.rightPaddle.position.y) * 0.3;
-
-        // Send paddle position only if it has changed
-        const paddlePosition = this.player === "player1" ? this.leftPaddle.position.y : this.rightPaddle.position.y;
-        if (this.lastPlayerPosition[this.player] !== paddlePosition) {
-            this.sendPaddlePosition(paddlePosition);
-            this.lastPlayerPosition[this.player] = paddlePosition;
+        if (this.keys["ArrowUp"] && this.rightPaddle.position.y < paddleLimit) {
+            this.rightPaddle.position.y += 0.1;
+        }
+        if (this.keys["ArrowDown"] && this.rightPaddle.position.y > -paddleLimit) {
+            this.rightPaddle.position.y -= 0.1;
         }
     }
 
-    updateBall() {
+    // setupControls() {
+    //     window.addEventListener("keydown", (e) => (this.keys[e.key] = true));
+    //     window.addEventListener("keyup", (e) => (this.keys[e.key] = false));
+    // }
+    setupControls() {
+        // Handle regular key presses
+        window.addEventListener("keydown", (e) => {
+            this.keys[e.key] = true;
+            // Handle spacebar power-up separately
+            if (e.code === "Space" && this.powerUpAvailable && !this.powerUpActive) {
+                this.activatePowerUp();
+            }
+        });
 
-        this.ball.position.x += this.ballVelocity.x;
-        this.ball.position.y += this.ballVelocity.y;
-        this.goalPosition = (this.fieldLength + 0.4) / 2;
-        const fieldTop = this.fieldWidth / 2 - this.ballSize / 2;
-        const fieldBottom = -this.fieldWidth / 2 + this.ballSize / 2;
-        const fieldLeft = -(this.fieldLength + 0.5) / 2;
-        const fieldRight = (this.fieldLength + 0.5) / 2;
-        if (this.ball.position.y >= fieldTop || this.ball.position.y <= fieldBottom) {
-            this.ballVelocity.y *= -1;
+        window.addEventListener("keyup", (e) => {
+            this.keys[e.key] = false;
+        });
+    }
+
+    activatePowerUp() {
+        if (!this.powerUpAvailable || this.powerUpActive || this.powerUpCount <= 0) return;
+
+        this.powerUpCount--;
+        this.powerUpActive = true;
+        this.currentPaddleSpeed = this.boostedPaddleSpeed;
+
+        // Just update the text, no need to create the display
+        this.powerUpDisplay.textContent = `Power-ups: ${this.powerUpCount}`;
+
+        setTimeout(() => {
+            this.powerUpActive = false;
+            this.currentPaddleSpeed = this.normalPaddleSpeed;
+        }, 5000);
+    }
+
+
+    setupPowerUpDisplay() {
+        this.powerUpDisplay = document.createElement('div');
+        Object.assign(this.powerUpDisplay.style, {
+            position: 'absolute',
+            bottom: '1px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: '#000060',
+            textShadow: '0 0 1px #0000FF, 0 0 2px #0000FF, 0 0 3px #0000FF',
+            zIndex: '1000'
+        });
+        this.board.parentElement.appendChild(this.powerUpDisplay);
+        this.powerUpDisplay.textContent = `Power-ups: ${this.powerUpCount}`;
+    }
+    //press c to rotate between camera views
+    cameraKeyControls() {
+        if (!this.currentCamera) {
+            this.currentCamera = this.topCamera;
         }
-
-        if (this.player == "player2" && this.ball.position.x >= fieldRight) {
-            this.player1Score++;
-            this.resetBall();
-            this.updateScoreboard();
-            this.sendBallPosition();
-        } else if (this.player == "player1" && this.ball.position.x <= fieldLeft) {
-            this.player2Score++;
-            this.resetBall();
-            this.updateScoreboard();
-            this.sendBallPosition();
-        }
-
-        // Check for paddle collisions
-        if (this.player === "player1") {
-            this.checkPaddleCollision(this.leftPaddle);
-        } else if (this.player === "player2") {
-            this.checkPaddleCollision(this.rightPaddle);
+        if (!this.cameraEventListener) {
+            this.cameraEventListener = (e) => {
+                if (e.key === "c") {
+                    if (this.currentCamera === this.topCamera) {
+                        this.currentCamera = this.player2Camera;
+                    } else {
+                        this.currentCamera = this.topCamera;
+                    }
+                }
+            };
+            window.addEventListener("keydown", this.cameraEventListener);
         }
     }
 
-    sendBallPosition() {
-        this.socket.send(JSON.stringify({
-            type: 'game_update',
-            user: this.user,
-            ball: { x: this.ball.position.x, y: this.ball.position.y },
-            ballVelocity: this.ballVelocity,
-            game_group: this.game_group,
-            player1Score: this.player1Score,
-            player2Score: this.player2Score,
-        }));
-    }
-
-    sendPaddlePosition() {
-        const paddlePosition = this.player === "player1" ? this.leftPaddle.position.y : this.rightPaddle.position.y;
-        this.socket.send(JSON.stringify({
-            type: 'player_move',
-            user: this.user,
-            player: this.player,
-            game_group: this.game_group,
-            position: paddlePosition
-        }));
-    }
-
-    animate() {
-        if (!this.isRunning) return;
-
-        requestAnimationFrame(() => this.animate());
-        this.updateBall();
-        this.updatePaddles();
-
-        const camera = this[this.currentCamera];
-        this.renderer.render(this.scene, camera);
-
+    //rotation of the starfield background
+    starfieldBackgroudRotation() {
         if (this.starfield && this.gameMap == 4) {
             this.starfield.rotation.y += 0.005;
             this.starfield.rotation.x += 0.0035;
@@ -821,112 +861,56 @@ class PongGame {
         }
     }
 
+    // Class initialization
+    init() {
+        this.setupCamera();
+        this.setupLighting();
+        this.setupGameElements();
+        this.setupGlowingGrid();
+        this.setupControls();
+        this.setupScoreboard();
+        this.setupPowerUpDisplay();
+        this.startCountdown(); // animates the game loading
+    }
+
     cleanup() {
-        // Perform any necessary cleanup here
-        this.isRunning = false;
-        window.removeEventListener("keydown", this.handleKeyDown);
-        window.removeEventListener("keyup", this.handleKeyUp);
+        window.removeEventListener("keydown", this.cameraEventListener);
+        window.removeEventListener("keydown", (e) => (this.keys[e.key] = true));
         window.removeEventListener("keyup", (e) => (this.keys[e.key] = false));
-        window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-        window.removeEventListener('popstate', this.handlePopState.bind(this));
-        // Remove other event listeners, stop animations, etc.
-        renderPage("home");
-    }
-
-    stopGame(winner) {
-        this.displayEndGameMessage();
-       // console.log(`${winner} wins the game!`);
-        this.socket.send(JSON.stringify({
-            type: 'end_game',
-            user: localStorage.getItem("username"),
-            game_group: this.game_group,
-            player1: this.player1,
-            player2: this.player2,
-            player1Score: this.player1Score,
-            player2Score: this.player2Score,
-            winner: winner
-        }));
-        this.cleanup();
-    }
-
-
-    forfeitGame() {
-        const forfeitingPlayer = this.user === this.player1Name ? "player1" : "player2";
-
-        this.socket.send(JSON.stringify({
-            type: 'end_game',
-            user: localStorage.getItem("username"),
-            game_group: this.game_group,
-            player1: this.player1,
-            player2: this.player2,
-            player1Score: forfeitingPlayer === "player1" ? 0 : 3,
-            player2Score: forfeitingPlayer === "player2" ? 0 : 3,
-        }));
-        this.cleanup();
-    }
-
-    displayEndGameMessage() {
-        if ((this.player1Score > this.player2Score) && (this.player === "player1")) {
-            this.displayMessage("Winner!");
-            return;
-        } else if ((this.player2Score > this.player1Score) && this.player === "player2") {
-            this.displayMessage("Winner!");
-            return;
-        } else {
-            this.displayMessage("You Lost!");
+        if (this.aiWorker) {
+            this.aiWorker.terminate();
+            this.aiWorker = null;
         }
     }
 
-    displayMessage(message) {
-        const div = document.createElement("div");
-        div.id = "endGameMessage";
-        div.style.position = "absolute";
-        div.style.top = "50%";
-        div.style.left = "50%";
-        div.style.transform = "translate(-50%, -50%)";
-        div.style.color = "white";
-        div.style.fontSize = "48px";
-        div.style.fontFamily = "'Arial', sans-serif";
-        div.style.padding = "20px";
-        div.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        div.style.borderRadius = "10px";
-        div.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
-        div.style.textAlign = "center";
-        div.style.animation = "fadeIn 1s ease-in-out";
-        div.innerText = message;
-        document.body.appendChild(div);
-
-        const style = document.createElement("style");
-        style.innerHTML = `
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-        // Remove the message after 4 seconds
-        setTimeout(() => {
-            div.remove();
-        }, 2000);
+    // Main Game Loop
+    animate() {
+        if (!this.isRunning || this.gameOver) {
+            this.cleanup();
+            //renderPage("home");
+            return;
+        }
+        requestAnimationFrame(() => this.animate());
+        this.updateBall();
+        this.updatePaddles();
+        this.cameraKeyControls();
+        this.renderer.render(this.scene, this.currentCamera);
+        this.starfieldBackgroudRotation();
     }
 }
 
-/////    function called on main js ///////////////
-async function startGame3d(data, socket) {
-    const loadingOverlay = new LoadingOverlay();
 
+async function startGameDuo() {
+    const loadingOverlay = new LoadingOverlay();
     let selectedMap;
     try {
         loadingOverlay.show();
         const response = await fetchWithAuth("/api/users/selectedmap/");
-
         if (!response.ok) {
             throw new Error("Failed to fetch selected map");
         }
-
         const mapData = await response.json();
         //console.log(mapData);
-
         selectedMap = mapData.map_number || 1;
         //console.log("Selected map:", selectedMap);
     } catch {
@@ -935,12 +919,6 @@ async function startGame3d(data, socket) {
         loadingOverlay.hide();
     }
     //console.log("Game starting...");
-    try {
-        const pongGame = new PongGame(data, socket, selectedMap);
-    }
-    catch {
-        renderPage("403");
-    }
-}
 
-//window.addEventListener("load", () => startGame(null, null, null));
+    const pongDuo = new PongDuoGame(selectedMap);
+}

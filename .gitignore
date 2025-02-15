@@ -180,3 +180,4 @@ Contracts/node_modules/
 Contracts/artifacts/
 Contracts/cache/
 Contracts/deployed-address.json
+Prometheus/data/

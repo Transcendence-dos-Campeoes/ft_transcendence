@@ -1,19 +1,19 @@
 async function attachSettingsFormListener() {
   const formUser = document.getElementById("profile-form");
   if (!formUser) {
-    console.error("Profile form not found");
+   //console.error("Profile form not found");
     return;
   }
 
   const formPassword = document.getElementById("password-form");
   if (!formPassword) {
-    console.error("Password form not found");
+    //console.error("Password form not found");
     return;
   }
 
   formUser.addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("📝 Submitting profile form");
+    //console.log("📝 Submitting profile form");
     const loadingOverlay = new LoadingOverlay();
 
     const username = document.getElementById("username-input").value;
@@ -29,7 +29,7 @@ async function attachSettingsFormListener() {
     if (profilePictureInput && profilePictureInput.files.length > 0) {
       formData.append("profile_image", profilePictureInput.files[0]);
     }
-    console.log(formData)
+    //console.log(formData)
     try {
       loadingOverlay.show();
       const response = await fetchWithAuth("/api/users/settings/update/", {
@@ -42,25 +42,13 @@ async function attachSettingsFormListener() {
       }
 
       const data = await response.json();
-      console.log("✅ Profile updated:", data);
-
-      // Update form with new data
-      document.getElementById("username-input").value = data.username;
-      localStorage.setItem("username", data.username);
-      document.getElementById("email-input").value = data.email;
-      document.getElementById("2fa-toggle").checked = data.two_factor_enabled;
-
-      // Update profile picture
-      if (data.profile_image) {
-        document.getElementById("profile-picture-settings").src =
-          data.profile_image;
-      }
+      //console.log("✅ Profile updated:", data);
 
       // Show success message
       displayMessage("Profile updated successfully", MessageType.SUCCESS);
       renderPage("home");
     } catch (error) {
-      console.error("❌ Error updating profile:", error);
+      //console.error("❌ Error updating profile:", error);
       displayMessage("Failed to update profile", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
@@ -69,7 +57,7 @@ async function attachSettingsFormListener() {
 
   formPassword.addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("📝 Submitting password form");
+    //console.log("📝 Submitting password form");
     const loadingOverlay = new LoadingOverlay();
 
     const currPassword = document.getElementById("current-password").value;
@@ -98,7 +86,7 @@ async function attachSettingsFormListener() {
       displayMessage("Password updated successfully", MessageType.SUCCESS);
       renderElement("overview");
     } catch (error) {
-      console.error("❌ Password updating:", error);
+      //console.error("❌ Password updating:", error);
       displayMessage("Failed to update password", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
@@ -123,7 +111,6 @@ async function loadSettingsData() {
     document.getElementById("username-input").value = data.username;
     document.getElementById("email-input").value = data.email;
     document.getElementById("profile-username").textContent = data.username;
-    document.getElementById("2fa-toggle").checked = data.two_fa_enabled;
     const profileImg = document.getElementById("profile-picture-settings");
     if (profileImg && data.profile_image) {
       profileImg.src = `data:image/jpeg;base64,${data.profile_image}`;

@@ -12,6 +12,7 @@ const elements = {
 		invites: "/components/invites.html",
 		tournamentBracket: "/components/tournamentBracket.html",
 		changeMap: "/components/changeMap.html",
+		404: "/components/404.html",
 	},
 };
 
@@ -25,7 +26,7 @@ function clearNavLinkButtons() {
 	});
 }
 async function renderElement(element) {
-	console.log("Rendering element:", element);
+	// console.log("Rendering element:", element);
 	const loadingOverlay = new LoadingOverlay();
 
 	try {
@@ -45,16 +46,12 @@ async function renderElement(element) {
 			throw new Error("Content container not found");
 		}
 
-		console.log("📡 Fetching component HTML:", elements.elements[element]);
 		const response = await fetch(elements.elements[element]);
 		const html = await response.text();
-		console.log("📥 HTML received, length:", html.length);
 
-		console.log("🎨 Updating DOM");
 		content.innerHTML = html;
-		elements.currentElement = element;
 
-		console.log("🎯 Initializing component:", element);
+		//console.log("Initializing component:", element);
 		if (element === "profile") {
 			await viewProfile();
 		} else if (element === "overview") {
@@ -75,9 +72,10 @@ async function renderElement(element) {
 		} else if (element === "changeMap") {
 			loadMaps();
 		}
-		console.log("✅ Component render complete:", element);
+		elements.currentElement = element;
+		//console.log("Component render complete:", element);
 	} catch (error) {
-		console.error("Error loading element:", error);
+		//console.error("Error loading element:", error);
 	} finally {
 		loadingOverlay.hide();
 	}

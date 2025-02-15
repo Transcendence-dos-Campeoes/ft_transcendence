@@ -21,24 +21,22 @@ async function logout() {
 			try {
 				responseData = await response.json();
 			} catch (e) {
-				console.error("Error parsing JSON:", e);
+				//console.log("Error parsing JSON:", e);
 				responseData = { detail: "An error occurred" };
 			}
 			if (responseData.detail === "Token is already blacklisted") {
 				localStorage.clear();
 				renderPage("login");
 			} else {
-				console.error("Failed to log out:", responseData);
+				//console.log("Failed to log out:", responseData);
 			}
 		}
 	} catch (error) {
-		console.error("Error logging out:", error);
+		//console.log("Error logging out:", error);
 		localStorage.clear();
-		renderPage("login");
 	}
 }
 
 async function clearLocalStorage() {
 	localStorage.clear();
-	renderPage("login");
 }

@@ -1,13 +1,13 @@
 function attachRegisterFormListener() {
 	const form = document.getElementById("registrationForm");
 	if (!form) {
-		console.error("Form not found");
+		//console.error("Form not found");
 		return;
 	}
 
 	form.addEventListener("submit", async function (event) {
 		event.preventDefault();
-		console.log("Form submitted");
+		//console.log("Form submitted");
 
 		const username = document.getElementById("floatingUsername").value;
 		const email = document.getElementById("floatingInput").value;
@@ -54,7 +54,7 @@ function attachRegisterFormListener() {
 					const errorData = JSON.parse(responseText);
 					displayMessage(formatErrorMessages(errorData), MessageType.ERROR);
 				} catch (e) {
-					console.error("Error parsing JSON:", e); // Log the JSON parsing error
+					//console.error("Error parsing JSON:", e); // Log the JSON parsing error
 					displayMessage(
 						"An error occurred while registering the user",
 						MessageType.ERROR
@@ -62,7 +62,7 @@ function attachRegisterFormListener() {
 				}
 			}
 		} catch (error) {
-			console.error("Error:", error);
+			//console.error("Error:", error);
 			displayMessage(
 				"An error occurred while registering the user",
 				MessageType.ERROR

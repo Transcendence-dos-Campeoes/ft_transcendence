@@ -1,6 +1,11 @@
-function waitgame() {
+async function waitgame() {
 
     const loadingOverlay = new LoadingOverlay();
+    // const authenticated = await isAuthenticated();
+    // if (!authenticated) {
+    //   console.log("User not authenticated, redirecting to login page.");
+    //   renderPage('login');
+    // }
 
     try {
         loadingOverlay.show();
@@ -15,10 +20,9 @@ function waitgame() {
 
         awaitModal = new MessageModal(MessageType.AWAIT);
         readyModal = new MessageModal(MessageType.READY);
-        giveUpModal = new MessageModal( );
+        giveUpModal = new MessageModal();
 
         awaitModal.show(`Waiting for other player to join...`, "Awaiting").then((accept) => {
-
             if (!accept) {
                 socket.send(
                     JSON.stringify({
@@ -26,7 +30,7 @@ function waitgame() {
                         from: currentUser,
                     })
                 );
-                renderElement('overview');
+                renderPage('home');
             }
             else if (accept) {
                 readyModal.show(`Playing against ${data.opponent}`, "Ready?").then((accept) => {
@@ -39,17 +43,19 @@ function waitgame() {
                             })
                         );
                         giveUpModal.show(`You gave up`, "Loss by forfeit")
-                        renderElement('overview');
+                        renderPage('home');
                     }
-                    else
-                    {
+                    else {
                         if (data.type != 'end_game')
                             socket.send(
                                 JSON.stringify({
                                     type: 'random_ready',
+                                    user: localStorage.getItem("username"),
                                     from: data.from,
                                     game_group: data.game_group,
                                     player: data.player,
+                                    player1: data.player1,
+                                    player2: data.player2,
                                 })
                             );
                     }
@@ -62,17 +68,16 @@ function waitgame() {
                 awaitModal.hide();
                 awaitModal.resolve(true);
             }
-            if (data.type === 'end_game')
-            {
+            if (data.type === 'end_game') {
                 readyModal.hide();
                 readyModal.resolve(true);
-                renderElement('overview');
+                renderPage('home');
             }
 
         });
     }
     catch (error) {
-        console.error("Error loading element:", error);
+        //console.error("Error loading element:", error);
     } finally {
         loadingOverlay.hide();
     }

@@ -26,12 +26,11 @@ async function handle42Callback() {
 
 			if (!response.ok) {
 				const errorData = await response.json();
-				console.error('Error:', errorData.error);
+				//console.error('Error:', errorData.error);
 				return;
 			}
 
 			const data = await response.json();
-			console.log('OAuth login successful:', data);
 
 			const responseStruct = {
 				access: data.access,
@@ -46,9 +45,9 @@ async function handle42Callback() {
 				renderAuthPage("two_fa_verify", responseStruct);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			//console.error('Error:', error);
 		}
 	} else {
-		console.error('Authorization code not found');
+		//console.error('Authorization code not found');
 	}
 };

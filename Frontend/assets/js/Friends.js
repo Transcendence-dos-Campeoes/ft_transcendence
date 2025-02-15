@@ -23,7 +23,7 @@ class FriendSystem {
       const friends = await response.json();  // Add await here
       this.renderFriends(friends);
     } catch (error) {
-      console.error("Error loading friends:", error);
+      //console.log("Error loading friends:", error);
     } finally {
       loadingOverlay.hide();
     }
@@ -40,7 +40,7 @@ class FriendSystem {
       this.renderPendingInvites(invites);
 
     } catch (error) {
-      console.error("Error loading invites:", error);
+        //console.log("Error loading invites:", error);
     } finally {
       loadingOverlay.hide();
     }
@@ -66,7 +66,7 @@ class FriendSystem {
         displayMessage("Failed to send invitation", MessageType.ERROR);
       }
     } catch (error) {
-      console.error("Error sending invite:", error);
+      //console.error("Error sending invite:", error);
       displayMessage("Error sending invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
@@ -100,7 +100,7 @@ class FriendSystem {
         displayMessage("Failed to process invitation", MessageType.ERROR);
       }
     } catch (error) {
-      console.error("Error responding to invite:", error);
+      //console.log("Error responding to invite:", error);
       displayMessage("Error processing invitation", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();
@@ -125,7 +125,7 @@ class FriendSystem {
         displayMessage("Failed to remove friend", MessageType.ERROR);
       }
     } catch (error) {
-      console.error("Error removing friend:", error);
+      //console.log("Error removing friend:", error);
       displayMessage("Error removing friend", MessageType.ERROR);
     } finally {
       loadingOverlay.hide();

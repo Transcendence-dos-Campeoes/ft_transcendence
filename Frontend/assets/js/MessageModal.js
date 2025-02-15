@@ -5,7 +5,9 @@ const MessageType = {
   INFO: "info",
   INVITE: "invite",
   AWAIT: "await",
-  READY: "ready"
+  READY: "ready",
+
+  INGAME_WARNING: "ingame_warning",
 };
 
 class MessageModal {
@@ -29,6 +31,8 @@ class MessageModal {
     const isSuccess = this.type === "success";
     const isError = this.type === "error";
     const isAwait = this.type === "await";
+    const isIngameWarning = this.type === "ingame_warning";
+
     const titleClass = isSuccess ? "text-success" : "text-danger";
     const title = isSuccess ? "Success" : "Error";
 
@@ -37,12 +41,12 @@ class MessageModal {
               <div class="modal-content bg-dark text-white border-secondary">
                   <div class="modal-header border-secondary">
                       <h5 class="modal-title ${titleClass}">${title}</h5>
-                      ${isError || isAwait || isSuccess ?
+                      ${(isError || isAwait || isSuccess) && !isIngameWarning ? 
         `<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>`
         : ''}
                       </div>
                   <div class="modal-body"></div>
-                  ${!isError && !isAwait && !isSuccess ? `
+                  ${!isError && !isAwait && !isSuccess && !isIngameWarning ? `
                   <div class="modal-footer border-secondary">
                       <span class="timer"></span>
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -59,14 +63,15 @@ class MessageModal {
       keyboard: false
     });
 
-    if (!isError && !isAwait && !isSuccess) {
+    if (!isError && !isAwait && !isSuccess && !isIngameWarning) {
       this.modal.querySelector('.btn-primary').addEventListener('click', () => this.handleAccept());
       this.modal.querySelector('.btn-secondary').addEventListener('click', () => this.handleCancel());
     }
-
+    if (isAwait)
+      this.modal.querySelector('.btn-close-white').addEventListener('click', () => this.handleCancel());
     // if (isAwait)
     //   socket.addEventListener('message', function(event) {
-    //     const data = JSON.parse(event.data);
+    //     const data = JSON.parse(event.data); 
     //     if (data.type === 'random_game') {
     //         awaitModal.hide();
     //   }
@@ -149,6 +154,8 @@ class DeclineModal extends MessageModal {
     const modal = document.createElement("div");
     modal.className = "modal fade";
     modal.setAttribute("tabindex", "-1");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
 
     modal.innerHTML = `
           <div class="modal-dialog modal-dialog-centered">
@@ -167,13 +174,17 @@ class DeclineModal extends MessageModal {
 
     document.body.appendChild(modal);
     this.modal = modal;
-    this.bsModal = new bootstrap.Modal(modal);
+    this.bsModal = new bootstrap.Modal(modal, {
+      backdrop: 'static',
+      keyboard: false
+    });
 
     this.modal.querySelector('.btn-primary').addEventListener('click', () => this.hide());
   }
 
   show(message, title = null) {
     this.modal.querySelector(".modal-body").innerHTML = message;
+    this.modal.removeAttribute('aria-hidden');
     this.bsModal.show();
   }
 }
