@@ -11,9 +11,9 @@ class Match(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    player1 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, 
+    player1 = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, 
                                related_name='matches_as_player1', null=True, blank=True)
-    player2 = models.ForeignKey(SiteUser, on_delete=models.CASCADE, 
+    player2 = models.ForeignKey(SiteUser, on_delete=models.SET_NULL, 
                                related_name='matches_as_player2', null=True, blank=True)
     player1_score = models.IntegerField(default=0)
     player2_score = models.IntegerField(default=0)
