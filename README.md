@@ -1,53 +1,52 @@
 # ft_transcendence
 
-## Backend
-After making changes to the database models, we need to run:
+ft_transcendence is a full-stack web application that brings a modern twist to the classic Pong game. Built as part of the 42 school curriculum, this project integrates real-time multiplayer gameplay, user authentication, tournaments, and blockchain-based result storage.
 
-### Apply database migrations
-```bash
-    python manage.py makemigrations 
-    python manage.py migrate
-```
+## Features
 
-During execution run:
-```bash
-    docker-compose exec database python manage.py makemigrations
-    docker-compose exec database python manage.py migrate
-```
+- 🎮 Classic Pong Gameplay – Play against friends or AI.
+- 🌐 Real-Time Multiplayer – Challenge players online.
+- 🔐 User Authentication – Secure login with 2FA.
+- 🏆 Tournaments & Leaderboards – Compete for the top spot.
+- 📦 Dockerized Microservices – Scalable and modular architecture.
+- 🔗 Blockchain Integration – Tournament results stored securely on-chain.
 
-### psycopg2
-It is a Database Adapter
-    We need this application to be able to run SQL commads using django without writing them in SQL.
-    The adapter handles the complexity of communicating with the database, and it ensures efficient and secure interaction with your database.
-    It is one of the best ways to avoid SQL injections when querying a database. Database adapters provide mechanisms to safely construct and execute SQL queries, such as parameterized queries, which are specifically designed to prevent SQL injection attacks
+## Tech Stack
 
+- **Backend**: Django, Node.js
+- **Frontend**: JavaScript (Bootstrap)
+- **Database**: PostgreSQL
+- **Infrastructure**: Docker, Microservices
+- **Blockchain**: Sepolia ETH, Hardhat
 
-### WSGI - Gunicorn
-You need a WSGI server like Gunicorn to run Django applications in a production environment because Django (and other Python web frameworks) rely on the WSGI (Web Server Gateway Interface) standard to communicate with web servers and handle HTTP requests.
-    It defines how a web server forwards HTTP requests to a Python application and receives the application's responses.
-    Django provides a WSGI application (your_project.wsgi:application), which acts as the entry point for web servers. However, it doesn’t include a production-ready WSGI server - Django's built-in runserver is designed for development purposes.
+## Setup & Installation
+### Prerequisites
 
-A WSGI server like Gunicorn is necessary because:
+- Docker & Docker Compose
+- Python & Node.js
+- PostgreSQL
 
-        *   Web servers like Nginx or Apache cannot directly execute Python code.
-        *   Gunicorn acts as a bridge between Nginx (or other reverse proxies) and your Django application 
-        *   Gunicorn can run multiple worker processes, enabling your application to handle multiple simultaneous requests.
+### Installation
 
-A typical Django deployment with Gunicorn looks like this:
+Clone the Repository:
 
-    1. Client sends an HTTP request.
-    2. Nginx (Reverse Proxy):
-        Handles the incoming request.
-        Serves static files (like CSS, JS, images) directly for efficiency.
-        Forwards the dynamic request (e.g., /api/) to Gunicorn.
-    3. Gunicorn (WSGI Server):
-        Receives the HTTP request from Nginx.
-        Passes it to Django's WSGI application.
-        Returns the response to Nginx.
-    4. Nginx sends the final response back to the client.
+    git clone https://github.com/Transcendence-dos-Campeoes/ft_transcendence.git
+    cd ft_transcendence
 
-## Docker-Compose for production
+Set Up Environment Variables (e.g., .env file for DB & API keys).
+Run with Docker:
 
-A version of the docker was created for production taht configures gunicorn and nginx.
-This allows the application to handle multiple simultaneous requests.
-Running backend as a non-root user
+    docker-compose up --build
+
+    Access the App:
+    Open http://localhost:8000 in your browser.
+
+### Contributing
+
+- Fork the repo & create a new branch.
+- Commit changes and open a pull request.
+- Follow the coding style & document major updates.
+
+### License
+
+This project is for educational purposes as part of 42 Porto.
